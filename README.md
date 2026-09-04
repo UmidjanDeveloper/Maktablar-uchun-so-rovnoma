@@ -43,19 +43,30 @@ Ilova ikki qismdan iborat:
   4. Maktab bo'yicha eng ommabop kasb (jadval)
   5. Sinflar bo'yicha taqsimot (doiraviy diagramma)
   6. Fanlar bo'yicha qiziqish (doiraviy diagramma)
+- **Tavsiyalar paneli** — diagrammalar "nima bo'lyapti" desa, bu panel
+  "endi nima qilish kerak" deydi. Har bir tavsiya raqamli dalil bilan:
+  *«Oqoltin mahallasida IT markazi ochish — 12 ta o'quvchidan 6 tasi (50%)
+  shu yo'nalishni tanlagan»*
 - **Anketalar jadvali:** qidiruv, sahifalash, qatorni bosganda to'liq ma'lumot oynasi
 - **Excelga yuklash** — filtrlangan ma'lumotlar 3 ta varaqda
   (Anketalar / Statistika / Hududlar)
 - **PDF hisobot** — hokim uchun tayyor, chop etishga yaroqli tahliliy hujjat:
-  KPI, diagrammalar, maktablar jadvali va avtomatik tavsiyalar
+  KPI, diagrammalar, maktablar jadvali va muhimlik darajasi bo'yicha
+  tartiblangan tavsiyalar
 
 ### Texnik jihatlar
 - **PWA** — ilovani kompyuterga o'rnatish va oflayn ishlatish mumkin
 - **Eski kompyuterlar uchun optimallashtirilgan** — og'ir kutubxonalar
   (`xlsx`, `jspdf`) faqat kerak bo'lganda yuklanadi
-- **Takroriy anketa himoyasi** — bir xil (ism + familiya + maktab + sinf)
-  24 soat ichida qayta topshirilmaydi. Ma'lumotlar bazasi darajasidagi
-  cheklov parallel so'rovlarda ham dublikat yaratilishiga yo'l qo'ymaydi
+- **Takroriy anketa himoyasi** — bir xil (ism + familiya + maktab + sinf +
+  telefon) 24 soat ichida qayta topshirilmaydi. Telefon raqami kalitga
+  kiritilgani uchun bir sinfdagi ikkita bir xil ismli o'quvchi bir-birini
+  bloklamaydi. Ma'lumotlar bazasi darajasidagi cheklov parallel
+  so'rovlarda ham dublikat yaratilishiga yo'l qo'ymaydi
+- **Tezlik chegarasi (rate limit)** — bitta IP manzildan bir daqiqada
+  5 tadan ko'p anketa qabul qilinmaydi (F5 ni bosaverishdan himoya)
+- **Xavfsizlik qulfi** — standart parol o'zgartirilmasa, tizim
+  production rejimida admin panelga kirishni butunlay bloklaydi
 - **Rang ko'rmaslik (CVD) uchun tekshirilgan** diagramma ranglari;
   har bir bo'lak nomi va soni bilan birga ko'rsatiladi
 
@@ -119,6 +130,18 @@ ADMIN_SESSION_SECRET="bu-kalitni-albatta-ozgartiring-kamida-32-belgi"
 npm run db:push    # Jadvallarni yaratadi
 npm run db:seed    # Mahalla/maktab/kasb kataloglari + 150 ta demo anketa
 ```
+
+### 4.1. ⚠️ Mahallalar ro'yxatini tekshiring
+
+Tizimga dastlab **34 ta** mahalla kiritilgan. Bu ro'yxat rasmiy MFY
+reyestri bilan solishtirilishi **shart** — Xatirchi tumanidagi fuqarolar
+yig'inlari soni bundan ko'proq bo'lishi mumkin.
+
+1. Tuman hokimligidan mahallalarning rasmiy ro'yxatini oling
+2. `/admin/settings` → **Mahallalar** bo'limidan yetishmayotganlarini qo'shing
+
+Ro'yxat to'liq bo'lmasa, o'sha mahallalardagi o'quvchilar anketada o'z
+mahallasini topa olmaydi va tahlil natijasi noto'g'ri bo'ladi.
 
 ### 5. Ishga tushirish
 
@@ -268,6 +291,7 @@ Maktablar-uchun-so-rovnoma/
 │   │       ├── kpi-cards.tsx
 │   │       ├── filter-bar.tsx
 │   │       ├── charts.tsx                 # Barcha 6 ta diagramma
+│   │       ├── recommendations-panel.tsx  # Tavsiyalar paneli
 │   │       ├── chart-shell.tsx            # Diagramma ramkasi + tooltip
 │   │       ├── submissions-table.tsx
 │   │       ├── student-modal.tsx
@@ -282,7 +306,10 @@ Maktablar-uchun-so-rovnoma/
 │   │   ├── api-auth.ts            # API himoyasi
 │   │   ├── filters.ts             # Filtr <-> Prisma `where`
 │   │   ├── catalog-crud.ts        # Umumiy CRUD yordamchisi
-│   │   ├── dedupe.ts              # Takroriy anketa kaliti
+│   │   ├── dedupe.ts              # Takroriy anketa kaliti (telefon bilan)
+│   │   ├── env-check.ts           # Xavfsizlik sozlamalari qulfi
+│   │   ├── rate-limit.ts          # Tezlik chegarasi
+│   │   ├── recommendations.ts     # Tavsiyalar motori (qoidalar)
 │   │   ├── offline.ts             # localStorage navbati
 │   │   ├── export-excel.ts        # Excel eksporti
 │   │   ├── export-pdf.ts          # PDF hisoboti
@@ -326,13 +353,41 @@ Maktablar-uchun-so-rovnoma/
 
 ## 🔒 Xavfsizlik
 
+### ⚠️ Ishga tushirishdan oldin majburiy qadam
+
+`.env` (yoki Vercel Environment Variables) da quyidagilarni **albatta**
+o'zgartiring:
+
+```bash
+# Kuchli parol yaratish (kamida 12 belgi)
+openssl rand -base64 24
+
+# Sessiya kaliti (kamida 32 belgi)
+openssl rand -base64 32
+```
+
+Agar `ADMIN_PASSWORD` `admin123` bo'lib qolsa yoki `ADMIN_SESSION_SECRET`
+namunaviy qiymatda qolsa, tizim **production rejimida admin panelga
+kirishni butunlay bloklaydi** (`503` xatosi va konsolda ogohlantirish).
+Bu ataylab qilingan: himoyasiz panel bilan ishga tushirishdan ko'ra,
+umuman kirmaslik xavfsizroq.
+
+### Boshqa himoya choralari
+
 - Admin panel HMAC-SHA256 bilan imzolangan `httpOnly` cookie orqali himoyalangan
   (amal qilish muddati — 8 soat)
 - `middleware.ts` barcha `/admin/*` sahifalarini tekshiradi
 - Barcha `/api/admin/*` va tahlil so'rovlari serverda qayta tekshiriladi
 - Parol doimiy vaqtda taqqoslanadi (timing attack himoyasi)
 - Anketa yuborish ochiq, lekin server tomonda Zod bilan qat'iy tekshiriladi
+- `/api/students` da tezlik chegarasi: 1 IP dan daqiqasiga 5 ta anketa
 - `robots.txt` admin panelni qidiruv tizimlaridan yashiradi
+
+> **Eslatma (rate limit):** chegara xotirada saqlanadi. Vercel kabi
+> serverless muhitda har bir funksiya nusxasi o'z xotirasiga ega, shuning
+> uchun chegara taxminiy. Amaliy "F5 ni bosaverish" holatini bu to'xtatadi.
+> Qat'iy kafolat kerak bo'lsa — Upstash Redis ga o'tish mumkin
+> (`src/lib/rate-limit.ts` ni almashtirish kifoya).
 
 ---
 

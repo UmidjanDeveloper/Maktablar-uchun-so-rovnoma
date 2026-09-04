@@ -141,7 +141,8 @@ async function main() {
     const grade = 5 + Math.floor(Math.random() * 7);
     const createdAt = randomDate(60);
 
-    const dedupeKey = buildDedupeKey(firstName, lastName, school, grade, createdAt);
+    const phone = Math.random() > 0.5 ? randomPhone() : null;
+    const dedupeKey = buildDedupeKey(firstName, lastName, school, grade, phone, createdAt);
     // Kalit takrorlansa — boshqa o'quvchi yaratamiz
     if (usedKeys.has(dedupeKey)) return null;
     usedKeys.add(dedupeKey);
@@ -151,7 +152,7 @@ async function main() {
       lastName,
       gender,
       dedupeKey,
-      phone: Math.random() > 0.5 ? randomPhone() : null,
+      phone,
       parentPhone: Math.random() > 0.6 ? randomPhone() : null,
       region: 'Navoiy',
       district: 'Xatirchi',

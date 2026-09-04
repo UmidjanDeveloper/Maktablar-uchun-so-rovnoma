@@ -4,7 +4,7 @@ import { buildWhere, parseFilters } from '@/lib/filters';
 import { requireAdmin } from '@/lib/api-auth';
 import { percent } from '@/lib/utils';
 import { KASB_ICON_MAP } from '@/lib/constants';
-import type { DashboardStats, NameValue, SchoolTopJob } from '@/types';
+import type { DashboardStats, MahallaInsight, NameValue, SchoolTopJob } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,6 +45,7 @@ export async function GET(request: NextRequest) {
         dreamJob: true,
         jobCategory: true,
         favoriteSubjects: true,
+        clubs: true,
         inspiration: true,
         studyAbroad: true,
       },
@@ -58,6 +59,14 @@ export async function GET(request: NextRequest) {
     const inspirations = new Map<string, number>();
     const abroad = new Map<string, number>();
     const schools = new Map<string, number>();
+    const clubs = new Map<string, number>();
+
+    /** Mahalla -> (yo'nalish -> son) — tavsiyalar uchun */
+    const mahallaCategories = new Map<string, Map<string, number>>();
+    /** Mahalla -> {qiz, o'g'il} */
+    const mahallaGender = new Map<string, { girls: number; boys: number }>();
+    /** Yo'nalish -> {qiz, o'g'il} */
+    const categoryGender = new Map<string, { ogil: number; qiz: number }>();
 
     /** Maktab -> (kasb -> son) */
     const schoolJobs = new Map<string, Map<string, number>>();
@@ -80,6 +89,25 @@ export async function GET(request: NextRequest) {
       if (row.inspiration) inc(inspirations, row.inspiration);
       if (row.studyAbroad) inc(abroad, row.studyAbroad);
       for (const subject of row.favoriteSubjects) inc(subjects, subject);
+      for (const club of row.clubs) inc(clubs, club);
+
+      // Mahalla kesimidagi yo'nalishlar va jins nisbati
+      let catMap = mahallaCategories.get(row.mahalla);
+      if (!catMap) {
+        catMap = new Map<string, number>();
+        mahallaCategories.set(row.mahalla, catMap);
+      }
+      inc(catMap, row.jobCategory);
+
+      const mg = mahallaGender.get(row.mahalla) ?? { girls: 0, boys: 0 };
+      if (isGirl) mg.girls += 1;
+      else mg.boys += 1;
+      mahallaGender.set(row.mahalla, mg);
+
+      const cg = categoryGender.get(row.jobCategory) ?? { ogil: 0, qiz: 0 };
+      if (isGirl) cg.qiz += 1;
+      else cg.ogil += 1;
+      categoryGender.set(row.jobCategory, cg);
 
       // Maktab bo'yicha kasblar
       let jobMap = schoolJobs.get(row.school);
@@ -126,6 +154,32 @@ export async function GET(request: NextRequest) {
           (parseInt(a.school, 10) || 0) - (parseInt(b.school, 10) || 0)
       );
 
+    // Mahalla kesimidagi tahlil — tavsiyalar shu asosda quriladi
+    const mahallaInsights: MahallaInsight[] = Array.from(mahallaCategories.entries())
+      .map(([mahalla, catMap]) => {
+        const [topCategory, topCategoryCount] = Array.from(catMap.entries()).sort(
+          (a, b) => b[1] - a[1] || a[0].localeCompare(b[0])
+        )[0];
+        const mahallaTotal = mahallas.get(mahalla) ?? 0;
+        const gender = mahallaGender.get(mahalla) ?? { girls: 0, boys: 0 };
+        return {
+          mahalla,
+          total: mahallaTotal,
+          topCategory,
+          topCategoryCount,
+          topCategoryShare: percent(topCategoryCount, mahallaTotal),
+          girls: gender.girls,
+          boys: gender.boys,
+        };
+      })
+      .sort((a, b) => b.total - a.total);
+
+    // Yo'nalishlar jins kesimida
+    const categoryGenderStats = toSorted(categories).map((c) => {
+      const cg = categoryGender.get(c.name) ?? { ogil: 0, qiz: 0 };
+      return { name: c.name, ogil: cg.ogil, qiz: cg.qiz };
+    });
+
     // Sinflarni 5 dan 11 gacha tabiiy tartibda chiqaramiz
     const byGrade = toSorted(grades).sort(
       (a, b) => parseInt(a.name, 10) - parseInt(b.name, 10)
@@ -151,6 +205,9 @@ export async function GET(request: NextRequest) {
       byCategory: toSorted(categories),
       byInspiration: toSorted(inspirations),
       studyAbroad: toSorted(abroad),
+      byClub: toSorted(clubs),
+      mahallaInsights,
+      categoryGender: categoryGenderStats,
     };
 
     return NextResponse.json(stats);

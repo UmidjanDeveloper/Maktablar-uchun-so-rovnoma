@@ -15,6 +15,7 @@ import {
   SubjectsChart,
   TopJobsChart,
 } from './charts';
+import { RecommendationsPanel } from './recommendations-panel';
 import { SubmissionsTable } from './submissions-table';
 import { StudentModal } from './student-modal';
 import { filtersToQuery } from '@/lib/filters';
@@ -259,6 +260,10 @@ export function DashboardClient() {
         mahallalar={mahallalar}
         maktablar={maktablar}
       />
+
+      {/* Tavsiyalar — diagrammalardan oldin, chunki hokim uchun
+          "nima qilish kerak" degan savol birinchi o'rinda turadi */}
+      <RecommendationsPanel stats={stats} loading={statsLoading} />
 
       {/* Diagrammalar */}
       {statsLoading && !stats ? (

@@ -6,7 +6,15 @@
  * ============================================================
  */
 
-/** Xatirchi tumanidagi mahallalar */
+/**
+ * Xatirchi tumanidagi mahallalar (fuqarolar yig'inlari).
+ *
+ * DIQQAT: bu ro'yxat boshlang'ich (seed) ma'lumot bo'lib, rasmiy MFY
+ * reyestri bilan solishtirilishi shart. Yetishmayotgan mahallalarni
+ * admin panel orqali qo'shish mumkin: /admin/settings -> Mahallalar.
+ * Ro'yxat to'liq bo'lmasa, o'sha mahalladagi o'quvchilar anketada
+ * o'z mahallasini tanlay olmaydi.
+ */
 export const MAHALLALAR: string[] = [
   "Angidon",
   "Langar",

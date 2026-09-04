@@ -1,7 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
-import { buildDedupeKey } from '@/lib/dedupe';
+import { buildDedupeKey, normalizePhone } from '@/lib/dedupe';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 import { studentSchema, fieldErrors } from '@/lib/validation';
 import { buildWhere, parseFilters } from '@/lib/filters';
 import { requireAdmin } from '@/lib/api-auth';
@@ -12,10 +13,26 @@ export const dynamic = 'force-dynamic';
 /** Takroriy anketani aniqlash oynasi — 24 soat */
 const DUPLICATE_WINDOW_MS = 24 * 60 * 60 * 1000;
 
+/** Bitta IP manzildan bir daqiqada ruxsat etilgan anketalar soni */
+const RATE_LIMIT = 5;
+const RATE_WINDOW_MS = 60 * 1000;
+
 /**
  * POST /api/students — yangi anketani saqlash (ochiq, login talab qilinmaydi)
  */
 export async function POST(request: NextRequest) {
+  // 0. Tezlik chegarasi — bitta kompyuterdan ketma-ket yuborishning oldini oladi
+  const ip = getClientIp(request);
+  const limit = checkRateLimit(`students:${ip}`, RATE_LIMIT, RATE_WINDOW_MS);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      {
+        message: `Juda ko'p urinish. ${limit.retryAfter} soniyadan so'ng qayta urinib ko'ring.`,
+      },
+      { status: 429, headers: { 'Retry-After': String(limit.retryAfter) } }
+    );
+  }
+
   let body: unknown;
   try {
     body = await request.json();
@@ -38,9 +55,10 @@ export async function POST(request: NextRequest) {
   const data = parsed.data;
 
   try {
-    // 2. Takroriy topshiruvni tekshirish:
-    //    bir xil ism + familiya + maktab + sinf 24 soat ichida qayta kiritilmaydi
-    const duplicate = await prisma.student.findFirst({
+    // 2. Takroriy topshiruvni tekshirish (24 soatlik oyna).
+    //    Bir xil ism + familiya + maktab + sinf topilsa ham, telefon
+    //    raqamlari har xil bo'lsa — bu ikki xil o'quvchi deb qabul qilinadi.
+    const candidates = await prisma.student.findMany({
       where: {
         firstName: { equals: data.firstName, mode: 'insensitive' },
         lastName: { equals: data.lastName, mode: 'insensitive' },
@@ -48,14 +66,19 @@ export async function POST(request: NextRequest) {
         grade: data.grade,
         createdAt: { gte: new Date(Date.now() - DUPLICATE_WINDOW_MS) },
       },
-      select: { id: true, createdAt: true },
+      select: { id: true, phone: true },
+      take: 20,
     });
+
+    const incomingPhone = normalizePhone(data.phone);
+    const duplicate = candidates.some((c) => normalizePhone(c.phone) === incomingPhone);
 
     if (duplicate) {
       return NextResponse.json(
         {
-          message:
-            "Bu ma'lumotlar bilan anketa oxirgi 24 soat ichida allaqachon topshirilgan. Rahmat!",
+          message: incomingPhone
+            ? "Bu ma'lumotlar bilan anketa oxirgi 24 soat ichida allaqachon topshirilgan. Rahmat!"
+            : "Bu ism va familiya bilan anketa oxirgi 24 soat ichida topshirilgan. Agar siz boshqa o'quvchi bo'lsangiz, telefon raqamingizni kiriting va qayta urinib ko'ring.",
           duplicate: true,
         },
         { status: 409 }
@@ -65,7 +88,13 @@ export async function POST(request: NextRequest) {
     // 3. Saqlash ("consent" bazaga yozilmaydi — u faqat forma sharti)
     const student = await prisma.student.create({
       data: {
-        dedupeKey: buildDedupeKey(data.firstName, data.lastName, data.school, data.grade),
+        dedupeKey: buildDedupeKey(
+          data.firstName,
+          data.lastName,
+          data.school,
+          data.grade,
+          data.phone
+        ),
         firstName: data.firstName,
         lastName: data.lastName,
         gender: data.gender,
@@ -95,8 +124,9 @@ export async function POST(request: NextRequest) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
       return NextResponse.json(
         {
-          message:
-            "Bu ma'lumotlar bilan anketa allaqachon topshirilgan. Rahmat!",
+          message: data.phone
+            ? "Bu ma'lumotlar bilan anketa allaqachon topshirilgan. Rahmat!"
+            : "Bu ism va familiya bilan anketa allaqachon topshirilgan. Agar siz boshqa o'quvchi bo'lsangiz, telefon raqamingizni kiriting.",
           duplicate: true,
         },
         { status: 409 }

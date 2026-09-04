@@ -11,6 +11,7 @@
  */
 import type { jsPDF } from 'jspdf';
 import { formatDate } from './utils';
+import { buildRecommendations, PRIORITY_LABELS } from './recommendations';
 import type { DashboardFilters, DashboardStats } from '@/types';
 
 /** A4 o'lchamlari (mm) va chekka bo'shliqlar */
@@ -293,38 +294,70 @@ export async function exportDashboardToPdf(
   let cursor = (afterTable?.finalY ?? y) + 10;
   cursor = sectionTitle(doc, 'Xulosa va tavsiyalar', cursor);
 
-  const topJob = stats.topJobs[0];
-  const topMahalla = stats.byMahalla[0];
-  const topSubject = stats.bySubject[0];
-  const recommendations: string[] = [];
-
-  if (topJob) {
-    recommendations.push(
-      `Tumandagi eng ommabop kasb - "${topJob.name}" (${topJob.value} ta o'quvchi). Shu yo'nalishda qo'shimcha to'garak va uchrashuvlar tashkil etish tavsiya etiladi.`
-    );
-  }
-  if (topMahalla) {
-    recommendations.push(
-      `Eng faol mahalla - ${topMahalla.name} (${topMahalla.value} ta anketa). Bu mahallada kasbga yo'naltirish tadbirlarini kengaytirish mumkin.`
-    );
-  }
-  if (topSubject) {
-    recommendations.push(
-      `O'quvchilar orasida eng ko'p yoqtiriladigan fan - ${topSubject.name} (${topSubject.value} ta tanlov). Ushbu fan bo'yicha chuqurlashtirilgan guruhlar ochish samarali bo'ladi.`
-    );
-  }
-  recommendations.push(
-    `Anketalarning ${stats.kpi.girlsPercent}% ini qizlar, ${stats.kpi.boysPercent}% ini o'g'il bolalar to'ldirgan. To'garaklarni rejalashtirishda ushbu nisbatni hisobga olish lozim.`
-  );
-
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(...DARK);
+  doc.setFontSize(8.5);
+  doc.setTextColor(...SLATE);
+  const introLines = doc.splitTextToSize(
+    safe(
+      'Quyidagi tavsiyalar anketa natijalari asosida avtomatik shakllantirilgan. ' +
+        'Har bir tavsiya yonida uni tasdiqlovchi raqamli dalil keltirilgan.'
+    ),
+    PAGE_W - M * 2
+  );
+  doc.text(introLines, M, cursor);
+  cursor += introLines.length * 4 + 4;
+
+  const recommendations = buildRecommendations(stats);
+
   for (const rec of recommendations) {
-    cursor = ensureSpace(doc, cursor, 14);
-    const lines = doc.splitTextToSize(safe(`\u00B7 ${rec}`), PAGE_W - M * 2);
-    doc.text(lines, M, cursor);
-    cursor += lines.length * 4.4 + 3;
+    cursor = ensureSpace(doc, cursor, 26);
+
+    // Muhimlik darajasi rangi
+    const badgeColor: [number, number, number] =
+      rec.priority === 'high'
+        ? [220, 38, 38]
+        : rec.priority === 'medium'
+          ? [217, 119, 6]
+          : [100, 116, 139];
+
+    // Chap tomonda rangli chiziq — darajani ko'rsatadi
+    doc.setFillColor(...badgeColor);
+    doc.roundedRect(M, cursor - 3.2, 1.4, 5, 0.7, 0.7, 'F');
+
+    // Sarlavha
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9.5);
+    doc.setTextColor(...DARK);
+    const titleLines = doc.splitTextToSize(safe(rec.title), PAGE_W - M * 2 - 26);
+    doc.text(titleLines, M + 4, cursor);
+
+    // Daraja yorlig'i o'ng tomonda
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7);
+    doc.setTextColor(...badgeColor);
+    doc.text(safe(PRIORITY_LABELS[rec.priority].toUpperCase()), PAGE_W - M, cursor, {
+      align: 'right',
+    });
+    cursor += titleLines.length * 4.4 + 1;
+
+    // Nima qilish kerak
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(...DARK);
+    const actionLines = doc.splitTextToSize(safe(rec.action), PAGE_W - M * 2 - 4);
+    doc.text(actionLines, M + 4, cursor);
+    cursor += actionLines.length * 4 + 1;
+
+    // Dalil
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(7.8);
+    doc.setTextColor(...SLATE);
+    const evidenceLines = doc.splitTextToSize(
+      safe(`Dalil: ${rec.evidence}`),
+      PAGE_W - M * 2 - 4
+    );
+    doc.text(evidenceLines, M + 4, cursor);
+    cursor += evidenceLines.length * 3.8 + 5;
   }
 
   addFooters(doc);

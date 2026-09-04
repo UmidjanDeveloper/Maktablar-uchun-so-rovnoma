@@ -1,11 +1,29 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { checkCredentials, createSessionToken, SESSION_COOKIE, SESSION_MAX_AGE } from '@/lib/auth';
 import { loginSchema, fieldErrors } from '@/lib/validation';
+import { findEnvProblems, isAdminLoginAllowed, warnAboutEnvProblems } from '@/lib/env-check';
 
 export const dynamic = 'force-dynamic';
 
+// Server ishga tushganda sozlamalarni bir marta tekshiramiz
+warnAboutEnvProblems();
+
 /** POST /api/auth/login — admin panelga kirish */
 export async function POST(request: NextRequest) {
+  // Ishlab chiqarishda standart parol/kalit qolib ketgan bo'lsa — kirishni
+  // umuman taqiqlaymiz. Aks holda platforma ochiq qolib ketadi.
+  if (!isAdminLoginAllowed()) {
+    const problems = findEnvProblems().map((p) => p.message);
+    console.error('[login] Xavfsiz bo\'lmagan sozlamalar:', problems);
+    return NextResponse.json(
+      {
+        message:
+          "Server sozlamalari xavfsiz emas: standart parol yoki sessiya kaliti o'zgartirilmagan. Tizim administratoriga murojaat qiling.",
+      },
+      { status: 503 }
+    );
+  }
+
   let body: unknown;
   try {
     body = await request.json();

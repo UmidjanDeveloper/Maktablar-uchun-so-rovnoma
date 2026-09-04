@@ -72,6 +72,26 @@ export interface SchoolTopJob {
   topJobIcon: string;
 }
 
+/** Mahalla kesimidagi tahlil — tavsiyalar uchun asos */
+export interface MahallaInsight {
+  mahalla: string;
+  total: number;
+  /** Shu mahallada eng ko'p tanlangan kasb yo'nalishi */
+  topCategory: string;
+  topCategoryCount: number;
+  /** Ushbu yo'nalishning mahalladagi ulushi (%) */
+  topCategoryShare: number;
+  girls: number;
+  boys: number;
+}
+
+/** Yo'nalish bo'yicha jins taqsimoti */
+export interface CategoryGenderStat {
+  name: string;
+  ogil: number;
+  qiz: number;
+}
+
 /** /api/stats javobi */
 export interface DashboardStats {
   kpi: {
@@ -93,6 +113,9 @@ export interface DashboardStats {
   byCategory: NameValue[];
   byInspiration: NameValue[];
   studyAbroad: NameValue[];
+  byClub: NameValue[];
+  mahallaInsights: MahallaInsight[];
+  categoryGender: CategoryGenderStat[];
 }
 
 /** Ro'yxat (jadval) uchun sahifalangan javob */

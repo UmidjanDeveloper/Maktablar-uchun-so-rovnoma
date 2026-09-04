@@ -7,8 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Confetti } from './confetti';
 import { KASB_ICON_MAP } from '@/lib/constants';
 
-/** Kiosk rejimida ekran avtomatik tozalanadigan vaqt (soniya) */
-const AUTO_RESET_SECONDS = 7;
+/**
+ * Kiosk rejimida ekran avtomatik tozalanadigan vaqt (soniya).
+ * 12 soniya — bola o'z ismini va tanlagan kasbini o'qib ulgurishi,
+ * lekin keyingi navbatdagi o'quvchi uzoq kutmasligi uchun.
+ */
+const AUTO_RESET_SECONDS = 12;
 
 interface SuccessScreenProps {
   firstName: string;
@@ -98,8 +102,12 @@ export function SuccessScreen({ firstName, dreamJob, savedOffline, onReset }: Su
         transition={{ delay: 0.5, duration: 0.4 }}
         className="mt-10 flex flex-col items-center gap-3"
       >
-        <Button size="xl" onClick={onReset}>
-          <RotateCcw className="h-5 w-5" />
+        <Button
+          size="xl"
+          onClick={onReset}
+          className="h-20 rounded-3xl px-12 text-xl shadow-soft-lg"
+        >
+          <RotateCcw className="h-6 w-6" />
           Yangi anketa to&apos;ldirish
         </Button>
         <p className="text-sm text-slate-400" aria-live="polite">
