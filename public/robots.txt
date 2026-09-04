@@ -1,0 +1,5 @@
+# Admin panel qidiruv tizimlarida ko'rinmasligi kerak
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/

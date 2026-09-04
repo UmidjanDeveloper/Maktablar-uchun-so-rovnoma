@@ -1,0 +1,92 @@
+// ============================================================
+//  KELAJAK EGASI — Prisma sxemasi
+//  Ma'lumotlar bazasi: PostgreSQL (Supabase bilan mos)
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+/// O'quvchi anketasi — platformaning asosiy jadvali
+model Student {
+  id       String  @id @default(cuid())
+  firstName String
+  lastName  String
+  /// "O'g'il bola" yoki "Qiz bola"
+  gender    String
+  phone       String?
+  parentPhone String?
+
+  region   String @default("Navoiy")
+  district String @default("Xatirchi")
+  mahalla  String
+  school   String
+  grade    Int
+
+  /// Yoqtirgan fanlar (Matematika, Fizika, ...)
+  favoriteSubjects String[]
+  /// Qatnashadigan to'garaklar (IT, Sport, ...)
+  clubs            String[]
+
+  /// Orzudagi kasb va uning yo'nalishi
+  dreamJob    String
+  jobCategory String
+  /// "Nima uchun aynan shu kasbni tanlading?"
+  motivation  String?
+
+  /// Kim ilhom berdi (Otam/Onam, O'qituvchim, ...)
+  inspiration        String?
+  /// Chet elda o'qish istagi (Ha / Yo'q / O'ylab ko'rmaganman)
+  studyAbroad        String?
+  /// Mahalla uchun kelajakdagi rejasi
+  futureContribution String?
+
+  createdAt DateTime @default(now())
+
+  /// Takroriy anketani bazaning o'zida bloklaydigan kalit:
+  /// "ism|familiya|maktab|sinf|YYYY-MM-DD". Bir vaqtda kelgan
+  /// bir xil so'rovlarda ikkinchisi P2002 xatosi bilan rad etiladi.
+  dedupeKey String? @unique
+
+  // Filtrlash va tahlil so'rovlarini tezlashtiruvchi indekslar
+  @@index([mahalla])
+  @@index([school])
+  @@index([grade])
+  @@index([gender])
+  @@index([jobCategory])
+  @@index([dreamJob])
+  @@index([createdAt])
+  // Takroriy anketani aniqlash uchun (24 soatlik tekshiruv)
+  @@index([firstName, lastName, school, grade])
+}
+
+/// Xatirchi tumani mahallalari ro'yxati (admin panelda tahrirlanadi)
+model Mahalla {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+}
+
+/// Maktablar ro'yxati (admin panelda tahrirlanadi)
+model School {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+}
+
+/// Kasblar katalogi (admin panelda tahrirlanadi)
+model Profession {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  category  String
+  icon      String
+  createdAt DateTime @default(now())
+
+  @@index([category])
+}

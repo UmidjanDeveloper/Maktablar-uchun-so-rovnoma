@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 224 89% 58%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222 47% 11%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 224 89% 58%;
+    --radius: 0.75rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-white text-slate-900 antialiased;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+
+  /* Kiosk rejimi: tasodifiy matn belgilash va kontekst menyusi chalg'itmasligi uchun */
+  .kiosk-noselect {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Eski kompyuterlarda animatsiyalar sekinlashtirmasligi uchun */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* Nozik fon naqshi — bosh sahifa uchun */
+  .bg-grid {
+    background-image:
+      radial-gradient(circle at 1px 1px, rgb(226 232 240) 1px, transparent 0);
+    background-size: 28px 28px;
+  }
+
+  /* Diagrammalar konteynerining umumiy ko'rinishi */
+  .chart-card {
+    @apply rounded-2xl border border-slate-200/80 bg-white p-5 shadow-soft;
+  }
+}
+
+/* Ingichka, chiroyli scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgb(203 213 225);
+  border-radius: 9999px;
+  border: 2px solid white;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(148 163 184);
+}
+
+/* Chop etishda (PDF) keraksiz elementlarni yashirish */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
