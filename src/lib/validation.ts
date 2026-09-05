@@ -55,14 +55,19 @@ export const step1Schema = z.object({
   gender: z.enum(JINSLAR, {
     errorMap: () => ({ message: 'Jinsingizni tanlang' }),
   }),
+  // Mahalla va maktab ro'yxatdan tanlanadi, lekin ro'yxatda bo'lmasa
+  // o'quvchi nomini qo'lda yozishi mumkin — shuning uchun uzunlik
+  // chegarasi bor (bo'sh yoki bir harfli qiymat o'tmaydi).
   mahalla: z
     .string({ required_error: 'Mahallangizni tanlang' })
     .trim()
-    .min(1, { message: 'Mahallangizni tanlang' }),
+    .min(2, { message: "Mahallangizni tanlang yoki nomini yozing" })
+    .max(120, { message: 'Mahalla nomi 120 ta belgidan oshmasligi kerak' }),
   school: z
     .string({ required_error: 'Maktabingizni tanlang' })
     .trim()
-    .min(1, { message: 'Maktabingizni tanlang' }),
+    .min(2, { message: "Maktabingizni tanlang yoki nomini yozing" })
+    .max(250, { message: 'Maktab nomi 250 ta belgidan oshmasligi kerak' }),
   grade: z.coerce
     .number({ required_error: 'Sinfingizni tanlang', invalid_type_error: 'Sinfingizni tanlang' })
     .refine((v) => SINFLAR.includes(v), { message: 'Sinf 5 dan 11 gacha bo\'lishi kerak' }),
@@ -135,7 +140,7 @@ export const catalogItemSchema = z.object({
     .string({ required_error: 'Nomini kiriting' })
     .trim()
     .min(2, { message: "Nomi kamida 2 ta belgidan iborat bo'lishi kerak" })
-    .max(100, { message: 'Nomi 100 ta belgidan oshmasligi kerak' }),
+    .max(250, { message: 'Nomi 250 ta belgidan oshmasligi kerak' }),
 });
 
 /** Kasb sxemasi */

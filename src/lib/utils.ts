@@ -47,6 +47,30 @@ export function searchKey(text: string): string {
   return normalize(text).replace(/['\-\s]/g, '');
 }
 
+/**
+ * Maktabni tartiblash uchun kalit — nom ichidagi BIRINCHI raqam.
+ *
+ * Rasmiy ro'yxatda maktab nomlari bir xil shaklda emas:
+ *   "5-sonli umumiy o'rta ta'lim maktabi"          -> 5
+ *   "Xatirchi tumani 21-sonli umumiy ..."          -> 21
+ *   "88-IDUM"                                       -> 88
+ *   "O'ZB. RES. ... 20-INFORMATIKA VA ..."          -> 20
+ *
+ * Raqamsiz nomlar ro'yxat oxiriga tushadi.
+ */
+export function schoolSortKey(name: string): number {
+  const match = name.match(/\d+/);
+  return match ? Number(match[0]) : Number.MAX_SAFE_INTEGER;
+}
+
+/** Maktablarni raqami bo'yicha tabiiy tartibda joylashtiradi */
+export function sortSchools<T>(items: T[], getName: (item: T) => string): T[] {
+  return [...items].sort((a, b) => {
+    const diff = schoolSortKey(getName(a)) - schoolSortKey(getName(b));
+    return diff !== 0 ? diff : getName(a).localeCompare(getName(b));
+  });
+}
+
 /** Ismning bosh harflari — avatar uchun */
 export function initials(firstName: string, lastName: string): string {
   return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();

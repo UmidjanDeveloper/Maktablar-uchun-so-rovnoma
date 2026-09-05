@@ -75,7 +75,13 @@ export function StepPersonal({ form, errors, update, mahallalar, maktablar }: St
       </Field>
 
       <div className="grid gap-5 sm:grid-cols-2">
-        <Field label="Mahalla" htmlFor="mahalla" required error={errors.mahalla}>
+        <Field
+          label="Mahalla"
+          htmlFor="mahalla"
+          required
+          error={errors.mahalla}
+          hint="Ro'yxatda topilmasa, nomini o'zing yozishing mumkin"
+        >
           <SearchableSelect
             id="mahalla"
             options={mahallalar}
@@ -85,10 +91,18 @@ export function StepPersonal({ form, errors, update, mahallalar, maktablar }: St
             searchPlaceholder="Mahalla nomini yozing..."
             emptyText="Bunday mahalla topilmadi"
             hasError={!!errors.mahalla}
+            allowCustom
+            customLabel={(q) => `«${q}» mahallasini qo'shish`}
           />
         </Field>
 
-        <Field label="Maktab" htmlFor="school" required error={errors.school}>
+        <Field
+          label="Maktab"
+          htmlFor="school"
+          required
+          error={errors.school}
+          hint="Maktab raqamini yozsang yetarli. Topilmasa — o'zing yoz"
+        >
           <SearchableSelect
             id="school"
             options={maktablar}
@@ -98,6 +112,8 @@ export function StepPersonal({ form, errors, update, mahallalar, maktablar }: St
             searchPlaceholder="Maktab raqamini yozing..."
             emptyText="Bunday maktab topilmadi"
             hasError={!!errors.school}
+            allowCustom
+            customLabel={(q) => `«${q}» maktabini qo'shish`}
           />
         </Field>
       </div>

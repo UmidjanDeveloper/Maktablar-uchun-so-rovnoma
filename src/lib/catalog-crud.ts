@@ -10,6 +10,7 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { catalogItemSchema, fieldErrors } from '@/lib/validation';
 import { requireAdmin } from '@/lib/api-auth';
+import { sortSchools } from '@/lib/utils';
 
 type CatalogModel = 'mahalla' | 'school';
 
@@ -50,15 +51,10 @@ export async function listCatalog(model: CatalogModel) {
 
   try {
     const items = await delegate(model).findMany({ orderBy: { createdAt: 'asc' } });
-    // Maktablarni raqami bo'yicha tabiiy tartibda ko'rsatamiz
+    // Maktablarni raqami bo'yicha, mahallalarni alifbo bo'yicha tartiblaymiz
     const sorted =
       model === 'school'
-        ? [...items].sort(
-            (a, b) =>
-              (parseInt(a.name, 10) || Number.MAX_SAFE_INTEGER) -
-                (parseInt(b.name, 10) || Number.MAX_SAFE_INTEGER) ||
-              a.name.localeCompare(b.name)
-          )
+        ? sortSchools(items, (i) => i.name)
         : [...items].sort((a, b) => a.name.localeCompare(b.name));
     return NextResponse.json({ items: sorted });
   } catch (error) {

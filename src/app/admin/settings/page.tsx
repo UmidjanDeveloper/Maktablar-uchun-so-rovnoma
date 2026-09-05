@@ -2,6 +2,7 @@ import { Info } from 'lucide-react';
 import { AdminShell } from '@/components/admin/admin-shell';
 import { CatalogManager } from '@/components/admin/catalog-manager';
 import { ProfessionManager } from '@/components/admin/profession-manager';
+import { UnlistedPanel } from '@/components/admin/unlisted-panel';
 import { MAHALLALAR } from '@/lib/constants';
 
 export const metadata = {
@@ -42,6 +43,9 @@ export default function SettingsPage() {
             </p>
           </div>
         </div>
+
+        {/* Anketada qo'lda kiritilgan nomlarni nazorat qilish */}
+        <UnlistedPanel />
 
         <div className="grid gap-4 lg:grid-cols-2">
           <CatalogManager

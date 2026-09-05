@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { MAHALLALAR, MAKTABLAR, KASBLAR } from '@/lib/constants';
+import { sortSchools } from '@/lib/utils';
 import type { CatalogsResponse } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -27,14 +28,9 @@ export async function GET() {
       mahallalar: mahallalar.length
         ? mahallalar
         : MAHALLALAR.map((name) => ({ id: name, name })),
-      // Maktablarni raqami bo'yicha tartiblaymiz: 1-maktab, 2-maktab, ...
+      // Maktablarni nom ichidagi raqam bo'yicha tartiblaymiz
       maktablar: maktablar.length
-        ? [...maktablar].sort(
-            (a, b) =>
-              (parseInt(a.name, 10) || Number.MAX_SAFE_INTEGER) -
-                (parseInt(b.name, 10) || Number.MAX_SAFE_INTEGER) ||
-              a.name.localeCompare(b.name)
-          )
+        ? sortSchools(maktablar, (m) => m.name)
         : MAKTABLAR.map((name) => ({ id: name, name })),
       kasblar: kasblar.length ? kasblar : KASBLAR.map((k) => ({ id: k.name, ...k })),
     };

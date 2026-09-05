@@ -24,9 +24,13 @@ Ilova ikki qismdan iborat:
 - **Loginsiz** — o'quvchi kompyuter oldiga o'tiradi va darhol to'ldiradi
 - **Kiosk rejimi** — anketa yuborilgandan so'ng ekran 7 soniyada avtomatik
   tozalanadi va keyingi o'quvchini kutadi
-- **Qidiruvli ro'yxatlar** — 70 ta mahalla va 50 ta maktab ichidan tez topish.
+- **Qidiruvli ro'yxatlar** — 70 ta mahalla va 94 ta maktab ichidan tez topish.
   Qidiruv apostrof, defis va bo'shliqqa befarq: `bogishamol` →
-  **Bog'ishamol**, `oqoltin` → **Oq-oltin**, `karvon` → **Ikrom Karvon**
+  **Bog'ishamol**, `oqoltin` → **Oq-oltin**, `karvon` → **Ikrom Karvon**.
+  Maktabni raqami bo'yicha topish mumkin: `21` → *Xatirchi tumani 21-sonli...*
+- **Ro'yxatda yo'q bo'lsa — qo'lda yozish** — o'quvchi mahalla yoki maktabini
+  topa olmasa, nomini o'zi yozib kiritadi. Bunday nomlar admin panelda
+  alohida ko'rsatiladi va bir bosishda katalogga qo'shiladi
 - **35 ta kasb** yirik, emoji bilan bezatilgan kartochkalarda — 7 ta yo'nalish bo'yicha
 - **Konfetti animatsiyasi** va shaxsiy tabrik: *«Rahmat, Zilola! Sen kelajakda
   ajoyib Shifokor bo'lasan!»*
@@ -137,18 +141,40 @@ ADMIN_SESSION_SECRET="bu-kalitni-albatta-ozgartiring-kamida-32-belgi"
 
 ```bash
 npm run db:push    # Jadvallarni yaratadi
-npm run db:seed    # 70 mahalla, 50 maktab, 35 kasb + 150 ta demo anketa
+npm run db:seed    # 70 mahalla, 94 maktab, 35 kasb + 150 ta demo anketa
 ```
 
-### 4.1. Mahallalar ro'yxati haqida
+### 4.1. Mahallalar va maktablar ro'yxati haqida
 
-Tizimga Xatirchi tumanining **70 ta** fuqarolar yig'ini (MFY) kiritilgan.
-Manba — tuman hokimligining *«Xatirchi tumanidagi mahalla raislarining
-ro'yxati»* rasmiy hujjati; nomlar kirill alifbosidan lotinga o'girilgan.
+Tizimga rasmiy hujjatlar asosida kiritilgan:
 
-Yangi MFY tashkil etilsa yoki nomi o'zgarsa, `/admin/settings` →
-**Mahallalar** bo'limidan o'zgartiring — yangi yozuv anketada darhol
-ko'rinadi, kodga tegish shart emas.
+| Katalog | Soni | Manba |
+|---------|------|-------|
+| Mahallalar (MFY) | **70 ta** | Tuman hokimligining mahalla raislari ro'yxati |
+| Maktablar | **94 ta** | Tuman xalq ta'limi bo'limining ro'yxati |
+
+Nomlar hujjatdagidek saqlangan. Faqat quyidagilar tuzatilgan: turli
+apostroflar bitta ko'rinishga keltirilgan, kirill alifbosidagi yozuvlar
+lotinga o'girilgan va aniq imlo xatolari to'g'rilangan (`Xatirchi tumsni`
+→ `Xatirchi tumani`).
+
+Ro'yxat o'zgarsa, `/admin/settings` bo'limidan qo'shing yoki tahrirlang —
+kodga tegish shart emas, o'zgarish anketada darhol ko'rinadi.
+
+### 4.2. Qo'lda kiritilgan nomlarni nazorat qilish
+
+O'quvchi mahalla yoki maktabini ro'yxatdan topa olmasa, nomini o'zi
+yozishi mumkin — shunda hech kim anketani to'ldirmasdan ketib qolmaydi.
+
+Ammo nazoratsiz qoldirilsa, ma'lumot parchalanadi: `7-maktab`,
+`7 maktab`, `7-sonli maktab` uchta alohida qiymat bo'lib qoladi va
+tahlil buziladi.
+
+Shu sababli `/admin/settings` sahifasida **«Qo'lda kiritilgan nomlar»**
+paneli bor: u katalogda bo'lmagan har bir nomni, u necha marta
+ishlatilganini va katalogdagi o'xshash nomni ko'rsatadi. Bir bosishda
+katalogga qo'shish mumkin. **So'rovnomaning birinchi kunlarida bu
+panelni muntazam tekshirib turing.**
 
 ### 5. Ishga tushirish
 
@@ -299,6 +325,8 @@ Maktablar-uchun-so-rovnoma/
 │   │       ├── filter-bar.tsx
 │   │       ├── charts.tsx                 # Barcha 6 ta diagramma
 │   │       ├── recommendations-panel.tsx  # Tavsiyalar paneli
+│   │       ├── dashboard-empty.tsx        # Bo'sh holat
+│   │       ├── unlisted-panel.tsx         # Qo'lda kiritilgan nomlar nazorati
 │   │       ├── chart-shell.tsx            # Diagramma ramkasi + tooltip
 │   │       ├── submissions-table.tsx
 │   │       ├── student-modal.tsx
@@ -306,7 +334,7 @@ Maktablar-uchun-so-rovnoma/
 │   │       └── profession-manager.tsx     # Kasblar CRUD
 │   │
 │   ├── lib/
-│   │   ├── constants.ts           # MAHALLALAR, MAKTABLAR, KASBLAR, ranglar
+│   │   ├── constants.ts           # MAHALLALAR (70), MAKTABLAR (94), KASBLAR
 │   │   ├── validation.ts          # Zod sxemalari (o'zbekcha xabarlar)
 │   │   ├── prisma.ts              # Prisma mijozi (singleton)
 │   │   ├── auth.ts                # HMAC sessiya cookie
@@ -349,6 +377,7 @@ Maktablar-uchun-so-rovnoma/
 | `PATCH`/`DELETE` | `/api/admin/mahallalar/[id]` | Admin | Tahrirlash / o'chirish |
 | `GET`/`POST` | `/api/admin/maktablar` | Admin | Maktablar |
 | `PATCH`/`DELETE` | `/api/admin/maktablar/[id]` | Admin | Tahrirlash / o'chirish |
+| `GET` | `/api/admin/unlisted` | Admin | Qo'lda kiritilgan, katalogda yo'q nomlar |
 | `GET`/`POST` | `/api/admin/kasblar` | Admin | Kasblar |
 | `PATCH`/`DELETE` | `/api/admin/kasblar/[id]` | Admin | Tahrirlash / o'chirish |
 

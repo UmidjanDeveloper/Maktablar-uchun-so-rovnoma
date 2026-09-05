@@ -90,14 +90,119 @@ export const MAHALLALAR: string[] = [
   'Yangirabod',
 ];
 
-/** Tumandagi 50 ta maktab: "1-maktab" ... "50-maktab" */
-export const MAKTABLAR: string[] = Array.from(
-  { length: 50 },
-  (_, i) => `${i + 1}-maktab`
-);
-
-/** Ro'yxatda yo'q maktab uchun zaxira variant */
-export const BOSHQA_MAKTAB = 'Boshqa';
+/**
+ * Xatirchi tumanidagi umumta'lim maktablari — 94 ta.
+ *
+ * Manba: tuman xalq ta'limi bo'limining rasmiy ro'yxati.
+ * Nomlar hujjatdagidek saqlangan; faqat quyidagilar tuzatilgan:
+ *   - turli apostroflar bitta ' belgisiga keltirildi
+ *   - "88-IDUM" kirill alifbosidan lotinga o'girildi
+ *   - "Xatirchi tumsni" -> "Xatirchi tumani" (imlo xatosi)
+ *   - "FANINICHUQURLASHTIRIB" -> "FANINI CHUQURLASHTIRIB"
+ *
+ * Ro'yxatdagi ba'zi maktablar nomi boshqa shaklda yozilgan (15, 20, 31,
+ * 53, 88-IDUM), shuning uchun tartiblash nom ichidagi BIRINCHI raqam
+ * bo'yicha amalga oshiriladi — `schoolSortKey` ga qarang.
+ *
+ * Ro'yxat o'zgarsa — admin panel orqali yangilang:
+ * /admin/settings -> Maktablar.
+ */
+export const MAKTABLAR: string[] = [
+  "1-sonli umumiy o'rta ta'lim maktabi",
+  "2-sonli umumiy o'rta ta'lim maktabi",
+  "3-sonli umumiy o'rta ta'lim maktabi",
+  "4-sonli umumiy o'rta ta'lim maktabi",
+  "5-sonli umumiy o'rta ta'lim maktabi",
+  "6-sonli umumiy o'rta ta'lim maktabi",
+  "7-sonli ayrim fanlar chuqur o'qitiladigan sinflari mavjud umumiy o'rta ta'lim maktabi",
+  "8-sonli umumiy o'rta ta'lim maktabi",
+  "9-sonli umumiy o'rta ta'lim maktabi",
+  "10-sonli umumiy o'rta ta'lim maktabi",
+  "11-sonli umumiy o'rta ta'lim maktabi",
+  "12-sonli umumiy o'rta ta'lim maktabi",
+  "13-sonli umumiy o'rta ta'lim maktabi",
+  "14-sonli umumiy o'rta ta'lim maktabi",
+  "16-sonli umumiy o'rta ta'lim maktabi",
+  "17-sonli umumiy o'rta ta'lim maktabi",
+  "18-sonli umumiy o'rta ta'lim maktabi",
+  "19-sonli umumiy o'rta ta'lim maktabi",
+  "Xatirchi tumani 21-sonli umumiy o'rta ta'lim maktabi",
+  "Xatirchi tumani 22-sonli umumiy o'rta ta'lim maktabi",
+  "23-sonli umumiy o'rta ta'lim maktabi",
+  "24-sonli umumiy o'rta ta'lim maktabi",
+  "25-sonli umumiy o'rta ta'lim maktabi",
+  "26-sonli umumiy o'rta ta'lim maktabi",
+  "27-sonli umumiy o'rta ta'lim maktabi",
+  "28-sonli umumiy o'rta ta'lim maktabi",
+  "29-sonli umumiy o'rta ta'lim maktabi",
+  "30-sonli umumiy o'rta ta'lim maktabi",
+  "32-sonli umumiy o'rta ta'lim maktabi",
+  "33-sonli umumiy o'rta ta'lim maktabi",
+  "34-sonli umumiy o'rta ta'lim maktabi",
+  "35-sonli umumiy o'rta ta'lim maktabi",
+  "36-sonli umumiy o'rta ta'lim maktabi",
+  "Xatirchi tumani 37-sonli umumiy o'rta ta'lim maktabi",
+  "38-sonli umumiy o'rta ta'lim maktabi",
+  "39-sonli umumiy o'rta ta'lim maktabi",
+  "40-sonli umumiy o'rta ta'lim maktabi",
+  "41-sonli umumiy o'rta ta'lim maktabi",
+  "42-sonli umumiy o'rta ta'lim maktabi",
+  "43-sonli umumiy o'rta ta'lim maktabi",
+  "44-sonli umumiy o'rta ta'lim maktabi",
+  "45-sonli umumiy o'rta ta'lim maktabi",
+  "46-sonli umumiy o'rta ta'lim maktabi",
+  "47-sonli umumiy o'rta ta'lim maktabi",
+  "48-sonli umumiy o'rta ta'lim maktabi",
+  "49-sonli umumiy o'rta ta'lim maktabi",
+  "50-sonli umumiy o'rta ta'lim maktabi",
+  "Xatirchi tuman 51-sonli umumiy o'rta ta'lim maktabi",
+  "52-sonli umumiy o'rta ta'lim maktabi",
+  "54-sonli umumiy o'rta ta'lim maktabi",
+  "55-sonli umumiy o'rta ta'lim maktabi",
+  "56-sonli umumiy o'rta ta'lim maktabi",
+  "57-sonli umumiy o'rta ta'lim maktabi",
+  "58-sonli umumiy o'rta ta'lim maktabi",
+  "59-sonli umumiy o'rta ta'lim maktabi",
+  "60-sonli umumiy o'rta ta'lim maktabi",
+  "61-sonli umumiy o'rta ta'lim maktabi",
+  "62-sonli umumiy o'rta ta'lim maktabi",
+  "63-sonli umumiy o'rta ta'lim maktabi",
+  "64-sonli umumiy o'rta ta'lim maktabi",
+  "65-sonli umumiy o'rta ta'lim maktabi",
+  "66-sonli umumiy o'rta ta'lim maktabi",
+  "67-sonli umumiy o'rta ta'lim maktabi",
+  "68-sonli umumiy o'rta ta'lim maktabi",
+  "69-sonli umumiy o'rta ta'lim maktabi",
+  "70-sonli umumiy o'rta ta'lim maktabi",
+  "71-sonli umumiy o'rta ta'lim maktabi",
+  "72-sonli umumiy o'rta ta'lim maktabi",
+  "73-sonli umumiy o'rta ta'lim maktabi",
+  "74-sonli umumiy o'rta ta'lim maktabi",
+  "75-sonli umumiy o'rta ta'lim maktabi",
+  "76-sonli umumiy o'rta ta'lim maktabi",
+  "77-sonli umumiy o'rta ta'lim maktabi",
+  "78-sonli umumiy o'rta ta'lim maktabi",
+  "79-sonli umumiy o'rta ta'lim maktabi",
+  "80-sonli umumiy o'rta ta'lim maktabi",
+  "81-sonli umumiy o'rta ta'lim maktabi",
+  "82-sonli umumiy o'rta ta'lim maktabi",
+  "83-sonli umumiy o'rta ta'lim maktabi",
+  "84-sonli umumiy o'rta ta'lim maktabi",
+  "85-sonli umumiy o'rta ta'lim maktabi",
+  "86-sonli umumiy o'rta ta'lim maktabi",
+  "87-sonli umumiy o'rta ta'lim maktabi",
+  "88-sonli umumiy o'rta ta'lim maktabi",
+  "89-sonli umumiy o'rta ta'lim maktabi",
+  "90-sonli umumiy o'rta ta'lim maktabi",
+  "91-sonli umumiy o'rta ta'lim maktabi",
+  "92-sonli umumiy o'rta ta'lim maktabi",
+  "31- umumiy o'rta ta'lim maktabi",
+  "53- umumiy o'rta ta'lim maktabi",
+  '88-IDUM',
+  "Ixtisoslashtirilgan ta'lim muassasalari agentligi tizimidagi Xatirchi tuman ixtisoslashtirilgan maktabi",
+  "O'ZB. RES. MAKTABGACHA VA MAKTAB TA'LIMI VAZIRLIGI NAVOIY VILOYATI XATIRCHI TUMANI 20-INFORMATIKA VA AXBOROT TEXNOLOGIYALARI FANINI CHUQURLASHTIRIB O'QITISHGA IXTISOSLASHTIRILGAN DAVLAT UMUMTA'LIM MAKTABI",
+  "Xatirchi tumani 15-umumiy o'rta ta'lim maktabi",
+];
 
 export interface ProfessionSeed {
   name: string;

@@ -21,7 +21,7 @@ import {
   fieldErrors,
 } from '@/lib/validation';
 import { enqueue, queueSize, syncQueue } from '@/lib/offline';
-import { MAHALLALAR, MAKTABLAR, KASBLAR, BOSHQA_MAKTAB } from '@/lib/constants';
+import { MAHALLALAR, MAKTABLAR, KASBLAR } from '@/lib/constants';
 import type { CatalogsResponse } from '@/types';
 
 /** Qadamlar sarlavhalari */
@@ -46,7 +46,7 @@ export function SurveyWizard() {
 
   // Kataloglar: avval serverdan olinadi, xato bo'lsa statik ro'yxatga qaytadi
   const [mahallalar, setMahallalar] = useState<string[]>(MAHALLALAR);
-  const [maktablar, setMaktablar] = useState<string[]>([...MAKTABLAR, BOSHQA_MAKTAB]);
+  const [maktablar, setMaktablar] = useState<string[]>(MAKTABLAR);
   const [kasblar, setKasblar] = useState(KASBLAR);
 
   /** Kataloglarni serverdan yuklash (admin qo'shgan yangi yozuvlar bilan) */
@@ -57,9 +57,7 @@ export function SurveyWizard() {
       .then((data: CatalogsResponse) => {
         if (cancelled) return;
         if (data.mahallalar?.length) setMahallalar(data.mahallalar.map((m) => m.name));
-        if (data.maktablar?.length) {
-          setMaktablar([...data.maktablar.map((m) => m.name), BOSHQA_MAKTAB]);
-        }
+        if (data.maktablar?.length) setMaktablar(data.maktablar.map((m) => m.name));
         if (data.kasblar?.length) setKasblar(data.kasblar);
       })
       .catch(() => {
