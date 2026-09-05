@@ -139,9 +139,18 @@ ADMIN_SESSION_SECRET="bu-kalitni-albatta-ozgartiring-kamida-32-belgi"
 
 ### 4. Ma'lumotlar bazasini tayyorlash
 
+**A varianti — terminalsiz (tavsiya etiladi).**
+`prisma/supabase-setup.sql` faylini oching, hammasini nusxalang va
+Supabase loyihangizdagi **SQL Editor** ga qo'yib, **RUN** ni bosing.
+U jadvallarni yaratadi hamda 70 mahalla, 94 maktab va 35 kasbni yozadi.
+Demo (soxta) anketalar qo'shilmaydi, shuning uchun keyin tozalash
+shart emas. Faylni qayta ishga tushirish xavfsiz.
+
+**B varianti — terminal orqali:**
+
 ```bash
 npm run db:push    # Jadvallarni yaratadi
-npm run db:seed    # 70 mahalla, 94 maktab, 35 kasb + 150 ta demo anketa
+npm run db:seed    # Kataloglar + 150 ta demo anketa (sinov uchun)
 ```
 
 ### 4.1. Mahallalar va maktablar ro'yxati haqida
@@ -259,6 +268,7 @@ Kiosk rejimidan chiqish: `Alt + F4` (Windows) yoki `Ctrl + W`.
 Maktablar-uchun-so-rovnoma/
 ├── prisma/
 │   ├── schema.prisma              # Ma'lumotlar bazasi sxemasi
+│   ├── supabase-setup.sql         # Terminalsiz o'rnatish (SQL Editor uchun)
 │   └── seed.ts                    # Kataloglar + 150 ta demo anketa
 │
 ├── public/
