@@ -13,8 +13,20 @@ export const dynamic = 'force-dynamic';
 /** Takroriy anketani aniqlash oynasi — 24 soat */
 const DUPLICATE_WINDOW_MS = 24 * 60 * 60 * 1000;
 
-/** Bitta IP manzildan bir daqiqada ruxsat etilgan anketalar soni */
-const RATE_LIMIT = 5;
+/**
+ * Bitta IP manzildan bir daqiqada ruxsat etilgan anketalar soni.
+ *
+ * MUHIM: maktab kompyuter sinfidagi barcha kompyuterlar odatda BITTA
+ * tashqi IP ortida (NAT) turadi. Ya'ni 15 ta o'quvchi bir dars davomida
+ * anketani deyarli bir vaqtda tugatsa, ularning hammasi bitta IP dan
+ * kelgandek ko'rinadi.
+ *
+ * Shu sababli chegara ataylab yuqori qo'yilgan: maqsad bir bolaning
+ * F5 ni bosaverishini to'xtatish, sinfni bloklash emas. Bir xil
+ * ma'lumotni qayta yuborish `dedupeKey` cheklovi bilan allaqachon
+ * to'xtatiladi, shuning uchun tezlik chegarasi faqat qo'shimcha himoya.
+ */
+const RATE_LIMIT = 30;
 const RATE_WINDOW_MS = 60 * 1000;
 
 /**

@@ -126,7 +126,8 @@ export async function exportStudentsToExcel(
     XLSX.utils.book_append_sheet(workbook, areaSheet, 'Hududlar');
   }
 
+  // Fayl nomi tuman va sana bilan — hokimiyat arxivida oson topilishi uchun
   const name =
-    fileName ?? `Kelajak-Egasi-anketalar-${new Date().toISOString().slice(0, 10)}.xlsx`;
+    fileName ?? `Xatirchi-anketalar-${new Date().toISOString().slice(0, 10)}.xlsx`;
   XLSX.writeFile(workbook, name);
 }

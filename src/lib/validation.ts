@@ -6,19 +6,30 @@
  */
 import { z } from 'zod';
 import { JINSLAR, SINFLAR } from './constants';
+import { canonicalizePhone } from './utils';
 
-/** +998 XX XXX XX XX formatidagi raqam (bo'shliq va tirelarga ruxsat) */
-const PHONE_REGEX = /^\+998\s?\d{2}\s?\d{3}\s?\d{2}\s?\d{2}$/;
-
-/** Ixtiyoriy telefon maydoni — bo'sh bo'lsa `undefined` ga aylanadi */
+/**
+ * Ixtiyoriy telefon maydoni.
+ *
+ * O'quvchi raqamni qanday yozishidan qat'i nazar (bo'shliq, defis,
+ * qavs, mamlakat kodisiz) qabul qilinadi va bazaga yagona ko'rinishda
+ * — `+998901234567` — yoziladi. Bo'sh bo'lsa `undefined` ga aylanadi.
+ */
 const optionalPhone = z
   .string()
   .trim()
   .optional()
-  .transform((v) => (v === '' ? undefined : v))
-  .refine((v) => v === undefined || PHONE_REGEX.test(v), {
-    message: "Telefon raqami +998 XX XXX XX XX ko'rinishida bo'lishi kerak",
-  });
+  .transform((v) => (v === '' || v === undefined ? undefined : v))
+  .superRefine((v, ctx) => {
+    if (v === undefined) return;
+    if (canonicalizePhone(v) === null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Telefon raqamini to'g'ri kiriting. Masalan: +998 90 123 45 67",
+      });
+    }
+  })
+  .transform((v) => (v === undefined ? undefined : (canonicalizePhone(v) ?? undefined)));
 
 /** Ixtiyoriy uzun matn maydoni */
 const optionalText = (max: number, label: string) =>

@@ -31,7 +31,11 @@ Ilova ikki qismdan iborat:
 - **Konfetti animatsiyasi** va shaxsiy tabrik: *«Rahmat, Zilola! Sen kelajakda
   ajoyib Shifokor bo'lasan!»*
 - **Oflayn rejim** — internet uzilsa anketa brauzerda saqlanadi va aloqa
-  tiklanishi bilan avtomatik yuboriladi (maktab internetlari uchun muhim)
+  tiklanishi bilan avtomatik yuboriladi (maktab internetlari uchun muhim).
+  Kompyuter xotirasi to'lib qolsa, o'quvchiga soxta "saqlandi" emas, rost
+  xabar ko'rsatiladi
+- **Telefon raqami erkin formatda** — `+998 90 123 45 67`, `+99890 123-45-67`,
+  `901234567` — barchasi qabul qilinadi va bazaga yagona ko'rinishda yoziladi
 
 ### Hokimiyat uchun tahlil paneli
 - **5 ta KPI:** jami o'quvchilar, maktablar, mahallalar, qizlar %, o'g'il bolalar %
@@ -49,6 +53,8 @@ Ilova ikki qismdan iborat:
   *«Oqoltin mahallasida IT markazi ochish — 12 ta o'quvchidan 6 tasi (50%)
   shu yo'nalishni tanlagan»*
 - **Anketalar jadvali:** qidiruv, sahifalash, qatorni bosganda to'liq ma'lumot oynasi
+- **Bo'sh holat** — ma'lumot yo'q bo'lsa nol to'la diagrammalar emas, keyingi
+  qadamlarni tushuntiruvchi ko'rsatma ko'rsatiladi
 - **Excelga yuklash** — filtrlangan ma'lumotlar 3 ta varaqda
   (Anketalar / Statistika / Hududlar)
 - **PDF hisobot** — hokim uchun tayyor, chop etishga yaroqli tahliliy hujjat:
@@ -65,7 +71,9 @@ Ilova ikki qismdan iborat:
   bloklamaydi. Ma'lumotlar bazasi darajasidagi cheklov parallel
   so'rovlarda ham dublikat yaratilishiga yo'l qo'ymaydi
 - **Tezlik chegarasi (rate limit)** — bitta IP manzildan bir daqiqada
-  5 tadan ko'p anketa qabul qilinmaydi (F5 ni bosaverishdan himoya)
+  30 tadan ko'p anketa qabul qilinmaydi. Chegara ataylab yuqori: maktab
+  kompyuter sinfi bitta tashqi IP (NAT) ortida turadi, shuning uchun past
+  chegara butun sinfni bloklab qo'yardi
 - **Xavfsizlik qulfi** — standart parol o'zgartirilmasa, tizim
   production rejimida admin panelga kirishni butunlay bloklaydi
 - **Rang ko'rmaslik (CVD) uchun tekshirilgan** diagramma ranglari;
@@ -379,12 +387,14 @@ umuman kirmaslik xavfsizroq.
 - Barcha `/api/admin/*` va tahlil so'rovlari serverda qayta tekshiriladi
 - Parol doimiy vaqtda taqqoslanadi (timing attack himoyasi)
 - Anketa yuborish ochiq, lekin server tomonda Zod bilan qat'iy tekshiriladi
-- `/api/students` da tezlik chegarasi: 1 IP dan daqiqasiga 5 ta anketa
+- `/api/students` da tezlik chegarasi: 1 IP dan daqiqasiga 30 ta anketa
 - `robots.txt` admin panelni qidiruv tizimlaridan yashiradi
 
 > **Eslatma (rate limit):** chegara xotirada saqlanadi. Vercel kabi
 > serverless muhitda har bir funksiya nusxasi o'z xotirasiga ega, shuning
 > uchun chegara taxminiy. Amaliy "F5 ni bosaverish" holatini bu to'xtatadi.
+> Bir xil ma'lumotni qayta yuborish esa `dedupeKey` cheklovi bilan
+> baribir to'xtatiladi.
 > Qat'iy kafolat kerak bo'lsa — Upstash Redis ga o'tish mumkin
 > (`src/lib/rate-limit.ts` ni almashtirish kifoya).
 

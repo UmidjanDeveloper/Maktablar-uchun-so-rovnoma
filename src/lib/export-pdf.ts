@@ -362,7 +362,6 @@ export async function exportDashboardToPdf(
 
   addFooters(doc);
 
-  doc.save(
-    fileName ?? `Kelajak-Egasi-hisobot-${new Date().toISOString().slice(0, 10)}.pdf`
-  );
+  // Fayl nomi tuman va sana bilan — hokimiyat arxivida oson topilishi uchun
+  doc.save(fileName ?? `Xatirchi-hisobot-${new Date().toISOString().slice(0, 10)}.pdf`);
 }

@@ -15,10 +15,11 @@ import {
   SubjectsChart,
   TopJobsChart,
 } from './charts';
+import { DashboardEmpty } from './dashboard-empty';
 import { RecommendationsPanel } from './recommendations-panel';
 import { SubmissionsTable } from './submissions-table';
 import { StudentModal } from './student-modal';
-import { filtersToQuery } from '@/lib/filters';
+import { activeFilterCount, filtersToQuery } from '@/lib/filters';
 import { exportStudentsToExcel } from '@/lib/export-excel';
 import { exportDashboardToPdf } from '@/lib/export-pdf';
 import { MAHALLALAR, MAKTABLAR } from '@/lib/constants';
@@ -58,6 +59,12 @@ export function DashboardClient() {
   const [maktablar, setMaktablar] = useState<string[]>(MAKTABLAR);
 
   const query = useMemo(() => filtersToQuery(filters).toString(), [filters]);
+
+  /** Filtrlar qo'llanilganmi? Bo'sh holat matnini tanlash uchun kerak */
+  const hasFilters = useMemo(() => activeFilterCount(filters) > 0, [filters]);
+
+  /** Ma'lumot umuman yo'qmi (yoki filtrlarga mos kelmadimi) */
+  const isEmpty = !statsLoading && !!stats && stats.kpi.totalStudents === 0;
 
   /** Qidiruvni "debounce" qilamiz — har bosilgan harfda so'rov ketmasligi uchun */
   useEffect(() => {
@@ -252,15 +259,29 @@ export function DashboardClient() {
         </div>
       </div>
 
-      <KpiCards stats={stats} loading={statsLoading} />
+      {/* Bazada umuman ma'lumot bo'lmasa, nol to'la kartochkalar va
+          filtrlarni ko'rsatishning ma'nosi yo'q */}
+      {!(isEmpty && !hasFilters) && (
+        <>
+          <KpiCards stats={stats} loading={statsLoading} />
 
-      <FilterBar
-        filters={filters}
-        onChange={handleFiltersChange}
-        mahallalar={mahallalar}
-        maktablar={maktablar}
-      />
+          <FilterBar
+            filters={filters}
+            onChange={handleFiltersChange}
+            mahallalar={mahallalar}
+            maktablar={maktablar}
+          />
+        </>
+      )}
 
+      {/* Bo'sh holat: diagrammalar o'rniga tushuntirish ko'rsatiladi */}
+      {isEmpty ? (
+        <DashboardEmpty
+          variant={hasFilters ? 'no-results' : 'first-run'}
+          onClearFilters={hasFilters ? () => handleFiltersChange(EMPTY_FILTERS) : undefined}
+        />
+      ) : (
+        <>
       {/* Tavsiyalar — diagrammalardan oldin, chunki hokim uchun
           "nima qilish kerak" degan savol birinchi o'rinda turadi */}
       <RecommendationsPanel stats={stats} loading={statsLoading} />
@@ -284,7 +305,11 @@ export function DashboardClient() {
           <ExtraInsights stats={stats} />
         </div>
       ) : null}
+        </>
+      )}
 
+      {/* Jadval faqat ma'lumot bo'lganda yoki filtr qo'llanilganda ko'rinadi */}
+      {!(isEmpty && !hasFilters) && (
       <SubmissionsTable
         data={students}
         loading={tableLoading}
@@ -293,6 +318,7 @@ export function DashboardClient() {
         onPageChange={setPage}
         onSelect={setSelected}
       />
+      )}
 
       <StudentModal student={selected} onClose={() => setSelected(null)} />
     </div>

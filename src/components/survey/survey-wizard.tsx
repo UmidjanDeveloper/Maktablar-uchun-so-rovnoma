@@ -226,7 +226,22 @@ export function SurveyWizard() {
       throw new Error(data?.message ?? 'server-error');
     } catch {
       // Tarmoq yoki server xatosi — anketani yo'qotmaslik uchun navbatga saqlaymiz
-      enqueue(payload);
+      const queued = enqueue(payload);
+
+      if (!queued) {
+        // Kompyuter xotirasiga ham saqlab bo'lmadi. Bu holatda o'quvchiga
+        // "saqlandi" deb ko'rsatish yolg'on bo'lardi — rostini aytamiz va
+        // uni oxirgi qadamda qoldiramiz, qayta urinishi mumkin.
+        toast({
+          title: "Anketani saqlab bo'lmadi",
+          description:
+            "Internet ham, kompyuter xotirasi ham ishlamayapti. Iltimos, o'qituvchingizga murojaat qiling.",
+          variant: 'error',
+        });
+        setSubmitting(false);
+        return;
+      }
+
       setPendingCount(queueSize());
       setSavedOffline(true);
       setStep(5);

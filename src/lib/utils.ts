@@ -52,6 +52,32 @@ export function initials(firstName: string, lastName: string): string {
   return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
 }
 
+/**
+ * Telefon raqamini yagona (kanonik) ko'rinishga keltiradi: +998901234567
+ *
+ * O'quvchilar raqamni juda turlicha yozadi, shuning uchun quyidagilarning
+ * barchasi qabul qilinadi:
+ *
+ *   +998 90 123 45 67      998901234567
+ *   +99890 123-45-67       90 123 45 67
+ *   (90) 123-45-67         901234567
+ *
+ * Noto'g'ri raqam uchun `null` qaytaradi.
+ */
+export function canonicalizePhone(input?: string | null): string | null {
+  if (!input) return null;
+
+  const digits = input.replace(/\D/g, '');
+
+  // Mamlakat kodisiz kiritilgan 9 xonali raqam
+  if (digits.length === 9) return `+998${digits}`;
+
+  // 998 bilan boshlanuvchi to'liq raqam
+  if (digits.length === 12 && digits.startsWith('998')) return `+${digits}`;
+
+  return null;
+}
+
 /** Telefon raqamini chiroyli ko'rinishga keltiradi: +998 90 123 45 67 */
 export function formatPhone(phone?: string | null): string {
   if (!phone) return '—';
