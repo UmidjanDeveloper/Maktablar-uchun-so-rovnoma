@@ -10,10 +10,15 @@ import { isMuted, playCelebration, setMuted } from '@/lib/sound';
 
 /**
  * Kiosk rejimida ekran avtomatik tozalanadigan vaqt (soniya).
- * 12 soniya — bola o'z ismini va kasbini o'qib ulgurishi, lekin
- * keyingi navbatdagi o'quvchi uzoq kutmasligi uchun.
+ *
+ * 40 soniya — bola tabrikni, o'z kasbini va unga atalgan jumlani
+ * shoshilmasdan o'qib ulgurishi uchun. Amalda 12 soniya kam bo'lib
+ * chiqdi: matn tugamasdan ekran tozalanardi.
+ *
+ * Keyingi o'quvchi kutib qolmaydi — "Yangi anketa to'ldirish"
+ * tugmasi hisoblagichni kutmasdan darhol keyingisiga o'tkazadi.
  */
-const AUTO_RESET_SECONDS = 12;
+const AUTO_RESET_SECONDS = 40;
 
 interface SuccessScreenProps {
   firstName: string;
@@ -36,7 +41,7 @@ interface SuccessScreenProps {
  *   - OVOZ   — militsiya tanlasa sirena, shifokor tanlasa yurak urishi
  *   - SO'Z   — har bir yo'nalish uchun alohida yozilgan jumla
  *
- * KIOSK REJIMI: 12 soniyadan so'ng ekran o'zi tozalanadi va keyingi
+ * KIOSK REJIMI: hisoblagich tugagach ekran o'zi tozalanadi va keyingi
  * o'quvchini kutadi — o'qituvchi aralashuvi kerak emas.
  */
 export function SuccessScreen({
