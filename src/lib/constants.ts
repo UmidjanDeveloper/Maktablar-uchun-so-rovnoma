@@ -7,49 +7,87 @@
  */
 
 /**
- * Xatirchi tumanidagi mahallalar (fuqarolar yig'inlari).
+ * Xatirchi tumanidagi mahallalar (fuqarolar yig'inlari) — 70 ta.
  *
- * DIQQAT: bu ro'yxat boshlang'ich (seed) ma'lumot bo'lib, rasmiy MFY
- * reyestri bilan solishtirilishi shart. Yetishmayotgan mahallalarni
- * admin panel orqali qo'shish mumkin: /admin/settings -> Mahallalar.
- * Ro'yxat to'liq bo'lmasa, o'sha mahalladagi o'quvchilar anketada
- * o'z mahallasini tanlay olmaydi.
+ * Manba: tuman hokimligining "Xatirchi tumanidagi mahalla raislarining
+ * RO'YXATI" rasmiy hujjati. Nomlar kirill alifbosidan lotinga o'girilgan.
+ *
+ * Ro'yxat o'zgarsa (yangi MFY tashkil etilsa yoki nomi o'zgarsa), uni
+ * shu yerda emas, admin panel orqali yangilash tavsiya etiladi:
+ * /admin/settings -> Mahallalar. Bu yerdagi ro'yxat faqat boshlang'ich
+ * (seed) ma'lumot sifatida ishlatiladi.
  */
 export const MAHALLALAR: string[] = [
-  "Angidon",
-  "Langar",
-  "Altintov",
-  "Uzunquduq",
+  'Avoqli',
+  'Alisher Navoiy',
+  'Amir Temur',
+  'Angidon',
+  'Baxshijar',
+  'Binokor',
   "Bog'ishamol",
-  "Oltinsoy",
-  "Kattasoy",
-  "Changir",
-  "Nayman",
-  "Guliston",
-  "Xo'jaqo'rg'on",
-  "Yangi",
+  "Bog'chakalon",
   "Bo'g'irdoq",
-  "Navbaxor",
-  "Chinobod",
-  "Binokor",
-  "Chechak ota",
-  "Qoracha",
-  "Mustaqillik",
-  "Xuddon",
-  "Oqoltin",
-  "Koriz-Arab",
-  "Galabek",
-  "Jazoyir",
-  "Olmazor",
-  "Xo'jaqulobod",
+  'Bunyodkor',
+  'Galabek',
+  'Guliston',
+  'Damariq',
+  'Dehqonobod',
+  "Do'stlik",
+  'Jaloyir',
+  'Zarafshon',
+  'Zarbdor',
+  'Ikrom Karvon',
+  'Istiqlol',
+  'Kattasoy',
+  'Koriz Arab',
   "Ko'ksaroy",
-  "Fidokor",
-  "Jaloyir",
+  'Qoracha',
+  "Qo'rg'ontepa",
+  "Qo'rg'oncha",
+  'Quchchi',
+  "Qo'shchinor",
+  'Langar',
   "M.Ulug'bek",
-  "Toshquloq",
-  "Paxtakor",
-  "Yangirabod",
-  "Yangirabot",
+  'Madaniyat',
+  'Maydon',
+  'Miyonqol',
+  'Mirdosh',
+  'Mirishkor',
+  'Mustaqillik',
+  'Navbahor',
+  "Navro'z",
+  'Nayman',
+  'Novja',
+  'Oq-oltin',
+  'Oqtepa',
+  'Olmazor',
+  'Oltinobod',
+  'Oltinsoy',
+  'Paraxun',
+  'Paxtakor',
+  'Polvonota',
+  'Samarqand',
+  'Sangijuman',
+  'Saroy',
+  'Tamabaxrin',
+  'Tasmachi',
+  'Tinchlik',
+  'Toshquloq',
+  'Uyshun',
+  'Uchqora',
+  'Uchtepa',
+  'Farovon',
+  'Fidokor',
+  'Xonaqa',
+  "Xo'jaqulobod",
+  "Xo'jaqo'rg'on",
+  "Chag'atoy",
+  'Changir',
+  'Chechak ota',
+  'Chinobod',
+  'Yangi',
+  'Yangi qurilish',
+  'Yangirabod',
 ];
 
 /** Tumandagi 50 ta maktab: "1-maktab" ... "50-maktab" */

@@ -1,4 +1,4 @@
-import { AlertTriangle } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { AdminShell } from '@/components/admin/admin-shell';
 import { CatalogManager } from '@/components/admin/catalog-manager';
 import { ProfessionManager } from '@/components/admin/profession-manager';
@@ -26,24 +26,19 @@ export default function SettingsPage() {
           </p>
         </div>
 
-        {/* Mahallalar ro'yxatining to'liqligi haqida ogohlantirish.
-            Ro'yxat rasmiy MFY reyestri bilan solishtirilishi shart —
-            aks holda ba'zi mahallalar tahlildan tushib qoladi. */}
-        <div className="flex items-start gap-3 rounded-2xl border-2 border-amber-200 bg-amber-50 p-4">
-          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
-          <div className="text-sm text-amber-900">
+        {/* Mahallalar ro'yxatining manbasi haqida ma'lumot */}
+        <div className="flex items-start gap-3 rounded-2xl border border-brand-200 bg-brand-50 p-4">
+          <Info className="mt-0.5 h-5 w-5 shrink-0 text-brand-600" />
+          <div className="text-sm text-brand-900">
             <p className="font-bold">
-              Mahallalar ro&apos;yxatini rasmiy reyestr bilan solishtiring
+              Mahallalar ro&apos;yxati rasmiy hujjat asosida kiritilgan
             </p>
             <p className="mt-1 leading-relaxed">
-              Tizimga dastlab <strong>{MAHALLALAR.length} ta</strong> mahalla
-              kiritilgan. Xatirchi tumanidagi fuqarolar yig&apos;ini (MFY) soni
-              bundan ko&apos;proq bo&apos;lishi mumkin. So&apos;rovnomani
-              boshlashdan <strong>oldin</strong> tuman hokimligidan rasmiy
-              ro&apos;yxatni oling va yetishmayotganlarini quyidan
-              qo&apos;shing — aks holda o&apos;sha mahallalardagi
-              o&apos;quvchilar anketada o&apos;z mahallasini topa olmaydi va
-              tahlil to&apos;liq bo&apos;lmaydi.
+              Tizimda Xatirchi tumanining <strong>{MAHALLALAR.length} ta</strong>{' '}
+              fuqarolar yig&apos;ini (MFY) mavjud — manba: tuman hokimligining
+              mahalla raislari ro&apos;yxati. Yangi MFY tashkil etilsa yoki nomi
+              o&apos;zgarsa, o&apos;zgarishni shu yerdan kiriting: yangi yozuv
+              anketada darhol ko&apos;rinadi.
             </p>
           </div>
         </div>

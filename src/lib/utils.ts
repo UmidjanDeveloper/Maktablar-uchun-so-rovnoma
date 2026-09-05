@@ -31,16 +31,20 @@ export function normalize(text: string): string {
 }
 
 /**
- * Qidiruv uchun kalit: apostroflar butunlay olib tashlanadi.
+ * Qidiruv uchun kalit: apostrof, defis va bo'shliqlar butunlay
+ * olib tashlanadi.
  *
  * Bu muhim, chunki o'quvchilar (va hokimiyat xodimlari) mahalla nomini
- * odatda apostrofsiz yozadi: "bogishamol" deb qidirganda ham
- * "Bog'ishamol" topilishi kerak. Ortiqcha bo'shliqlar ham qisqartiriladi.
+ * qanday yozishi oldindan ma'lum emas. Quyidagilarning barchasi bitta
+ * mahallani topishi kerak:
+ *
+ *   "Bog'ishamol"  <- bogishamol, bogʻishamol
+ *   "Oq-oltin"     <- oqoltin, oq oltin, oq-oltin
+ *   "Chechak ota"  <- chechakota, chechak ota
+ *   "Ikrom Karvon" <- karvon, ikromkarvon
  */
 export function searchKey(text: string): string {
-  return normalize(text)
-    .replace(/'/g, '')
-    .replace(/\s+/g, ' ');
+  return normalize(text).replace(/['\-\s]/g, '');
 }
 
 /** Ismning bosh harflari — avatar uchun */

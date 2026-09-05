@@ -24,8 +24,9 @@ Ilova ikki qismdan iborat:
 - **Loginsiz** — o'quvchi kompyuter oldiga o'tiradi va darhol to'ldiradi
 - **Kiosk rejimi** — anketa yuborilgandan so'ng ekran 7 soniyada avtomatik
   tozalanadi va keyingi o'quvchini kutadi
-- **Qidiruvli ro'yxatlar** — 34 ta mahalla va 50 ta maktab ichidan tez topish.
-  Apostrofga befarq: `bogishamol` deb yozilganda ham **Bog'ishamol** topiladi
+- **Qidiruvli ro'yxatlar** — 70 ta mahalla va 50 ta maktab ichidan tez topish.
+  Qidiruv apostrof, defis va bo'shliqqa befarq: `bogishamol` →
+  **Bog'ishamol**, `oqoltin` → **Oq-oltin**, `karvon` → **Ikrom Karvon**
 - **35 ta kasb** yirik, emoji bilan bezatilgan kartochkalarda — 7 ta yo'nalish bo'yicha
 - **Konfetti animatsiyasi** va shaxsiy tabrik: *«Rahmat, Zilola! Sen kelajakda
   ajoyib Shifokor bo'lasan!»*
@@ -128,20 +129,18 @@ ADMIN_SESSION_SECRET="bu-kalitni-albatta-ozgartiring-kamida-32-belgi"
 
 ```bash
 npm run db:push    # Jadvallarni yaratadi
-npm run db:seed    # Mahalla/maktab/kasb kataloglari + 150 ta demo anketa
+npm run db:seed    # 70 mahalla, 50 maktab, 35 kasb + 150 ta demo anketa
 ```
 
-### 4.1. ⚠️ Mahallalar ro'yxatini tekshiring
+### 4.1. Mahallalar ro'yxati haqida
 
-Tizimga dastlab **34 ta** mahalla kiritilgan. Bu ro'yxat rasmiy MFY
-reyestri bilan solishtirilishi **shart** — Xatirchi tumanidagi fuqarolar
-yig'inlari soni bundan ko'proq bo'lishi mumkin.
+Tizimga Xatirchi tumanining **70 ta** fuqarolar yig'ini (MFY) kiritilgan.
+Manba — tuman hokimligining *«Xatirchi tumanidagi mahalla raislarining
+ro'yxati»* rasmiy hujjati; nomlar kirill alifbosidan lotinga o'girilgan.
 
-1. Tuman hokimligidan mahallalarning rasmiy ro'yxatini oling
-2. `/admin/settings` → **Mahallalar** bo'limidan yetishmayotganlarini qo'shing
-
-Ro'yxat to'liq bo'lmasa, o'sha mahallalardagi o'quvchilar anketada o'z
-mahallasini topa olmaydi va tahlil natijasi noto'g'ri bo'ladi.
+Yangi MFY tashkil etilsa yoki nomi o'zgarsa, `/admin/settings` →
+**Mahallalar** bo'limidan o'zgartiring — yangi yozuv anketada darhol
+ko'rinadi, kodga tegish shart emas.
 
 ### 5. Ishga tushirish
 
