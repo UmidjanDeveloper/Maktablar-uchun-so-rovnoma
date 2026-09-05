@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Loader2, Send, Sparkles, WifiOff } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Loader2, Send, WifiOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/components/ui/toast';
@@ -11,6 +11,7 @@ import { StepInterests } from './step-interests';
 import { StepDreamJob } from './step-dream-job';
 import { StepFuture } from './step-future';
 import { SuccessScreen } from './success-screen';
+import { WelcomeScreen } from './welcome-screen';
 import { EMPTY_FORM, type FormState } from './types';
 import {
   step1Schema,
@@ -256,6 +257,7 @@ export function SurveyWizard() {
       <SuccessScreen
         firstName={form.firstName}
         dreamJob={form.dreamJob}
+        jobCategory={form.jobCategory}
         savedOffline={savedOffline}
         onReset={resetAll}
       />
@@ -264,56 +266,7 @@ export function SurveyWizard() {
 
   // ---------- Kutib olish ekrani (kiosk boshlanishi) ----------
   if (step === 0) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center"
-      >
-        <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-brand-500 to-brand-700 text-5xl shadow-soft-lg">
-          🎓
-        </div>
-        <h1 className="max-w-3xl text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
-          Kelajak Egasi
-        </h1>
-        <p className="mt-2 text-base font-semibold uppercase tracking-widest text-brand-600">
-          Xatirchi tuman kasb platformasi
-        </p>
-        <p className="mt-5 max-w-xl text-lg text-slate-600">
-          Salom! Sen kim bo&apos;lishni orzu qilasan? Bir necha savolga javob ber — biz
-          mahallangda sen uchun kerakli to&apos;garaklarni ochamiz.
-        </p>
-
-        <div className="mt-8 grid w-full max-w-2xl grid-cols-2 gap-3 sm:grid-cols-4">
-          {STEPS.map((s, i) => (
-            <div
-              key={s.title}
-              className="rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-soft"
-            >
-              <div className="text-2xl leading-none">{s.icon}</div>
-              <p className="mt-2 text-xs font-bold uppercase tracking-wide text-slate-400">
-                {i + 1}-qadam
-              </p>
-              <p className="text-sm font-semibold text-slate-800">{s.title}</p>
-            </div>
-          ))}
-        </div>
-
-        <Button size="xl" className="mt-10" onClick={() => setStep(1)}>
-          <Sparkles className="h-5 w-5" />
-          Anketani boshlash
-        </Button>
-        <p className="mt-3 text-sm text-slate-400">Atigi 2 daqiqa vaqtingni oladi ⏱️</p>
-
-        {pendingCount > 0 && (
-          <p className="mt-6 flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-800">
-            <WifiOff className="h-4 w-4" />
-            {pendingCount} ta anketa yuborilishini kutmoqda
-          </p>
-        )}
-      </motion.div>
-    );
+    return <WelcomeScreen onStart={() => setStep(1)} pendingCount={pendingCount} />;
   }
 
   // ---------- Anketa qadamlari ----------
@@ -325,16 +278,16 @@ export function SurveyWizard() {
       <div className="mb-8">
         <div className="mb-3 flex items-end justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-brand-600">
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-brand-600">
               {step}-qadam / 4
             </p>
-            <h2 className="mt-1 flex items-center gap-2 text-2xl font-extrabold tracking-tight text-slate-900">
+            <h2 className="mt-1.5 flex items-center gap-2.5 font-display text-3xl font-extrabold tracking-tight text-ink">
               <span>{current.icon}</span>
               {current.title}
             </h2>
-            <p className="text-sm text-slate-500">{current.subtitle}</p>
+            <p className="mt-0.5 text-[15px] text-ink-soft">{current.subtitle}</p>
           </div>
-          <span className="shrink-0 text-2xl font-extrabold text-slate-200">
+          <span className="shrink-0 font-display text-3xl font-extrabold text-ink-faint/40">
             {Math.round(progress)}%
           </span>
         </div>
@@ -343,7 +296,7 @@ export function SurveyWizard() {
 
       {/* Oflayn ogohlantirishi */}
       {!isOnline && (
-        <div className="mb-6 flex items-center gap-2 rounded-2xl border-2 border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+        <div className="mb-6 flex items-center gap-2 rounded-2xl border-2 border-sun-200 bg-sun-50 px-4 py-3 text-sm font-medium text-sun-700">
           <WifiOff className="h-4 w-4 shrink-0" />
           Internet aloqasi yo&apos;q. Xavotir olma — anketang saqlanadi va aloqa
           tiklanganda yuboriladi.
@@ -351,7 +304,7 @@ export function SurveyWizard() {
       )}
 
       {/* Qadam kontenti */}
-      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-soft sm:p-8">
+      <div className="rounded-3xl border border-cream-deep bg-white p-5 shadow-soft sm:p-8">
         <AnimatePresence mode="wait">
           <motion.div
             key={step}
@@ -380,18 +333,24 @@ export function SurveyWizard() {
 
       {/* Navigatsiya tugmalari */}
       <div className="mt-6 flex items-center justify-between gap-3">
-        <Button variant="outline" size="lg" onClick={goBack} disabled={submitting}>
+        <Button variant="outline" size="lg" onClick={goBack} disabled={submitting} className="h-14">
           <ArrowLeft className="h-5 w-5" />
           Orqaga
         </Button>
 
         {step < 4 ? (
-          <Button size="lg" onClick={goNext}>
+          <Button size="lg" onClick={goNext} className="h-14 px-10 text-base">
             Davom etish
             <ArrowRight className="h-5 w-5" />
           </Button>
         ) : (
-          <Button size="lg" variant="success" onClick={handleSubmit} disabled={submitting}>
+          <Button
+            size="lg"
+            variant="success"
+            onClick={handleSubmit}
+            disabled={submitting}
+            className="h-14 px-10 text-base"
+          >
             {submitting ? (
               <>
                 <Loader2 className="h-5 w-5 animate-spin" />

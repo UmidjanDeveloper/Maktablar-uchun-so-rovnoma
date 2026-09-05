@@ -65,16 +65,16 @@ export function ChipGroup({
             whileTap={{ scale: 0.95 }}
             aria-pressed={selected}
             className={cn(
-              'flex items-center gap-2 rounded-2xl border-2 px-4 py-3 text-sm font-semibold transition-colors',
+              'flex items-center gap-2 rounded-2xl border-2 px-4 py-3 text-[15px] font-semibold transition-all',
               'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-100',
               selected
-                ? 'border-brand-600 bg-brand-50 text-brand-800'
-                : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+                ? 'border-brand-600 bg-brand-600 text-white shadow-soft'
+                : 'border-cream-deep bg-white text-ink-soft hover:border-brand-200 hover:bg-brand-50'
             )}
           >
             {option.icon && <span className="text-lg leading-none">{option.icon}</span>}
             <span>{option.name}</span>
-            {selected && <Check className="h-4 w-4 stroke-[3] text-brand-600" />}
+            {selected && <Check className="h-4 w-4 stroke-[3]" />}
           </motion.button>
         );
       })}

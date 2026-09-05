@@ -32,7 +32,7 @@ export function Field({
         {required && <span className="text-red-500">*</span>}
       </Label>
       {children}
-      {hint && !error && <p className="text-xs text-slate-500">{hint}</p>}
+      {hint && !error && <p className="text-xs text-ink-faint">{hint}</p>}
       {error && (
         <p className="flex items-center gap-1.5 text-sm font-medium text-red-600">
           <AlertCircle className="h-4 w-4 shrink-0" />

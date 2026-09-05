@@ -6,7 +6,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Field } from './field';
 import { cn } from '@/lib/utils';
-import { KASB_KATEGORIYALARI } from '@/lib/constants';
+import { categoryTheme, KASB_KATEGORIYALARI } from '@/lib/constants';
 import type { FormState } from './types';
 
 interface Profession {
@@ -51,6 +51,7 @@ export function StepDreamJob({ form, errors, update, kasblar }: StepDreamJobProp
   );
 
   const selected = kasblar.find((k) => k.name === form.dreamJob);
+  const selectedTheme = categoryTheme(selected?.category ?? form.jobCategory);
 
   return (
     <div className="space-y-6">
@@ -71,6 +72,7 @@ export function StepDreamJob({ form, errors, update, kasblar }: StepDreamJobProp
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {visible.map((kasb, index) => {
           const isSelected = form.dreamJob === kasb.name;
+          const theme = categoryTheme(kasb.category);
           return (
             <motion.button
               key={kasb.name}
@@ -82,20 +84,27 @@ export function StepDreamJob({ form, errors, update, kasblar }: StepDreamJobProp
               whileTap={{ scale: 0.97 }}
               onClick={() => update({ dreamJob: kasb.name, jobCategory: kasb.category })}
               aria-pressed={isSelected}
+              style={
+                isSelected
+                  ? {
+                      borderColor: theme.color,
+                      backgroundColor: theme.soft,
+                      boxShadow: `0 14px 32px -14px ${theme.color}88`,
+                    }
+                  : undefined
+              }
               className={cn(
-                'flex min-h-[128px] flex-col items-center justify-center gap-2 rounded-2xl border-2 p-4 text-center transition-colors',
+                'flex min-h-[132px] flex-col items-center justify-center gap-2.5 rounded-3xl border-2 p-4 text-center transition-all',
                 'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-100',
                 isSelected
-                  ? 'border-brand-600 bg-brand-50 shadow-soft'
-                  : 'border-slate-200 bg-white hover:border-brand-300 hover:bg-slate-50'
+                  ? 'scale-[1.02]'
+                  : 'border-cream-deep bg-white hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-soft'
               )}
             >
-              <span className="text-4xl leading-none">{kasb.icon}</span>
+              <span className="text-[42px] leading-none">{kasb.icon}</span>
               <span
-                className={cn(
-                  'text-sm font-semibold leading-tight',
-                  isSelected ? 'text-brand-800' : 'text-slate-700'
-                )}
+                className="font-display text-sm font-bold leading-tight"
+                style={{ color: isSelected ? theme.color : '#3D556B' }}
               >
                 {kasb.name}
               </span>
@@ -103,7 +112,7 @@ export function StepDreamJob({ form, errors, update, kasblar }: StepDreamJobProp
           );
         })}
         {visible.length === 0 && (
-          <p className="col-span-full rounded-2xl bg-slate-50 p-6 text-center text-sm text-slate-500">
+          <p className="col-span-full rounded-2xl bg-cream-deep/60 p-6 text-center text-sm text-ink-faint">
             Bu yo&apos;nalishda hozircha kasblar qo&apos;shilmagan.
           </p>
         )}
@@ -117,13 +126,23 @@ export function StepDreamJob({ form, errors, update, kasblar }: StepDreamJobProp
           transition={{ duration: 0.25 }}
           className="space-y-4 overflow-hidden"
         >
-          <div className="flex items-center gap-3 rounded-2xl border-2 border-brand-100 bg-brand-50 p-4">
-            <span className="text-3xl leading-none">{selected?.icon ?? '⭐'}</span>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">
+          <div
+            className="flex items-center gap-4 rounded-3xl border-2 p-4"
+            style={{
+              borderColor: `${selectedTheme.color}33`,
+              backgroundColor: selectedTheme.soft,
+            }}
+          >
+            <span className="text-4xl leading-none">{selected?.icon ?? '⭐'}</span>
+            <div className="min-w-0">
+              <p
+                className="text-[11px] font-bold uppercase tracking-[0.14em]"
+                style={{ color: selectedTheme.color }}
+              >
                 Sening tanlovingiz
               </p>
-              <p className="text-lg font-bold text-brand-900">{form.dreamJob}</p>
+              <p className="font-display text-xl font-extrabold text-ink">{form.dreamJob}</p>
+              <p className="mt-0.5 text-sm text-ink-soft">{selectedTheme.cheer}</p>
             </div>
           </div>
 

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { AlertCircle, ArrowLeft, Loader2, Lock, LogIn, User } from 'lucide-react';
+import { Logo } from '@/components/shared/logo';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -57,13 +58,11 @@ export function LoginForm() {
       className="w-full max-w-md"
     >
       <div className="mb-8 text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 text-3xl shadow-soft-lg">
-          🏛️
-        </div>
-        <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">
-          Hokimiyat boshqaruv paneli
+        <Logo className="mx-auto mb-5 h-16 w-16" />
+        <h1 className="text-2xl font-extrabold tracking-tight text-ink">
+          Boshqaruv paneli
         </h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-ink-faint">
           &laquo;Kelajak Egasi&raquo; — Xatirchi tumani
         </p>
       </div>
@@ -79,7 +78,6 @@ export function LoginForm() {
                   id="username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="hokimiyat"
                   autoComplete="username"
                   className="pl-10"
                   required
@@ -96,7 +94,6 @@ export function LoginForm() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
                   autoComplete="current-password"
                   className="pl-10"
                   required

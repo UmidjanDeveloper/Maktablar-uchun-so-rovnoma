@@ -61,9 +61,9 @@ export function StepPersonal({ form, errors, update, mahallalar, maktablar }: St
                   'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-100',
                   selected
                     ? isBoy
-                      ? 'border-brand-600 bg-brand-50 text-brand-800'
-                      : 'border-pink-500 bg-pink-50 text-pink-800'
-                    : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+                      ? 'border-brand-600 bg-brand-600 text-white shadow-soft'
+                      : 'border-[#C21E7A] bg-[#C21E7A] text-white shadow-soft'
+                    : 'border-cream-deep bg-white text-ink-soft hover:border-brand-200 hover:bg-brand-50'
                 )}
               >
                 <span className="text-2xl leading-none">{isBoy ? '👦' : '👧'}</span>
@@ -134,7 +134,7 @@ export function StepPersonal({ form, errors, update, mahallalar, maktablar }: St
                   'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-100',
                   selected
                     ? 'border-brand-600 bg-brand-600 text-white shadow-soft'
-                    : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+                    : 'border-cream-deep bg-white text-ink-soft hover:border-brand-200 hover:bg-brand-50'
                 )}
               >
                 {sinf}
@@ -181,14 +181,14 @@ export function StepPersonal({ form, errors, update, mahallalar, maktablar }: St
       </div>
 
       {/* Hudud oldindan belgilangan — o'quvchi o'zgartirmaydi */}
-      <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
+      <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-cream-deep/60 p-4 text-sm text-ink-soft">
         <span className="text-lg">📍</span>
         <span>
-          Viloyat: <strong className="text-slate-900">{VILOYAT}</strong>
+          Viloyat: <strong className="text-ink">{VILOYAT}</strong>
         </span>
-        <span className="text-slate-300">•</span>
+        <span className="text-ink-faint">•</span>
         <span>
-          Tuman: <strong className="text-slate-900">{TUMAN}</strong>
+          Tuman: <strong className="text-ink">{TUMAN}</strong>
         </span>
       </div>
     </div>

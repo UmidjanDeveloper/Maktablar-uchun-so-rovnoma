@@ -1,13 +1,22 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
+import { Plus_Jakarta_Sans, Outfit } from 'next/font/google';
 import './globals.css';
 import { ToastProvider } from '@/components/ui/toast';
 import { ServiceWorkerRegister } from '@/components/shared/service-worker-register';
 
-const inter = Inter({
+/** Asosiy matn shrifti — uzun matnlarda ham oson o'qiladi */
+const body = Plus_Jakarta_Sans({
   subsets: ['latin', 'latin-ext'],
   variable: '--font-sans',
   display: 'swap',
+});
+
+/** Sarlavhalar shrifti — geometrik, iliq va ishonchli */
+const display = Outfit({
+  subsets: ['latin', 'latin-ext'],
+  variable: '--font-display',
+  display: 'swap',
+  weight: ['500', '600', '700', '800'],
 });
 
 export const metadata: Metadata = {
@@ -19,7 +28,7 @@ export const metadata: Metadata = {
   authors: [{ name: 'Xatirchi tumani hokimligi' }],
   keywords: ['Kelajak Egasi', 'Xatirchi', 'Navoiy', 'kasb tanlash', 'maktab', 'anketa'],
   icons: {
-    icon: '/icons/icon.svg',
+    icon: '/logo.svg',
     apple: '/icons/icon-192.png',
   },
   openGraph: {
@@ -31,7 +40,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#3366f2',
+  themeColor: '#17559B',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
@@ -39,8 +48,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="uz" className={inter.variable}>
-      <body className="min-h-screen bg-white font-sans">
+    <html lang="uz" className={`${body.variable} ${display.variable}`}>
+      <body className="min-h-screen bg-cream font-sans text-ink">
         <ToastProvider>
           {children}
           <ServiceWorkerRegister />

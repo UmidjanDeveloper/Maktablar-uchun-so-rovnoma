@@ -313,62 +313,164 @@ export const VILOYAT = 'Navoiy';
 export const TUMAN = 'Xatirchi';
 
 /**
- * Diagrammalar uchun kategoriyali ranglar palitrasi — yangi diagramma
- * qo'shilganda shu ro'yxatdan tartib bo'yicha rang olinadi.
+ * ============================================================
+ *  BREND RANGLARI
  *
- * Ranglar `dataviz` validatori bilan tekshirilgan: yorqinlik diapazoni,
- * rang to'yinganligi, rang ko'rmaslik (CVD) uchun ajralish va oq fonda
- * kontrast — barcha tekshiruvlardan o'tgan.
+ *  Palitra Xatirchi tumani gerbidan olingan: quyosh (sariq),
+ *  tog'lar va nihol (yashil), daryo (ko'k). Ya'ni ranglar
+ *  tasodifiy tanlanmagan — tumanning o'z ramzidan kelib chiqadi.
+ * ============================================================
+ */
+export const BRAND = {
+  /** Quyosh — asosiy urg'u rangi */
+  sun: '#F2B01E',
+  sunDeep: '#D89506',
+  /** Tog'lar va nihol */
+  leaf: '#2E9B3F',
+  leafDeep: '#1F7A2D',
+  /** Daryo */
+  river: '#17559B',
+  riverDeep: '#0F3E75',
+  /** Matn uchun chuqur siyoh rangi */
+  ink: '#0E2439',
+} as const;
+
+/**
+ * Har bir kasb yo'nalishining o'z rangi, tabrik matni va ovozi.
+ *
+ * Anketa oxirida o'quvchi aynan o'zi tanlagan yo'nalishga mos
+ * rang, so'z va ovoz bilan tabriklanadi — shu payt bola
+ * "bu men haqimda" degan his oladi.
+ */
+export interface CategoryTheme {
+  /** Asosiy rang */
+  color: string;
+  /** Fon uchun ochiq soya */
+  soft: string;
+  /** Tabrik ekranidagi shaxsiy jumla */
+  cheer: string;
+  /** Qaysi ovoz chalinadi (sound.ts dagi nomlar) */
+  sound: SoundName;
+}
+
+export type SoundName =
+  | 'siren'
+  | 'heartbeat'
+  | 'digital'
+  | 'machine'
+  | 'melody'
+  | 'bell'
+  | 'coins';
+
+export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
+  'IT & Texnologiya': {
+    color: '#17559B',
+    soft: '#E7F0FB',
+    cheer: "Sening kodlaring ertangi kunni yozadi.",
+    sound: 'digital',
+  },
+  Tibbiyot: {
+    color: '#C2334D',
+    soft: '#FCEAED',
+    cheer: "Sening qo'llaring odamlarga shifo beradi.",
+    sound: 'heartbeat',
+  },
+  "Ta'lim & Ilm": {
+    color: '#7A3FBF',
+    soft: '#F1EAFB',
+    cheer: 'Sen minglab bolalarning yo’lini yoritasan.',
+    sound: 'bell',
+  },
+  'Harbiy & Huquq': {
+    color: '#1F7A2D',
+    soft: '#E8F5EA',
+    cheer: 'Sen xalqimiz tinchligining posboni bo’lasan.',
+    sound: 'siren',
+  },
+  Muhandislik: {
+    color: '#B5651D',
+    soft: '#FBF0E5',
+    cheer: 'Sen quradigan narsalar asrlar qoladi.',
+    sound: 'machine',
+  },
+  Ijodkorlik: {
+    color: '#C21E7A',
+    soft: '#FCE8F3',
+    cheer: 'Sening ijoding odamlar qalbiga yetib boradi.',
+    sound: 'melody',
+  },
+  Tadbirkorlik: {
+    color: '#D89506',
+    soft: '#FDF3DF',
+    cheer: 'Sen yaratgan ish o’rinlari oilalarni boqadi.',
+    sound: 'coins',
+  },
+};
+
+/** Noma'lum yo'nalish uchun zaxira mavzu */
+export const DEFAULT_CATEGORY_THEME: CategoryTheme = {
+  color: BRAND.river,
+  soft: '#E7F0FB',
+  cheer: 'Sening mehnating tumanimizni obod qiladi.',
+  sound: 'melody',
+};
+
+/** Yo'nalish mavzusini xavfsiz olish */
+export function categoryTheme(category: string): CategoryTheme {
+  return CATEGORY_THEMES[category] ?? DEFAULT_CATEGORY_THEME;
+}
+
+/**
+ * Diagrammalar uchun kategoriyali ranglar palitrasi.
+ * `dataviz` validatoridan o'tgan: yorqinlik, to'yinganlik,
+ * rang ko'rmaslik (CVD) va oq fonda kontrast tekshirilgan.
  */
 export const CHART_COLORS = [
-  '#3366f2',
-  '#ea580c',
-  '#059669',
-  '#8b5cf6',
-  '#dc2626',
-  '#0891b2',
-  '#a16207',
-  '#db2777',
+  '#17559B',
+  '#D89506',
+  '#1F7A2D',
+  '#7A3FBF',
+  '#C2334D',
+  '#0E7C86',
+  '#B5651D',
+  '#C21E7A',
 ];
 
 /** Bitta seriyali diagrammalar uchun asosiy rang */
-export const CHART_PRIMARY = '#3366f2';
+export const CHART_PRIMARY = '#17559B';
 
 /**
  * Ketma-ket (sequential) ranglar shkalasi — doiraviy diagrammalar uchun.
- * Ranglar yorqinlik bo'yicha ketma-ket joylashgan, shuning uchun rangni
- * ajrata olmaydigan foydalanuvchilar ham bo'laklarni farqlay oladi.
+ * Yorqinlik bo'yicha tartiblangan, shuning uchun rangni ajrata olmaydigan
+ * foydalanuvchi ham bo'laklarni farqlay oladi.
  */
 export const RAMP_BLUE = [
-  '#bfdbfe',
-  '#93c5fd',
-  '#60a5fa',
-  '#3b82f6',
-  '#2563eb',
-  '#1d4ed8',
-  '#1e40af',
+  '#C5DBF2',
+  '#9CC1E7',
+  '#6FA3D8',
+  '#4785C6',
+  '#2A6AAE',
+  '#17559B',
+  '#0F3E75',
 ];
 
 export const RAMP_AMBER = [
-  '#fed7aa',
-  '#fdba74',
-  '#fb923c',
-  '#f97316',
-  '#ea580c',
-  '#dc2626',
-  '#c2410c',
-  '#9a3412',
-  '#7c2d12',
-  '#611c0c',
+  '#FBE3B4',
+  '#F7D08A',
+  '#F2B01E',
+  '#DE9C0C',
+  '#C48606',
+  '#A96F0A',
+  '#8C5A10',
+  '#6F4712',
+  '#553612',
+  '#3D270F',
 ];
 
-/**
- * Jins bo'yicha ranglar — barcha diagrammalarda bir xil bo'lishi uchun.
- * Ushbu juftlik ham CVD tekshiruvidan o'tgan (DeltaE 19.8 protan).
- */
+/** Jins bo'yicha ranglar — barcha diagrammalarda bir xil */
 export const GENDER_COLORS: Record<string, string> = {
-  "O'g'il bola": '#3366f2',
-  'Qiz bola': '#db2777',
+  "O'g'il bola": '#17559B',
+  'Qiz bola': '#C21E7A',
 };
 
 /** Kasb nomiga qarab emoji topish uchun tezkor xarita */

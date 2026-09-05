@@ -4,17 +4,18 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-semibold ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl font-display text-sm font-semibold ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]',
   {
     variants: {
       variant: {
-        default: 'bg-brand-600 text-white shadow-soft hover:bg-brand-700',
+        default: 'bg-brand-600 text-white btn-glow hover:bg-brand-700',
         destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
-        outline: 'border-2 border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300',
-        secondary: 'bg-slate-100 text-slate-900 hover:bg-slate-200',
-        ghost: 'hover:bg-slate-100 hover:text-slate-900',
+        outline: 'border-2 border-cream-deep bg-white text-ink hover:bg-cream hover:border-brand-200',
+        secondary: 'bg-cream-deep text-ink hover:bg-sun-100',
+        ghost: 'hover:bg-cream-deep hover:text-ink',
         link: 'text-brand-600 underline-offset-4 hover:underline',
-        success: 'bg-emerald-600 text-white shadow-soft hover:bg-emerald-700',
+        success: 'bg-leaf-400 text-white btn-glow hover:bg-leaf-500',
+        sun: 'bg-sun-400 text-ink btn-glow hover:bg-sun-500',
       },
       size: {
         default: 'h-11 px-5 py-2',

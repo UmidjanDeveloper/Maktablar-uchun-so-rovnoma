@@ -1,0 +1,205 @@
+/**
+ * ============================================================
+ *  TABRIK OVOZLARI
+ *
+ *  Anketa yakunida o'quvchi tanlagan kasb yo'nalishiga mos ovoz
+ *  chalinadi: militsiya tanlasa — sirena, shifokor tanlasa —
+ *  yurak urishi, dasturchi tanlasa — raqamli signal.
+ *
+ *  Ovozlar HECH QANDAY FAYLDAN yuklanmaydi — ular brauzerning
+ *  o'zida (Web Audio API) generatsiya qilinadi. Sabab:
+ *    - internet kerak emas, oflayn rejimda ham ishlaydi
+ *    - saytga bir kilobayt ham qo'shmaydi
+ *    - eski kompyuterlarda ham darhol chalinadi
+ *
+ *  Kompyuter sinfida shovqin bo'lmasligi uchun ovozni o'chirib
+ *  qo'yish mumkin — tanlov brauzerda saqlanadi.
+ * ============================================================
+ */
+import type { SoundName } from './constants';
+
+const MUTE_KEY = 'kelajak_egasi_muted';
+
+/** Ovoz o'chirilganmi? */
+export function isMuted(): boolean {
+  try {
+    return window.localStorage.getItem(MUTE_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+/** Ovozni yoqish/o'chirish */
+export function setMuted(muted: boolean): void {
+  try {
+    window.localStorage.setItem(MUTE_KEY, muted ? '1' : '0');
+  } catch {
+    // Xotira ishlamasa — ovoz shu seans uchun yoqiq qoladi
+  }
+}
+
+/** AudioContext'ni faqat kerak bo'lganda yaratamiz */
+let ctx: AudioContext | null = null;
+
+function audioContext(): AudioContext | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    if (!ctx) {
+      const Ctor =
+        window.AudioContext ??
+        (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (!Ctor) return null;
+      ctx = new Ctor();
+    }
+    // Brauzer kontekstni to'xtatib qo'ygan bo'lsa qayta yoqamiz
+    if (ctx.state === 'suspended') void ctx.resume();
+    return ctx;
+  } catch {
+    return null;
+  }
+}
+
+interface ToneOptions {
+  /** Chastota (Gs) yoki chastota o'zgarishi [boshi, oxiri] */
+  freq: number | [number, number];
+  /** Boshlanish vaqti (soniya, hozirdan) */
+  at: number;
+  /** Davomiyligi (soniya) */
+  dur: number;
+  /** Balandligi 0..1 */
+  gain?: number;
+  type?: OscillatorType;
+}
+
+/** Bitta ohang chaladi */
+function tone(ac: AudioContext, o: ToneOptions): void {
+  const t0 = ac.currentTime + o.at;
+  const osc = ac.createOscillator();
+  const amp = ac.createGain();
+
+  osc.type = o.type ?? 'sine';
+
+  if (Array.isArray(o.freq)) {
+    osc.frequency.setValueAtTime(o.freq[0], t0);
+    osc.frequency.linearRampToValueAtTime(o.freq[1], t0 + o.dur);
+  } else {
+    osc.frequency.setValueAtTime(o.freq, t0);
+  }
+
+  // Yumshoq kirish va chiqish — "chirt" etgan ovoz bo'lmasligi uchun
+  const peak = o.gain ?? 0.16;
+  amp.gain.setValueAtTime(0.0001, t0);
+  amp.gain.exponentialRampToValueAtTime(peak, t0 + Math.min(0.04, o.dur / 3));
+  amp.gain.exponentialRampToValueAtTime(0.0001, t0 + o.dur);
+
+  osc.connect(amp);
+  amp.connect(ac.destination);
+  osc.start(t0);
+  osc.stop(t0 + o.dur + 0.05);
+}
+
+/** Nota chastotalari (A4 = 440 Gs) */
+const NOTE = {
+  C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.0, A4: 440.0,
+  C5: 523.25, D5: 587.33, E5: 659.25, G5: 783.99, C6: 1046.5,
+};
+
+/** Har bir yo'nalish uchun ovoz retsepti */
+const RECIPES: Record<SoundName, (ac: AudioContext) => void> = {
+  /** Militsiya, harbiy, qutqaruvchi — sirena */
+  siren: (ac) => {
+    for (let i = 0; i < 3; i++) {
+      const at = i * 0.42;
+      tone(ac, { freq: [660, 990], at, dur: 0.2, type: 'sawtooth', gain: 0.1 });
+      tone(ac, { freq: [990, 660], at: at + 0.21, dur: 0.2, type: 'sawtooth', gain: 0.1 });
+    }
+  },
+
+  /** Shifokor, hamshira — yurak urishi va tinch signal */
+  heartbeat: (ac) => {
+    for (let i = 0; i < 3; i++) {
+      const at = i * 0.62;
+      tone(ac, { freq: 62, at, dur: 0.14, type: 'sine', gain: 0.34 });
+      tone(ac, { freq: 52, at: at + 0.2, dur: 0.18, type: 'sine', gain: 0.26 });
+    }
+    tone(ac, { freq: NOTE.E5, at: 1.85, dur: 0.5, gain: 0.12 });
+  },
+
+  /** Dasturchi, muhandis-dasturchi — raqamli signallar */
+  digital: (ac) => {
+    const seq = [NOTE.C5, NOTE.E5, NOTE.G5, NOTE.C6];
+    seq.forEach((f, i) =>
+      tone(ac, { freq: f, at: i * 0.1, dur: 0.09, type: 'square', gain: 0.07 })
+    );
+    tone(ac, { freq: [NOTE.C5, NOTE.C6], at: 0.46, dur: 0.42, type: 'square', gain: 0.06 });
+  },
+
+  /** Muhandis, quruvchi, uchuvchi — mexanizm ovozi */
+  machine: (ac) => {
+    for (let i = 0; i < 4; i++) {
+      tone(ac, { freq: 120 + i * 18, at: i * 0.13, dur: 0.1, type: 'square', gain: 0.09 });
+    }
+    tone(ac, { freq: [180, 520], at: 0.56, dur: 0.6, type: 'sawtooth', gain: 0.08 });
+  },
+
+  /** Rassom, musiqachi, jurnalist — ko'tarinki ohang */
+  melody: (ac) => {
+    const seq = [NOTE.C5, NOTE.D5, NOTE.E5, NOTE.G5, NOTE.C6];
+    seq.forEach((f, i) =>
+      tone(ac, { freq: f, at: i * 0.13, dur: 0.34, type: 'triangle', gain: 0.13 })
+    );
+  },
+
+  /** O'qituvchi, olim — maktab qo'ng'irog'i */
+  bell: (ac) => {
+    [0, 0.34, 0.68].forEach((at) => {
+      tone(ac, { freq: NOTE.G5, at, dur: 0.55, type: 'sine', gain: 0.13 });
+      tone(ac, { freq: NOTE.C6, at, dur: 0.45, type: 'sine', gain: 0.07 });
+    });
+  },
+
+  /** Tadbirkor, bank xodimi — tanga jarangi */
+  coins: (ac) => {
+    [0, 0.09, 0.19, 0.3].forEach((at, i) => {
+      tone(ac, { freq: NOTE.C6 + i * 90, at, dur: 0.16, type: 'triangle', gain: 0.1 });
+    });
+    tone(ac, { freq: NOTE.G5, at: 0.44, dur: 0.5, type: 'sine', gain: 0.12 });
+  },
+};
+
+/** Barcha yo'nalishlar uchun umumiy tantanavor akkord */
+function fanfare(ac: AudioContext): void {
+  [NOTE.C4, NOTE.E4, NOTE.G4, NOTE.C5].forEach((f, i) =>
+    tone(ac, { freq: f, at: i * 0.07, dur: 0.9, type: 'triangle', gain: 0.09 })
+  );
+}
+
+/**
+ * Tabrik ovozini chaladi.
+ * Ovoz o'chirilgan bo'lsa yoki brauzer qo'llab-quvvatlamasa — jimgina
+ * o'tkazib yuboriladi, hech qanday xato chiqmaydi.
+ */
+export function playCelebration(sound: SoundName): void {
+  if (isMuted()) return;
+
+  const ac = audioContext();
+  if (!ac) return;
+
+  try {
+    fanfare(ac);
+    RECIPES[sound]?.(ac);
+  } catch {
+    // Ovoz chalinmasa ham anketa muvaffaqiyatli yuborilgan — muhimi shu
+  }
+}
+
+/** Tugma bosilganda qisqa signal (ovoz yoqilganini bildirish uchun) */
+export function playTick(): void {
+  const ac = audioContext();
+  if (!ac) return;
+  try {
+    tone(ac, { freq: NOTE.E5, at: 0, dur: 0.12, type: 'triangle', gain: 0.1 });
+  } catch {
+    // e'tiborsiz
+  }
+}

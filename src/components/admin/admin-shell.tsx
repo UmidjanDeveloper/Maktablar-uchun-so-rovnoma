@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { BarChart3, LogOut, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { LogoLockup } from '@/components/shared/logo';
 import { cn } from '@/lib/utils';
 
 const NAV = [
@@ -26,18 +27,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-slate-50/70">
       <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur no-print">
         <div className="mx-auto flex h-16 max-w-[1500px] items-center justify-between gap-4 px-4">
-          <Link href="/admin/dashboard" className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-xl shadow-soft">
-              🏛️
-            </span>
-            <span className="leading-tight">
-              <span className="block text-base font-extrabold tracking-tight text-slate-900">
-                Kelajak Egasi
-              </span>
-              <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                Hokimiyat paneli
-              </span>
-            </span>
+          <Link href="/admin/dashboard">
+            <LogoLockup subtitle="Boshqaruv paneli" />
           </Link>
 
           <nav className="flex items-center gap-1">

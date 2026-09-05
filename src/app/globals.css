@@ -4,13 +4,13 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
+    --background: 42 47% 97%;
+    --foreground: 209 60% 14%;
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
-    --primary: 224 89% 58%;
+    --primary: 210 74% 35%;
     --primary-foreground: 0 0% 100%;
     --secondary: 210 40% 96%;
     --secondary-foreground: 222 47% 11%;
@@ -22,7 +22,7 @@
     --destructive-foreground: 0 0% 100%;
     --border: 214 32% 91%;
     --input: 214 32% 91%;
-    --ring: 224 89% 58%;
+    --ring: 210 74% 35%;
     --radius: 0.75rem;
   }
 
@@ -35,8 +35,15 @@
   }
 
   body {
-    @apply bg-white text-slate-900 antialiased;
+    @apply bg-cream text-ink antialiased;
     font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+
+  /* Sarlavhalar — display shrifti, zich va ishonchli */
+  h1, h2, h3 {
+    font-family: var(--font-display), system-ui, sans-serif;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
   }
 
   /* Kiosk rejimi: tasodifiy matn belgilash va kontekst menyusi chalg'itmasligi uchun */
@@ -58,11 +65,29 @@
 }
 
 @layer components {
-  /* Nozik fon naqshi — bosh sahifa uchun */
+  /* Nozik fon naqshi */
   .bg-grid {
     background-image:
-      radial-gradient(circle at 1px 1px, rgb(226 232 240) 1px, transparent 0);
+      radial-gradient(circle at 1px 1px, rgb(214 205 186) 1px, transparent 0);
     background-size: 28px 28px;
+  }
+
+  /**
+   * Tong foni — gerbdagi quyosh chiqishi metaforasi.
+   * Bosh sahifa va tabrik ekranida ishlatiladi.
+   */
+  .bg-sunrise {
+    background:
+      radial-gradient(1100px 520px at 50% -8%, #FDECC3 0%, rgba(253,236,195,0) 62%),
+      radial-gradient(760px 420px at 88% 8%, #E4F1E7 0%, rgba(228,241,231,0) 60%),
+      #FBF8F1;
+  }
+
+  /* Ko'tarinki tugma — asosiy harakat uchun */
+  .btn-glow {
+    box-shadow:
+      0 10px 26px -10px rgba(23, 85, 155, 0.55),
+      inset 0 1px 0 rgba(255, 255, 255, 0.22);
   }
 
   /* Diagrammalar konteynerining umumiy ko'rinishi */
@@ -80,12 +105,12 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background-color: rgb(203 213 225);
+  background-color: rgb(198 188 168);
   border-radius: 9999px;
-  border: 2px solid white;
+  border: 2px solid #FBF8F1;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background-color: rgb(148 163 184);
+  background-color: rgb(163 152 130);
 }
 
 /* Chop etishda (PDF) keraksiz elementlarni yashirish */
