@@ -1,27 +1,3 @@
--- =====================================================================
---  KELAJAK EGASI - Supabase uchun boshlang'ich sozlash
---  Xatirchi tumani, Navoiy viloyati
---
---  QANDAY ISHLATISH:
---    1. Supabase loyihangizni oching
---    2. Chap menyudan  SQL Editor  ni tanlang
---    3. Ushbu faylning HAMMASINI nusxalab, oynaga qo'ying
---    4. Pastdagi  RUN  tugmasini bosing
---
---  Bu fayl bajaradi:
---    - 4 ta jadval yaratadi (Student, Mahalla, School, Profession)
---    - 70 ta mahalla, 94 ta maktab, 35 ta kasbni yozadi
---    - Demo (soxta) anketalar QO'SHILMAYDI - baza toza qoladi
---
---  Faylni qayta ishga tushirish xavfsiz: mavjud yozuvlar takrorlanmaydi.
--- =====================================================================
-
-
--- ---------------------------------------------------------------------
---  1-QISM. Jadvallarni yaratish
--- ---------------------------------------------------------------------
-
--- CreateTable
 CREATE TABLE IF NOT EXISTS "Student" (
     "id" TEXT NOT NULL,
     "firstName" TEXT NOT NULL,
@@ -48,7 +24,6 @@ CREATE TABLE IF NOT EXISTS "Student" (
     CONSTRAINT "Student_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
 CREATE TABLE IF NOT EXISTS "Mahalla" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -57,7 +32,6 @@ CREATE TABLE IF NOT EXISTS "Mahalla" (
     CONSTRAINT "Mahalla_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
 CREATE TABLE IF NOT EXISTS "School" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -66,7 +40,6 @@ CREATE TABLE IF NOT EXISTS "School" (
     CONSTRAINT "School_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
 CREATE TABLE IF NOT EXISTS "Profession" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -77,50 +50,31 @@ CREATE TABLE IF NOT EXISTS "Profession" (
     CONSTRAINT "Profession_pkey" PRIMARY KEY ("id")
 );
 
--- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "Student_dedupeKey_key" ON "Student"("dedupeKey");
 
--- CreateIndex
 CREATE INDEX IF NOT EXISTS "Student_mahalla_idx" ON "Student"("mahalla");
 
--- CreateIndex
 CREATE INDEX IF NOT EXISTS "Student_school_idx" ON "Student"("school");
 
--- CreateIndex
 CREATE INDEX IF NOT EXISTS "Student_grade_idx" ON "Student"("grade");
 
--- CreateIndex
 CREATE INDEX IF NOT EXISTS "Student_gender_idx" ON "Student"("gender");
 
--- CreateIndex
 CREATE INDEX IF NOT EXISTS "Student_jobCategory_idx" ON "Student"("jobCategory");
 
--- CreateIndex
 CREATE INDEX IF NOT EXISTS "Student_dreamJob_idx" ON "Student"("dreamJob");
 
--- CreateIndex
 CREATE INDEX IF NOT EXISTS "Student_createdAt_idx" ON "Student"("createdAt");
 
--- CreateIndex
 CREATE INDEX IF NOT EXISTS "Student_firstName_lastName_school_grade_idx" ON "Student"("firstName", "lastName", "school", "grade");
 
--- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "Mahalla_name_key" ON "Mahalla"("name");
 
--- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "School_name_key" ON "School"("name");
 
--- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "Profession_name_key" ON "Profession"("name");
 
--- CreateIndex
 CREATE INDEX IF NOT EXISTS "Profession_category_idx" ON "Profession"("category");
-
-
--- ---------------------------------------------------------------------
---  2-QISM. Mahallalar - 70 ta
---  Manba: tuman hokimligining mahalla raislari ro'yxati
--- ---------------------------------------------------------------------
 
 INSERT INTO "Mahalla" ("id", "name") VALUES
   (gen_random_uuid()::text, 'Avoqli'),
@@ -194,12 +148,6 @@ INSERT INTO "Mahalla" ("id", "name") VALUES
   (gen_random_uuid()::text, 'Yangi qurilish'),
   (gen_random_uuid()::text, 'Yangirabod')
 ON CONFLICT ("name") DO NOTHING;
-
-
--- ---------------------------------------------------------------------
---  3-QISM. Maktablar - 94 ta
---  Manba: tuman xalq ta'limi bo'limining ro'yxati
--- ---------------------------------------------------------------------
 
 INSERT INTO "School" ("id", "name") VALUES
   (gen_random_uuid()::text, '1-sonli umumiy o''rta ta''lim maktabi'),
@@ -298,11 +246,6 @@ INSERT INTO "School" ("id", "name") VALUES
   (gen_random_uuid()::text, 'Xatirchi tumani 15-umumiy o''rta ta''lim maktabi')
 ON CONFLICT ("name") DO NOTHING;
 
-
--- ---------------------------------------------------------------------
---  4-QISM. Kasblar - 35 ta, 7 ta yo'nalish bo'yicha
--- ---------------------------------------------------------------------
-
 INSERT INTO "Profession" ("id", "name", "category", "icon") VALUES
   (gen_random_uuid()::text, 'Dasturchi', 'IT & Texnologiya', '💻'),
   (gen_random_uuid()::text, 'Sun''iy Intellekt mutaxassisi', 'IT & Texnologiya', '🤖'),
@@ -340,12 +283,6 @@ INSERT INTO "Profession" ("id", "name", "category", "icon") VALUES
   (gen_random_uuid()::text, 'Bank xodimi', 'Tadbirkorlik', '🏦'),
   (gen_random_uuid()::text, 'Sportchi/Murabbiy', 'Tadbirkorlik', '⚽')
 ON CONFLICT ("name") DO NOTHING;
-
-
--- ---------------------------------------------------------------------
---  Tekshiruv - quyidagi natija chiqishi kerak:
---    mahallalar = 70,  maktablar = 94,  kasblar = 35,  anketalar = 0
--- ---------------------------------------------------------------------
 
 SELECT
   (SELECT count(*) FROM "Mahalla")    AS mahallalar,
