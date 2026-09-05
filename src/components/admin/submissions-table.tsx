@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { KASB_ICON_MAP } from '@/lib/constants';
+import { EntityIcon } from '@/lib/icons';
 import { formatDate } from '@/lib/utils';
 import type { PaginatedStudents, StudentRecord } from '@/types';
 
@@ -32,20 +32,20 @@ export function SubmissionsTable({
   const totalPages = data?.totalPages ?? 1;
 
   return (
-    <section className="rounded-2xl border border-slate-200/80 bg-white shadow-soft">
+    <section className="glass rounded-lg">
       <header className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h3 className="text-base font-bold tracking-tight text-slate-900">
+          <h3 className="font-display text-base font-semibold tracking-tight text-ink">
             Oxirgi anketalar
           </h3>
-          <p className="mt-0.5 text-xs text-slate-500">
+          <p className="mt-0.5 text-xs text-ink-faint">
             {data ? `Jami ${data.total.toLocaleString('uz-UZ')} ta yozuv` : 'Yuklanmoqda...'}
             {' · '}Batafsil ko&apos;rish uchun qatorni bosing
           </p>
         </div>
 
         <div className="relative w-full sm:w-72 no-print">
-          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
           <Input
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
@@ -56,7 +56,7 @@ export function SubmissionsTable({
         </div>
       </header>
 
-      <div className="border-t border-slate-100">
+      <div className="border-t border-line">
         <Table>
           <TableHeader>
             <TableRow>
@@ -83,7 +83,7 @@ export function SubmissionsTable({
 
             {!loading && data?.items.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="py-12 text-center text-sm text-slate-400">
+                <TableCell colSpan={7} className="py-12 text-center text-sm text-ink-faint">
                   Tanlangan shartlarga mos anketa topilmadi
                 </TableCell>
               </TableRow>
@@ -102,9 +102,9 @@ export function SubmissionsTable({
                       onSelect(student);
                     }
                   }}
-                  className="cursor-pointer focus:bg-brand-50 focus:outline-none"
+                  className="cursor-pointer focus-visible:bg-surface-strong focus-visible:outline-none"
                 >
-                  <TableCell className="font-semibold text-slate-900">
+                  <TableCell className="font-semibold">
                     {student.firstName} {student.lastName}
                   </TableCell>
                   <TableCell>
@@ -112,16 +112,19 @@ export function SubmissionsTable({
                       {student.gender === 'Qiz bola' ? 'Qiz' : "O'g'il"}
                     </Badge>
                   </TableCell>
-                  <TableCell className="tabular-nums">{student.grade}</TableCell>
-                  <TableCell>{student.school}</TableCell>
-                  <TableCell>{student.mahalla}</TableCell>
+                  <TableCell className="font-mono tabular-nums text-ink-muted">{student.grade}</TableCell>
+                  <TableCell className="text-ink-muted">{student.school}</TableCell>
+                  <TableCell className="text-ink-muted">{student.mahalla}</TableCell>
                   <TableCell>
-                    <span className="flex items-center gap-1.5">
-                      <span aria-hidden="true">{KASB_ICON_MAP[student.dreamJob] ?? '⭐'}</span>
+                    <span className="flex items-center gap-2">
+                      <EntityIcon
+                        name={student.dreamJob}
+                        className="h-4 w-4 shrink-0 text-accent"
+                      />
                       {student.dreamJob}
                     </span>
                   </TableCell>
-                  <TableCell className="text-xs text-slate-500">
+                  <TableCell className="font-mono text-[11px] tabular-nums text-ink-faint">
                     {formatDate(student.createdAt)}
                   </TableCell>
                 </TableRow>
@@ -131,8 +134,8 @@ export function SubmissionsTable({
       </div>
 
       {/* Sahifalash */}
-      <footer className="flex items-center justify-between gap-3 border-t border-slate-100 p-4 no-print">
-        <p className="text-xs text-slate-500">
+      <footer className="flex items-center justify-between gap-3 border-t border-line p-4 no-print">
+        <p className="font-mono text-xs tabular-nums text-ink-faint">
           {page}-sahifa / {totalPages}
         </p>
         <div className="flex items-center gap-2">

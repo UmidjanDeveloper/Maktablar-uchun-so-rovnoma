@@ -56,7 +56,7 @@ export function MultiSelect({
           aria-expanded={open}
           className={cn(
             'h-10 w-full justify-between px-3 text-sm font-normal',
-            values.length === 0 && 'text-slate-400',
+            values.length === 0 && 'text-ink-faint',
             className
           )}
         >
@@ -78,12 +78,12 @@ export function MultiSelect({
                     onChange([]);
                   }
                 }}
-                className="rounded p-0.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                className="rounded-sm p-0.5 text-ink-faint transition-colors hover:bg-surface-strong hover:text-ink"
               >
                 <X className="h-3.5 w-3.5" />
               </span>
             )}
-            <ChevronsUpDown className="h-4 w-4 text-slate-400" />
+            <ChevronsUpDown className="h-4 w-4 text-ink-faint" />
           </div>
         </Button>
       </PopoverTrigger>
@@ -101,8 +101,9 @@ export function MultiSelect({
                 <CommandItem key={option} value={option} onSelect={() => toggle(option)}>
                   <div
                     className={cn(
-                      'mr-2 flex h-4 w-4 items-center justify-center rounded border-2 border-slate-300',
-                      values.includes(option) && 'border-brand-600 bg-brand-600 text-white'
+                      'mr-2 flex h-4 w-4 items-center justify-center rounded-[4px] border border-line-strong',
+                      values.includes(option) &&
+                        'border-accent bg-accent-solid text-accent-contrast'
                     )}
                   >
                     {values.includes(option) && <Check className="h-3 w-3 stroke-[3]" />}

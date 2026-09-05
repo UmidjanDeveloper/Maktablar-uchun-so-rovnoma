@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Check, Loader2, Pencil, Plus, Trash2, X } from 'lucide-react';
+import { Briefcase, Check, Loader2, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/toast';
 import { KASB_KATEGORIYALARI } from '@/lib/constants';
+import { EntityIcon } from '@/lib/icons';
 
 interface Profession {
   id: string;
@@ -142,20 +143,24 @@ export function ProfessionManager() {
   );
 
   return (
-    <section className="rounded-2xl border border-slate-200/80 bg-white shadow-soft">
-      <header className="border-b border-slate-100 p-5">
-        <h2 className="flex items-center gap-2 text-base font-bold tracking-tight text-slate-900">
-          <span aria-hidden="true">💼</span>
+    <section className="glass rounded-lg">
+      <header className="border-b border-line p-4 sm:p-5">
+        <h2 className="flex items-center gap-2 font-display text-base font-semibold tracking-tight text-ink">
+          <span className="flex h-8 w-8 items-center justify-center rounded-md border border-accent/35 bg-[color-mix(in_srgb,var(--accent)_12%,transparent)] text-accent">
+            <Briefcase className="h-[17px] w-[17px]" strokeWidth={1.9} />
+          </span>
           Kasblar
           {!loading && (
-            <span className="text-sm font-normal text-slate-400">({items.length} ta)</span>
+            <span className="font-mono text-xs font-normal tabular-nums text-ink-faint">
+              ({items.length} ta)
+            </span>
           )}
         </h2>
-        <p className="mt-0.5 text-xs text-slate-500">
+        <p className="mt-1 text-xs text-ink-faint">
           Anketaning 3-qadamida o&apos;quvchilarga ko&apos;rsatiladigan kasblar ro&apos;yxati
         </p>
 
-        <form onSubmit={handleAdd} className="mt-4 grid gap-3 sm:grid-cols-[1fr_1fr_88px_auto]">
+        <form onSubmit={handleAdd} className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_88px_auto]">
           <div className="space-y-1.5">
             <Label className="text-xs">Kasb nomi</Label>
             <Input
@@ -172,7 +177,7 @@ export function ProfessionManager() {
             <select
               value={draft.category}
               onChange={(e) => setDraft({ ...draft, category: e.target.value })}
-              className="h-10 w-full rounded-xl border-2 border-slate-200 bg-white px-3 text-sm focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-100"
+              className="h-10 w-full rounded-md border border-line bg-surface-solid px-3 text-sm text-ink transition-colors focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
               {categories.map((c) => (
                 <option key={c} value={c}>
@@ -182,9 +187,17 @@ export function ProfessionManager() {
             </select>
           </div>
 
+          {/*
+            Anketada endi emoji emas, bir uslubdagi SVG ikona ko'rsatiladi
+            (ikona kasb nomi bo'yicha topiladi). Bu maydon eksport
+            fayllarida ishlatiladigan zaxira belgi sifatida saqlanib qoldi.
+          */}
           <div className="space-y-1.5">
-            <Label className="text-xs">Emoji</Label>
+            <Label className="text-xs" htmlFor="kasb-belgi">
+              Belgi
+            </Label>
             <Input
+              id="kasb-belgi"
               value={draft.icon}
               onChange={(e) => setDraft({ ...draft, icon: e.target.value })}
               className="h-10 text-center text-lg"
@@ -209,16 +222,16 @@ export function ProfessionManager() {
             ))}
           </div>
         ) : items.length === 0 ? (
-          <p className="p-8 text-center text-sm text-slate-400">
+          <p className="p-8 text-center text-sm text-ink-faint">
             Kasblar ro&apos;yxati bo&apos;sh. Avval <code>npm run db:seed</code> buyrug&apos;ini
             bajaring.
           </p>
         ) : (
-          <ul className="divide-y divide-slate-50">
+          <ul className="divide-y divide-line">
             {items.map((item) => (
               <li key={item.id} className="px-3 py-2">
                 {editingId === item.id ? (
-                  <div className="grid gap-2 sm:grid-cols-[1fr_1fr_72px_auto]">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1fr_72px_auto]">
                     <Input
                       value={editDraft.name}
                       onChange={(e) => setEditDraft({ ...editDraft, name: e.target.value })}
@@ -229,7 +242,7 @@ export function ProfessionManager() {
                     <select
                       value={editDraft.category}
                       onChange={(e) => setEditDraft({ ...editDraft, category: e.target.value })}
-                      className="h-9 rounded-xl border-2 border-slate-200 bg-white px-2 text-sm focus:border-brand-500 focus:outline-none"
+                      className="h-9 rounded-md border border-line bg-surface-solid px-2 text-sm text-ink focus:border-accent focus:outline-none"
                     >
                       {categories.map((c) => (
                         <option key={c} value={c}>
@@ -247,7 +260,7 @@ export function ProfessionManager() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-9 w-9 text-emerald-600"
+                        className="h-9 w-9 text-ok"
                         onClick={() => handleUpdate(item.id)}
                         disabled={busyId === item.id}
                         aria-label="Saqlash"
@@ -261,7 +274,7 @@ export function ProfessionManager() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-9 w-9 text-slate-400"
+                        className="h-9 w-9"
                         onClick={() => setEditingId(null)}
                         aria-label="Bekor qilish"
                       >
@@ -271,10 +284,10 @@ export function ProfessionManager() {
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <span className="text-xl leading-none" aria-hidden="true">
-                      {item.icon}
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-surface-strong text-accent">
+                      <EntityIcon name={item.name} className="h-[18px] w-[18px]" />
                     </span>
-                    <span className="min-w-0 flex-1 truncate text-sm font-medium text-slate-800">
+                    <span className="min-w-0 flex-1 truncate text-sm font-medium text-ink">
                       {item.name}
                     </span>
                     <Badge variant="secondary" className="hidden shrink-0 sm:inline-flex">
@@ -283,7 +296,7 @@ export function ProfessionManager() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-9 w-9 shrink-0 text-slate-400 hover:text-brand-600"
+                      className="h-9 w-9 shrink-0 hover:text-accent"
                       onClick={() => {
                         setEditingId(item.id);
                         setEditDraft({
@@ -299,7 +312,7 @@ export function ProfessionManager() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-9 w-9 shrink-0 text-slate-400 hover:text-red-600"
+                      className="h-9 w-9 shrink-0 hover:text-danger"
                       onClick={() => handleDelete(item)}
                       disabled={busyId === item.id}
                       aria-label="O'chirish"

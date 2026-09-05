@@ -1,5 +1,6 @@
 'use client';
 
+import { Sparkles } from 'lucide-react';
 import { ChipGroup } from '@/components/shared/chip-group';
 import { Field } from './field';
 import { FANLAR, TOGARAKLAR } from '@/lib/constants';
@@ -42,9 +43,13 @@ export function StepInterests({ form, errors, update }: StepInterestsProps) {
       </Field>
 
       {form.favoriteSubjects.length > 0 && (
-        <div className="rounded-2xl border border-leaf-100 bg-leaf-50 p-4 text-sm font-medium text-leaf-600">
-          <span className="mr-1.5">✨</span>
-          Ajoyib! Sen {form.favoriteSubjects.length} ta fanni yoqtirar ekansan.
+        <div className="flex items-center gap-2 rounded-md border border-ok/40 bg-ok-bg px-4 py-3 text-sm font-medium text-ok">
+          <Sparkles className="h-4 w-4 shrink-0" />
+          Ajoyib! Sen{' '}
+          <span className="font-mono font-semibold tabular-nums">
+            {form.favoriteSubjects.length}
+          </span>{' '}
+          ta fanni yoqtirar ekansan.
         </div>
       )}
     </div>

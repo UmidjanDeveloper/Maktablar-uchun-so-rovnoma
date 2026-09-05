@@ -26,17 +26,19 @@ export function ChartShell({
   empty = false,
 }: ChartShellProps) {
   return (
-    <section className={cn('chart-card flex flex-col', className)}>
+    <section className={cn('glass flex flex-col rounded-lg p-4 sm:p-5', className)}>
       <header className="mb-4 flex items-start justify-between gap-3">
-        <div>
-          <h3 className="text-base font-bold tracking-tight text-slate-900">{title}</h3>
-          {description && <p className="mt-0.5 text-xs text-slate-500">{description}</p>}
+        <div className="min-w-0">
+          <h3 className="font-display text-[15px] font-semibold tracking-tight text-ink sm:text-base">
+            {title}
+          </h3>
+          {description && <p className="mt-0.5 text-xs text-ink-faint">{description}</p>}
         </div>
         {action}
       </header>
 
       {empty ? (
-        <div className="flex flex-1 items-center justify-center rounded-xl bg-slate-50 py-12 text-sm text-slate-400">
+        <div className="flex flex-1 items-center justify-center rounded-md border border-dashed border-line py-12 text-center text-sm text-ink-faint">
           Tanlangan filtrlar bo&apos;yicha ma&apos;lumot topilmadi
         </div>
       ) : (
@@ -61,16 +63,16 @@ export function ChartTooltip({
   if (!active || !payload?.length) return null;
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-soft-lg">
-      {label && <p className="mb-1 text-xs font-bold text-slate-900">{label}</p>}
+    <div className="rounded-md border border-line-strong bg-surface-solid px-3 py-2 shadow-float">
+      {label && <p className="mb-1 text-xs font-bold text-ink">{label}</p>}
       {payload.map((entry, index) => (
         <div key={index} className="flex items-center gap-2 text-xs">
           <span
-            className="h-2.5 w-2.5 shrink-0 rounded-sm"
+            className="h-2.5 w-2.5 shrink-0 rounded-[3px]"
             style={{ backgroundColor: entry.color }}
           />
-          <span className="text-slate-600">{entry.name}:</span>
-          <span className="font-bold text-slate-900">
+          <span className="text-ink-muted">{entry.name}:</span>
+          <span className="font-mono font-semibold tabular-nums text-ink">
             {entry.value} {unit}
           </span>
         </div>

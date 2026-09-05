@@ -88,62 +88,63 @@ export function UnlistedPanel({ onCatalogChange }: UnlistedPanelProps) {
   if (loading) return <Skeleton className="h-40" />;
 
   return (
-    <section className="rounded-2xl border border-slate-200/80 bg-white shadow-soft">
-      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 p-5">
+    <section className="glass rounded-lg">
+      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line p-4 sm:p-5">
         <div className="flex items-center gap-2.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50">
-            <PencilLine className="h-5 w-5 text-amber-600" />
+          <span className="flex h-9 w-9 items-center justify-center rounded-md border border-warn/40 bg-warn-bg text-warn">
+            <PencilLine className="h-[18px] w-[18px]" strokeWidth={1.9} />
           </span>
           <div>
-            <h2 className="flex items-center gap-2 text-base font-bold tracking-tight text-slate-900">
+            <h2 className="flex items-center gap-2 font-display text-base font-semibold tracking-tight text-ink">
               Qo&apos;lda kiritilgan nomlar
               {total > 0 && <Badge variant="warning">{total} ta</Badge>}
             </h2>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-ink-faint">
               O&apos;quvchilar ro&apos;yxatdan topa olmay, o&apos;zi yozgan mahalla va
               maktablar
             </p>
           </div>
         </div>
 
-        <Button variant="ghost" size="sm" onClick={() => void load()} className="text-slate-500">
+        <Button variant="ghost" size="sm" onClick={() => void load()}>
           <RefreshCw className="h-4 w-4" />
           Yangilash
         </Button>
       </header>
 
       {total === 0 ? (
-        <div className="flex items-center justify-center gap-2 p-8 text-sm text-slate-500">
-          <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+        <div className="flex items-center justify-center gap-2 p-8 text-sm text-ink-muted">
+          <CheckCircle2 className="h-5 w-5 text-ok" />
           Barcha anketalar katalogdagi nomlar bilan to&apos;ldirilgan
         </div>
       ) : (
-        <div className="divide-y divide-slate-100">
+        <div className="divide-y divide-line">
           {(['mahallalar', 'maktablar'] as const).map((kind) => {
             const items = data?.[kind] ?? [];
             if (items.length === 0) return null;
 
             return (
               <div key={kind} className="p-4">
-                <p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">
+                <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
                   {kind === 'mahallalar' ? 'Mahallalar' : 'Maktablar'}
                 </p>
                 <ul className="space-y-2">
                   {items.map((item) => (
                     <li
                       key={item.name}
-                      className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-100 bg-slate-50/70 p-3"
+                      className="flex flex-wrap items-center gap-2 rounded-md border border-line bg-surface p-3"
                     >
                       <div className="min-w-0 flex-1">
-                        <p className="break-words text-sm font-semibold text-slate-900">
+                        <p className="break-words text-sm font-semibold text-ink">
                           {item.name}
                         </p>
-                        <p className="mt-0.5 text-xs text-slate-500">
-                          {item.count} ta anketada ishlatilgan
+                        <p className="mt-0.5 text-xs text-ink-faint">
+                          <span className="font-mono tabular-nums">{item.count}</span> ta anketada
+                          ishlatilgan
                           {item.suggestion && (
                             <>
                               {' · '}
-                              <span className="text-amber-700">
+                              <span className="text-warn">
                                 katalogdagi o&apos;xshash nom: «{item.suggestion}»
                               </span>
                             </>

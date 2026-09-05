@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
-import { KASB_ICON_MAP } from '@/lib/constants';
+import { EntityIcon } from '@/lib/icons';
 import { formatDate, formatPhone, initials } from '@/lib/utils';
 import type { StudentRecord } from '@/types';
 
@@ -22,10 +22,10 @@ interface StudentModalProps {
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-3">
-      <span className="w-44 shrink-0 text-xs font-semibold uppercase tracking-wide text-slate-400">
+      <span className="w-44 shrink-0 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
         {label}
       </span>
-      <span className="text-sm text-slate-800">{value}</span>
+      <span className="text-sm text-ink-muted">{value}</span>
     </div>
   );
 }
@@ -42,9 +42,16 @@ export function StudentModal({ student, onClose }: StudentModalProps) {
         <DialogHeader>
           <div className="flex items-center gap-4 pr-8">
             <div
-              className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-lg font-extrabold ${
-                isGirl ? 'bg-pink-50 text-pink-700' : 'bg-brand-50 text-brand-700'
-              }`}
+              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border font-mono text-lg font-semibold"
+              style={{
+                borderColor: isGirl
+                  ? 'color-mix(in srgb, var(--accent-3) 45%, transparent)'
+                  : 'color-mix(in srgb, var(--accent) 45%, transparent)',
+                backgroundColor: isGirl
+                  ? 'color-mix(in srgb, var(--accent-3) 14%, transparent)'
+                  : 'color-mix(in srgb, var(--accent) 14%, transparent)',
+                color: isGirl ? 'var(--accent-3)' : 'var(--accent)',
+              }}
             >
               {initials(student.firstName, student.lastName)}
             </div>
@@ -52,7 +59,7 @@ export function StudentModal({ student, onClose }: StudentModalProps) {
               <DialogTitle className="truncate">
                 {student.firstName} {student.lastName}
               </DialogTitle>
-              <DialogDescription className="mt-1 flex flex-wrap items-center gap-1.5">
+              <DialogDescription className="mt-1.5 flex flex-wrap items-center gap-1.5">
                 <Badge variant={isGirl ? 'pink' : 'default'}>{student.gender}</Badge>
                 <Badge variant="secondary">{student.grade}-sinf</Badge>
                 <Badge variant="outline">{student.school}</Badge>
@@ -61,17 +68,19 @@ export function StudentModal({ student, onClose }: StudentModalProps) {
           </div>
         </DialogHeader>
 
-        {/* Orzu kasb */}
-        <div className="flex items-center gap-4 rounded-2xl border-2 border-brand-100 bg-brand-50 p-4">
-          <span className="text-4xl leading-none" aria-hidden="true">
-            {KASB_ICON_MAP[student.dreamJob] ?? '⭐'}
+        {/* Orzu kasb — oynadagi eng muhim ma'lumot */}
+        <div className="flex items-center gap-4 rounded-md border border-accent/35 bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] p-4">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-[color-mix(in_srgb,var(--accent)_16%,transparent)] text-accent">
+            <EntityIcon name={student.dreamJob} className="h-6 w-6" strokeWidth={1.7} />
           </span>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">
+          <div className="min-w-0">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-accent">
               Orzu qilgan kasbi
             </p>
-            <p className="text-lg font-bold text-brand-900">{student.dreamJob}</p>
-            <p className="text-xs text-brand-700">{student.jobCategory}</p>
+            <p className="font-display text-lg font-semibold leading-tight text-ink">
+              {student.dreamJob}
+            </p>
+            <p className="text-xs text-ink-faint">{student.jobCategory}</p>
           </div>
         </div>
 
@@ -126,9 +135,20 @@ export function StudentModal({ student, onClose }: StudentModalProps) {
         <Separator />
 
         <div className="space-y-3">
-          <Row label="Telefon" value={formatPhone(student.phone)} />
-          <Row label="Ota-ona telefoni" value={formatPhone(student.parentPhone)} />
-          <Row label="To'ldirilgan sana" value={formatDate(student.createdAt)} />
+          <Row
+            label="Telefon"
+            value={<span className="font-mono tabular-nums">{formatPhone(student.phone)}</span>}
+          />
+          <Row
+            label="Ota-ona telefoni"
+            value={
+              <span className="font-mono tabular-nums">{formatPhone(student.parentPhone)}</span>
+            }
+          />
+          <Row
+            label="To'ldirilgan sana"
+            value={<span className="font-mono tabular-nums">{formatDate(student.createdAt)}</span>}
+          />
         </div>
       </DialogContent>
     </Dialog>

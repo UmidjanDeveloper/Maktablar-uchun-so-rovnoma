@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Loader2, Send, WifiOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
+import { StepNodes } from './step-nodes';
 import { useToast } from '@/components/ui/toast';
 import { StepPersonal } from './step-personal';
 import { StepInterests } from './step-interests';
@@ -27,11 +27,14 @@ import type { CatalogsResponse } from '@/types';
 
 /** Qadamlar sarlavhalari */
 const STEPS = [
-  { title: "Shaxsiy ma'lumot", subtitle: "O'zing haqingda qisqacha", icon: '👤' },
-  { title: 'Qiziqishlar', subtitle: 'Nimalar seni qiziqtiradi?', icon: '⭐' },
-  { title: 'Orzu kasb', subtitle: 'Kim bo\'lishni orzu qilasan?', icon: '🚀' },
-  { title: 'Kelajak', subtitle: 'Rejalaring haqida', icon: '🌅' },
+  { title: "Shaxsiy ma'lumot", subtitle: "O'zing haqingda qisqacha", short: 'Ma\'lumot' },
+  { title: 'Qiziqishlar', subtitle: 'Nimalar seni qiziqtiradi?', short: 'Qiziqish' },
+  { title: 'Orzu kasb', subtitle: "Kim bo'lishni orzu qilasan?", short: 'Kasb' },
+  { title: 'Kelajak', subtitle: 'Rejalaring haqida', short: 'Kelajak' },
 ] as const;
+
+/** Qadam nomlari — step-node ko'rsatkichi uchun */
+const STEP_LABELS = STEPS.map((s) => s.short);
 
 export function SurveyWizard() {
   const { toast } = useToast();
@@ -249,8 +252,6 @@ export function SurveyWizard() {
     }
   };
 
-  const progress = useMemo(() => (step === 0 ? 0 : (step / 4) * 100), [step]);
-
   // ---------- Tabrik ekrani ----------
   if (step === 5) {
     return (
@@ -273,30 +274,25 @@ export function SurveyWizard() {
   const current = STEPS[step - 1];
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 pb-16 pt-6 sm:pt-10">
-      {/* Progress */}
-      <div className="mb-8">
-        <div className="mb-3 flex items-end justify-between gap-4">
-          <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-brand-600">
-              {step}-qadam / 4
-            </p>
-            <h2 className="mt-1.5 flex items-center gap-2.5 font-display text-3xl font-extrabold tracking-tight text-ink">
-              <span>{current.icon}</span>
-              {current.title}
-            </h2>
-            <p className="mt-0.5 text-[15px] text-ink-soft">{current.subtitle}</p>
-          </div>
-          <span className="shrink-0 font-display text-3xl font-extrabold text-ink-faint/40">
-            {Math.round(progress)}%
-          </span>
+    <div className="mx-auto w-full max-w-3xl px-4 pb-16 pt-6 sm:px-6 sm:pt-10">
+      {/* Qadam ko'rsatkichi */}
+      <div className="mb-7">
+        <StepNodes current={step} total={4} labels={STEP_LABELS} />
+
+        <div className="mt-6">
+          <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">
+            {step}-qadam / 4
+          </p>
+          <h2 className="mt-1.5 font-display text-2xl font-bold tracking-tight text-ink sm:text-3xl">
+            {current.title}
+          </h2>
+          <p className="mt-1 text-sm text-ink-muted">{current.subtitle}</p>
         </div>
-        <Progress value={progress} />
       </div>
 
       {/* Oflayn ogohlantirishi */}
       {!isOnline && (
-        <div className="mb-6 flex items-center gap-2 rounded-2xl border-2 border-sun-200 bg-sun-50 px-4 py-3 text-sm font-medium text-sun-700">
+        <div className="mb-6 flex items-center gap-2 rounded-md border border-warn/40 bg-warn-bg px-4 py-3 text-sm font-medium text-warn">
           <WifiOff className="h-4 w-4 shrink-0" />
           Internet aloqasi yo&apos;q. Xavotir olma — anketang saqlanadi va aloqa
           tiklanganda yuboriladi.
@@ -304,14 +300,14 @@ export function SurveyWizard() {
       )}
 
       {/* Qadam kontenti */}
-      <div className="rounded-3xl border border-cream-deep bg-white p-5 shadow-soft sm:p-8">
+      <div className="glass rounded-lg p-4 sm:p-7">
         <AnimatePresence mode="wait">
           <motion.div
             key={step}
-            initial={{ opacity: 0, x: 24 }}
+            initial={{ opacity: 0, x: 28 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -24 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
+            exit={{ opacity: 0, x: -28 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
           >
             {step === 1 && (
               <StepPersonal
@@ -333,15 +329,15 @@ export function SurveyWizard() {
 
       {/* Navigatsiya tugmalari */}
       <div className="mt-6 flex items-center justify-between gap-3">
-        <Button variant="outline" size="lg" onClick={goBack} disabled={submitting} className="h-14">
-          <ArrowLeft className="h-5 w-5" />
+        <Button variant="outline" size="lg" onClick={goBack} disabled={submitting}>
+          <ArrowLeft className="h-4 w-4" />
           Orqaga
         </Button>
 
         {step < 4 ? (
-          <Button size="lg" onClick={goNext} className="h-14 px-10 text-base">
+          <Button size="lg" onClick={goNext} className="px-8">
             Davom etish
-            <ArrowRight className="h-5 w-5" />
+            <ArrowRight className="h-4 w-4" />
           </Button>
         ) : (
           <Button
@@ -349,7 +345,7 @@ export function SurveyWizard() {
             variant="success"
             onClick={handleSubmit}
             disabled={submitting}
-            className="h-14 px-10 text-base"
+            className="px-8"
           >
             {submitting ? (
               <>

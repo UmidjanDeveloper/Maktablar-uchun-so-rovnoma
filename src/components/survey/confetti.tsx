@@ -15,8 +15,8 @@ interface Piece {
   shape: 'square' | 'circle';
 }
 
-/** Konfetti ranglari — tuman gerbining palitrasidan */
-const COLORS = ['#F2B01E', '#2E9B3F', '#17559B', '#C21E7A', '#D89506', '#7A3FBF', '#0E7C86'];
+/** Konfetti ranglari — brend urg'ularidan */
+const COLORS = ['#60A5FA', '#22D3EE', '#A78BFA', '#34D399', '#FBBF24', '#F472B6', '#818CF8'];
 
 interface ConfettiProps {
   /** Bo'laklar soni — eski kompyuterlarda kamaytirish mumkin */

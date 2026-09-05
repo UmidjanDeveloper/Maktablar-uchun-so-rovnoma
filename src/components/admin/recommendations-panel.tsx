@@ -11,10 +11,13 @@ import { cn } from '@/lib/utils';
 import type { DashboardStats } from '@/types';
 
 /** Muhimlik darajasiga qarab ranglar */
-const PRIORITY_STYLES: Record<RecommendationPriority, { bar: string; badge: 'default' | 'warning' | 'secondary' }> = {
-  high: { bar: 'bg-red-500', badge: 'warning' },
-  medium: { bar: 'bg-amber-500', badge: 'warning' },
-  info: { bar: 'bg-slate-300', badge: 'secondary' },
+const PRIORITY_STYLES: Record<
+  RecommendationPriority,
+  { bar: string; badge: 'default' | 'warning' | 'secondary' }
+> = {
+  high: { bar: 'bg-danger', badge: 'warning' },
+  medium: { bar: 'bg-warn', badge: 'warning' },
+  info: { bar: 'bg-line-strong', badge: 'secondary' },
 };
 
 /** Boshida ko'rsatiladigan tavsiyalar soni */
@@ -50,17 +53,17 @@ export function RecommendationsPanel({ stats, loading }: RecommendationsPanelPro
   const visible = expanded ? recommendations : recommendations.slice(0, INITIAL_COUNT);
 
   return (
-    <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-soft">
+    <section className="glass rounded-lg p-4 sm:p-5">
       <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50">
-            <Lightbulb className="h-5 w-5 text-amber-600" />
+          <span className="flex h-9 w-9 items-center justify-center rounded-md border border-warn/40 bg-warn-bg text-warn">
+            <Lightbulb className="h-[18px] w-[18px]" strokeWidth={1.9} />
           </span>
           <div>
-            <h2 className="text-base font-bold tracking-tight text-slate-900">
+            <h2 className="font-display text-base font-semibold tracking-tight text-ink">
               Tavsiyalar
             </h2>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-ink-faint">
               Filtrlangan ma&apos;lumot asosida avtomatik shakllantirildi
             </p>
           </div>
@@ -80,7 +83,7 @@ export function RecommendationsPanel({ stats, loading }: RecommendationsPanelPro
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.22, delay: Math.min(index * 0.04, 0.24) }}
-              className="flex gap-3 rounded-xl border border-slate-100 bg-slate-50/60 p-3.5"
+              className="flex gap-3 rounded-md border border-line bg-surface p-3.5"
             >
               {/* Muhimlikni bildiruvchi rangli chiziq */}
               <span
@@ -90,13 +93,13 @@ export function RecommendationsPanel({ stats, loading }: RecommendationsPanelPro
 
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-start justify-between gap-2">
-                  <h3 className="text-sm font-bold text-slate-900">{rec.title}</h3>
+                  <h3 className="font-display text-sm font-semibold text-ink">{rec.title}</h3>
                   <Badge variant={style.badge} className="shrink-0">
                     {PRIORITY_LABELS[rec.priority]}
                   </Badge>
                 </div>
-                <p className="mt-1 text-sm leading-relaxed text-slate-600">{rec.action}</p>
-                <p className="mt-1.5 text-xs font-medium text-slate-400">
+                <p className="mt-1 text-sm leading-relaxed text-ink-muted">{rec.action}</p>
+                <p className="mt-1.5 font-mono text-[11px] tabular-nums text-ink-faint">
                   Dalil: {rec.evidence}
                 </p>
               </div>
@@ -109,7 +112,7 @@ export function RecommendationsPanel({ stats, loading }: RecommendationsPanelPro
         <Button
           variant="ghost"
           size="sm"
-          className="mt-3 w-full text-slate-500"
+          className="mt-3 w-full"
           onClick={() => setExpanded((v) => !v)}
         >
           <ChevronDown

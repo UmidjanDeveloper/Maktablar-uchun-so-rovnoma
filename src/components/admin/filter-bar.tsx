@@ -28,10 +28,10 @@ export function FilterBar({ filters, onChange, mahallalar, maktablar }: FilterBa
   const patch = (part: Partial<DashboardFilters>) => onChange({ ...filters, ...part });
 
   return (
-    <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-soft no-print">
+    <div className="glass rounded-lg p-4 no-print">
       <div className="mb-3 flex items-center justify-between gap-3">
-        <h2 className="flex items-center gap-2 text-sm font-bold text-slate-900">
-          <SlidersHorizontal className="h-4 w-4 text-slate-400" />
+        <h2 className="flex items-center gap-2 font-display text-sm font-semibold text-ink">
+          <SlidersHorizontal className="h-4 w-4 text-ink-faint" />
           Filtrlar
           {count > 0 && <Badge>{count} ta faol</Badge>}
         </h2>
@@ -43,7 +43,7 @@ export function FilterBar({ filters, onChange, mahallalar, maktablar }: FilterBa
         )}
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <div className="space-y-1.5">
           <Label className="text-xs">Mahalla</Label>
           <MultiSelect
@@ -104,20 +104,20 @@ export function FilterBar({ filters, onChange, mahallalar, maktablar }: FilterBa
             <CalendarDays className="h-3.5 w-3.5" />
             Sana oralig&apos;i
           </Label>
-          <div className="flex items-center gap-1.5">
+          <div className="flex min-w-0 items-center gap-1.5">
             <Input
               type="date"
               value={filters.dateFrom ?? ''}
               onChange={(e) => patch({ dateFrom: e.target.value || null })}
-              className="h-10 px-2 text-xs"
+              className="h-10 min-w-0 px-2 text-xs"
               aria-label="Boshlanish sanasi"
             />
-            <span className="text-slate-300">–</span>
+            <span className="text-ink-faint">–</span>
             <Input
               type="date"
               value={filters.dateTo ?? ''}
               onChange={(e) => patch({ dateTo: e.target.value || null })}
-              className="h-10 px-2 text-xs"
+              className="h-10 min-w-0 px-2 text-xs"
               aria-label="Tugash sanasi"
             />
           </div>

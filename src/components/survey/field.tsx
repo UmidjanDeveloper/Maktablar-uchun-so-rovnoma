@@ -29,12 +29,12 @@ export function Field({
     <div className={cn('space-y-2', className)}>
       <Label htmlFor={htmlFor} className="flex items-center gap-1 text-[15px]">
         {label}
-        {required && <span className="text-red-500">*</span>}
+        {required && <span className="text-danger">*</span>}
       </Label>
       {children}
       {hint && !error && <p className="text-xs text-ink-faint">{hint}</p>}
       {error && (
-        <p className="flex items-center gap-1.5 text-sm font-medium text-red-600">
+        <p className="flex items-center gap-1.5 text-sm font-medium text-danger">
           <AlertCircle className="h-4 w-4 shrink-0" />
           {error}
         </p>

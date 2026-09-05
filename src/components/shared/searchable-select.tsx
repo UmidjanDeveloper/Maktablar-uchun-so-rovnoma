@@ -90,13 +90,13 @@ export function SearchableSelect({
           aria-expanded={open}
           className={cn(
             'h-12 w-full justify-between px-4 text-base font-normal',
-            !value && 'text-slate-400',
-            hasError && 'border-red-400 focus-visible:ring-red-100',
+            !value && 'text-ink-faint',
+            hasError && 'border-danger focus-visible:ring-danger',
             className
           )}
         >
           <span className="truncate text-left">{value || placeholder}</span>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 text-slate-400" />
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 text-ink-faint" />
         </Button>
       </PopoverTrigger>
 
@@ -126,7 +126,7 @@ export function SearchableSelect({
                 >
                   <Check
                     className={cn(
-                      'mr-2 mt-0.5 h-4 w-4 shrink-0 text-brand-600',
+                      'mr-2 mt-0.5 h-4 w-4 shrink-0 text-accent',
                       value === option ? 'opacity-100' : 'opacity-0'
                     )}
                   />
@@ -138,7 +138,7 @@ export function SearchableSelect({
             {showCustom && (
               <CommandGroup
                 heading={
-                  <span className="px-2 text-xs text-slate-400">
+                  <span className="px-2 text-xs text-ink-faint">
                     Ro&apos;yxatda topilmadimi?
                   </span>
                 }
@@ -146,7 +146,7 @@ export function SearchableSelect({
                 <CommandItem
                   value={`qolda-kiritish ${trimmed}`}
                   onSelect={() => select(trimmed)}
-                  className="items-start whitespace-normal text-brand-700"
+                  className="items-start whitespace-normal text-accent"
                 >
                   <PencilLine className="mr-2 mt-0.5 h-4 w-4 shrink-0" />
                   <span className="font-semibold leading-snug">

@@ -11,7 +11,7 @@ const Command = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <CommandPrimitive
     ref={ref}
-    className={cn('flex h-full w-full flex-col overflow-hidden rounded-xl bg-white', className)}
+    className={cn('flex h-full w-full flex-col overflow-hidden rounded-md bg-surface-solid', className)}
     {...props}
   />
 ));
@@ -21,12 +21,12 @@ const CommandInput = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Input>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>
 >(({ className, ...props }, ref) => (
-  <div className="flex items-center border-b border-slate-100 px-3" cmdk-input-wrapper="">
-    <Search className="mr-2 h-4 w-4 shrink-0 text-slate-400" />
+  <div className="flex items-center border-b border-line px-3" cmdk-input-wrapper="">
+    <Search className="mr-2 h-4 w-4 shrink-0 text-ink-faint" />
     <CommandPrimitive.Input
       ref={ref}
       className={cn(
-        'flex h-11 w-full rounded-md bg-transparent py-3 text-base outline-none placeholder:text-slate-400 disabled:cursor-not-allowed disabled:opacity-50',
+        'flex h-11 w-full rounded-md bg-transparent py-3 text-base outline-none placeholder:text-ink-faint disabled:cursor-not-allowed disabled:opacity-50',
         className
       )}
       {...props}
@@ -51,7 +51,7 @@ const CommandEmpty = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Empty>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Empty>
 >((props, ref) => (
-  <CommandPrimitive.Empty ref={ref} className="py-6 text-center text-sm text-slate-500" {...props} />
+  <CommandPrimitive.Empty ref={ref} className="py-6 text-center text-sm text-ink-muted" {...props} />
 ));
 CommandEmpty.displayName = CommandPrimitive.Empty.displayName;
 
@@ -61,7 +61,7 @@ const CommandGroup = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <CommandPrimitive.Group
     ref={ref}
-    className={cn('overflow-hidden p-1 text-slate-900', className)}
+    className={cn('overflow-hidden p-1 text-ink', className)}
     {...props}
   />
 ));
@@ -75,7 +75,7 @@ const CommandItem = React.forwardRef<
     ref={ref}
     className={cn(
       'relative flex cursor-pointer select-none items-center rounded-lg px-3 py-2.5 text-sm outline-none',
-      'data-[selected=true]:bg-brand-50 data-[selected=true]:text-brand-800',
+      'data-[selected=true]:bg-surface-strong data-[selected=true]:text-ink',
       'data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50',
       className
     )}

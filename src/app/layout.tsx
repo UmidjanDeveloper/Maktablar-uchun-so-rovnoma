@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from 'next';
-import { Plus_Jakarta_Sans, Outfit } from 'next/font/google';
+import { Plus_Jakarta_Sans, Space_Grotesk, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { ToastProvider } from '@/components/ui/toast';
+import { ThemeProvider, themeInitScript } from '@/components/shared/theme-provider';
 import { ServiceWorkerRegister } from '@/components/shared/service-worker-register';
 
 /** Asosiy matn shrifti — uzun matnlarda ham oson o'qiladi */
@@ -11,12 +12,20 @@ const body = Plus_Jakarta_Sans({
   display: 'swap',
 });
 
-/** Sarlavhalar shrifti — geometrik, iliq va ishonchli */
-const display = Outfit({
-  subsets: ['latin', 'latin-ext'],
+/** Sarlavhalar shrifti — geometrik, "texnologik" xarakterdagi */
+const display = Space_Grotesk({
+  subsets: ['latin'],
   variable: '--font-display',
   display: 'swap',
-  weight: ['500', '600', '700', '800'],
+  weight: ['500', '600', '700'],
+});
+
+/** Raqamlar uchun — jadval va ko'rsatkichlarda ustunlar tekis turadi */
+const mono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+  display: 'swap',
+  weight: ['400', '600'],
 });
 
 export const metadata: Metadata = {
@@ -40,7 +49,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#17559B',
+  themeColor: '#0B1120',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
@@ -48,12 +57,25 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="uz" className={`${body.variable} ${display.variable}`}>
-      <body className="min-h-screen bg-cream font-sans text-ink">
-        <ToastProvider>
-          {children}
-          <ServiceWorkerRegister />
-        </ToastProvider>
+    <html
+      lang="uz"
+      className={`${body.variable} ${display.variable} ${mono.variable}`}
+      suppressHydrationWarning
+    >
+      <head>
+        {/*
+          Tema sahifa chizilishidan oldin qo'llanadi — busiz bir lahza
+          noto'g'ri rangda ko'rinib, keyin "sakrab" o'zgaradi.
+        */}
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
+      <body className="min-h-screen font-sans antialiased">
+        <ThemeProvider>
+          <ToastProvider>
+            {children}
+            <ServiceWorkerRegister />
+          </ToastProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -3,32 +3,61 @@ import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
+/**
+ * Tugma variantlari.
+ *
+ * Radius `pill` emas — 8-12 px to'rtburchak, bu zamonaviyroq ko'rinadi
+ * va matn uzun bo'lganda ham tartibli qoladi. Hover'da gradient siljiydi
+ * va nozik porlash qo'shiladi; `disabled` holat aniq farqlanadi.
+ */
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl font-display text-sm font-semibold ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]',
+  [
+    'relative inline-flex items-center justify-center gap-2 whitespace-nowrap',
+    'font-display font-semibold tracking-tight',
+    'transition-[transform,box-shadow,background-position,opacity] duration-200 ease-out',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-canvas',
+    'disabled:pointer-events-none disabled:opacity-40 disabled:saturate-50',
+    'active:scale-[0.985]',
+  ].join(' '),
   {
     variants: {
       variant: {
-        default: 'bg-brand-600 text-white btn-glow hover:bg-brand-700',
-        destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
-        outline: 'border-2 border-cream-deep bg-white text-ink hover:bg-cream hover:border-brand-200',
-        secondary: 'bg-cream-deep text-ink hover:bg-sun-100',
-        ghost: 'hover:bg-cream-deep hover:text-ink',
-        link: 'text-brand-600 underline-offset-4 hover:underline',
-        success: 'bg-leaf-400 text-white btn-glow hover:bg-leaf-500',
-        sun: 'bg-sun-400 text-ink btn-glow hover:bg-sun-500',
+        /* Asosiy harakat — gradient + porlash */
+        default: [
+          'text-accent-contrast shadow-glow',
+          'bg-[linear-gradient(110deg,var(--accent-solid)_0%,var(--accent-3)_50%,var(--accent-solid)_100%)]',
+          'bg-[length:220%_100%] bg-[position:0%_0] hover:bg-[position:100%_0]',
+          'hover:-translate-y-[1px]',
+        ].join(' '),
+
+        /* Ikkilamchi — shisha yuza */
+        outline: 'glass text-ink hover:border-line-strong hover:-translate-y-[1px]',
+
+        secondary: 'bg-surface-strong text-ink hover:brightness-110',
+
+        ghost: 'text-ink-muted hover:bg-surface hover:text-ink',
+
+        link: 'text-accent underline-offset-4 hover:underline',
+
+        /* Yakuniy tasdiq */
+        success: [
+          'text-accent-contrast',
+          'bg-[linear-gradient(110deg,var(--ok)_0%,var(--accent-2)_55%,var(--ok)_100%)]',
+          'bg-[length:220%_100%] bg-[position:0%_0] hover:bg-[position:100%_0]',
+          'shadow-float hover:-translate-y-[1px]',
+        ].join(' '),
+
+        destructive: 'bg-danger-bg text-danger hover:brightness-110',
       },
       size: {
-        default: 'h-11 px-5 py-2',
-        sm: 'h-9 rounded-lg px-3 text-xs',
-        lg: 'h-14 rounded-2xl px-8 text-base',
-        xl: 'h-16 rounded-2xl px-10 text-lg',
-        icon: 'h-10 w-10',
+        sm: 'h-9 rounded-sm px-3 text-xs',
+        default: 'h-11 rounded-md px-5 text-sm',
+        lg: 'h-13 rounded-md px-7 text-[15px]',
+        xl: 'h-14 rounded-lg px-9 text-base',
+        icon: 'h-11 w-11 rounded-md',
       },
     },
-    defaultVariants: {
-      variant: 'default',
-      size: 'default',
-    },
+    defaultVariants: { variant: 'default', size: 'default' },
   }
 );
 

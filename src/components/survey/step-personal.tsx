@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { Check, MapPin } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { SearchableSelect } from '@/components/shared/searchable-select';
 import { Field } from './field';
@@ -20,7 +21,7 @@ interface StepPersonalProps {
 export function StepPersonal({ form, errors, update, mahallalar, maktablar }: StepPersonalProps) {
   return (
     <div className="space-y-6">
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Field label="Ism" htmlFor="firstName" required error={errors.firstName}>
           <Input
             id="firstName"
@@ -28,7 +29,7 @@ export function StepPersonal({ form, errors, update, mahallalar, maktablar }: St
             onChange={(e) => update({ firstName: e.target.value })}
             placeholder="Masalan: Javohir"
             autoComplete="off"
-            className={cn(errors.firstName && 'border-red-400')}
+            className={cn(errors.firstName && 'border-danger')}
           />
         </Field>
 
@@ -39,7 +40,7 @@ export function StepPersonal({ form, errors, update, mahallalar, maktablar }: St
             onChange={(e) => update({ lastName: e.target.value })}
             placeholder="Masalan: Karimov"
             autoComplete="off"
-            className={cn(errors.lastName && 'border-red-400')}
+            className={cn(errors.lastName && 'border-danger')}
           />
         </Field>
       </div>
@@ -54,27 +55,45 @@ export function StepPersonal({ form, errors, update, mahallalar, maktablar }: St
                 key={jins}
                 type="button"
                 whileTap={{ scale: 0.97 }}
+                transition={{ type: 'spring', stiffness: 420, damping: 26 }}
                 onClick={() => update({ gender: jins })}
                 aria-pressed={selected}
                 className={cn(
-                  'flex items-center justify-center gap-2.5 rounded-2xl border-2 px-4 py-4 text-base font-semibold transition-colors',
-                  'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-100',
+                  'relative flex items-center justify-center gap-2 rounded-md border px-4 py-3.5',
+                  'font-display text-[15px] font-semibold transition-[color,background-color,border-color,box-shadow] duration-200',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-canvas',
                   selected
-                    ? isBoy
-                      ? 'border-brand-600 bg-brand-600 text-white shadow-soft'
-                      : 'border-[#C21E7A] bg-[#C21E7A] text-white shadow-soft'
-                    : 'border-cream-deep bg-white text-ink-soft hover:border-brand-200 hover:bg-brand-50'
+                    ? 'border-accent bg-[color-mix(in_srgb,var(--accent)_14%,transparent)] text-ink shadow-glow'
+                    : 'glass text-ink-muted hover:border-line-strong hover:text-ink'
                 )}
               >
-                <span className="text-2xl leading-none">{isBoy ? '👦' : '👧'}</span>
+                <span
+                  className={cn(
+                    'flex h-6 w-6 items-center justify-center rounded-full border text-[11px] font-bold',
+                    selected ? 'border-accent text-accent' : 'border-line text-ink-faint'
+                  )}
+                >
+                  {isBoy ? 'O' : 'Q'}
+                </span>
                 {jins}
+
+                {selected && (
+                  <motion.span
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: 'spring', stiffness: 520, damping: 22 }}
+                    className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-accent-solid text-accent-contrast shadow-glow"
+                  >
+                    <Check className="h-3 w-3 stroke-[3.5]" />
+                  </motion.span>
+                )}
               </motion.button>
             );
           })}
         </div>
       </Field>
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Field
           label="Mahalla"
           htmlFor="mahalla"
@@ -127,14 +146,16 @@ export function StepPersonal({ form, errors, update, mahallalar, maktablar }: St
                 key={sinf}
                 type="button"
                 whileTap={{ scale: 0.94 }}
+                transition={{ type: 'spring', stiffness: 420, damping: 26 }}
                 onClick={() => update({ grade: sinf })}
                 aria-pressed={selected}
                 className={cn(
-                  'h-14 w-16 rounded-2xl border-2 text-lg font-bold transition-colors',
-                  'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-100',
+                  'h-12 w-12 rounded-md border font-mono text-base font-semibold tabular-nums',
+                  'transition-[color,background-color,border-color,box-shadow] duration-200',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-canvas',
                   selected
-                    ? 'border-brand-600 bg-brand-600 text-white shadow-soft'
-                    : 'border-cream-deep bg-white text-ink-soft hover:border-brand-200 hover:bg-brand-50'
+                    ? 'border-accent bg-accent-solid text-accent-contrast shadow-glow'
+                    : 'glass text-ink-muted hover:border-line-strong hover:text-ink'
                 )}
               >
                 {sinf}
@@ -144,7 +165,7 @@ export function StepPersonal({ form, errors, update, mahallalar, maktablar }: St
         </div>
       </Field>
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Field
           label="Telefon raqaming"
           htmlFor="phone"
@@ -158,7 +179,7 @@ export function StepPersonal({ form, errors, update, mahallalar, maktablar }: St
             value={form.phone}
             onChange={(e) => update({ phone: e.target.value })}
             placeholder="+998 90 123 45 67"
-            className={cn(errors.phone && 'border-red-400')}
+            className={cn(errors.phone && 'border-danger')}
           />
         </Field>
 
@@ -175,20 +196,20 @@ export function StepPersonal({ form, errors, update, mahallalar, maktablar }: St
             value={form.parentPhone}
             onChange={(e) => update({ parentPhone: e.target.value })}
             placeholder="+998 90 123 45 67"
-            className={cn(errors.parentPhone && 'border-red-400')}
+            className={cn(errors.parentPhone && 'border-danger')}
           />
         </Field>
       </div>
 
       {/* Hudud oldindan belgilangan — o'quvchi o'zgartirmaydi */}
-      <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-cream-deep/60 p-4 text-sm text-ink-soft">
-        <span className="text-lg">📍</span>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md border border-line bg-surface px-4 py-3 text-sm text-ink-muted">
+        <MapPin className="h-4 w-4 shrink-0 text-ink-faint" />
         <span>
-          Viloyat: <strong className="text-ink">{VILOYAT}</strong>
+          Viloyat: <strong className="font-semibold text-ink">{VILOYAT}</strong>
         </span>
-        <span className="text-ink-faint">•</span>
+        <span className="text-ink-faint">·</span>
         <span>
-          Tuman: <strong className="text-ink">{TUMAN}</strong>
+          Tuman: <strong className="font-semibold text-ink">{TUMAN}</strong>
         </span>
       </div>
     </div>

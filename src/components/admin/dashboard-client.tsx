@@ -222,10 +222,13 @@ export function DashboardClient() {
       {/* Sarlavha va amallar */}
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.22em] text-accent">
+            Xatirchi tumani hokimligi
+          </p>
+          <h1 className="mt-1 font-display text-2xl font-bold tracking-tight text-ink">
             Tahlil paneli
           </h1>
-          <p className="text-sm text-slate-500">
+          <p className="mt-0.5 text-sm text-ink-muted">
             Xatirchi tumani o&apos;quvchilarining kasb tanlovi bo&apos;yicha jonli statistika
           </p>
         </div>
@@ -288,13 +291,13 @@ export function DashboardClient() {
 
       {/* Diagrammalar */}
       {statsLoading && !stats ? (
-        <div className="grid gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="chart-card h-[340px] animate-pulse lg:col-span-2" />
+            <div key={i} className="glass h-[340px] animate-pulse rounded-lg lg:col-span-2" />
           ))}
         </div>
       ) : stats ? (
-        <div className="grid gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
           <TopJobsChart data={stats.topJobs} />
           <GenderJobsChart data={stats.genderJobs} />
           <MahallaChart data={stats.byMahalla} />
@@ -333,34 +336,36 @@ function ExtraInsights({ stats }: { stats: DashboardStats }) {
   ];
 
   return (
-    <section className="chart-card">
-      <h3 className="text-base font-bold tracking-tight text-slate-900">
+    <section className="glass rounded-lg p-4 sm:p-5">
+      <h3 className="font-display text-[15px] font-semibold tracking-tight text-ink sm:text-base">
         Qo&apos;shimcha ko&apos;rsatkichlar
       </h3>
-      <p className="mt-0.5 text-xs text-slate-500">O&apos;quvchilarning kelajak haqidagi javoblari</p>
+      <p className="mt-0.5 text-xs text-ink-faint">
+        O&apos;quvchilarning kelajak haqidagi javoblari
+      </p>
 
       <div className="mt-4 space-y-5">
         {blocks.map((block) => {
           const total = block.data.reduce((sum, item) => sum + item.value, 0);
           return (
             <div key={block.title}>
-              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
                 {block.title}
               </p>
               {block.data.length === 0 ? (
-                <p className="text-sm text-slate-400">Ma&apos;lumot yo&apos;q</p>
+                <p className="text-sm text-ink-faint">Ma&apos;lumot yo&apos;q</p>
               ) : (
                 <ul className="space-y-2">
                   {block.data.map((item) => (
                     <li key={item.name} className="flex items-center gap-2 text-sm">
-                      <span className="min-w-0 flex-1 truncate text-slate-600">{item.name}</span>
-                      <span className="h-1.5 w-20 shrink-0 overflow-hidden rounded-full bg-slate-100">
+                      <span className="min-w-0 flex-1 truncate text-ink-muted">{item.name}</span>
+                      <span className="h-1.5 w-20 shrink-0 overflow-hidden rounded-full bg-surface-strong">
                         <span
-                          className="block h-full rounded-full bg-brand-600"
+                          className="block h-full rounded-full bg-[linear-gradient(90deg,var(--accent-solid),var(--accent-3))]"
                           style={{ width: `${total ? (item.value / total) * 100 : 0}%` }}
                         />
                       </span>
-                      <span className="w-9 shrink-0 text-right font-bold tabular-nums text-slate-900">
+                      <span className="w-9 shrink-0 text-right font-mono font-semibold tabular-nums text-ink">
                         {item.value}
                       </span>
                     </li>

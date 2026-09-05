@@ -6,7 +6,9 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Field } from './field';
 import { cn } from '@/lib/utils';
+import { Check } from 'lucide-react';
 import { categoryTheme, KASB_KATEGORIYALARI } from '@/lib/constants';
+import { EntityIcon } from '@/lib/icons';
 import type { FormState } from './types';
 
 interface Profession {
@@ -60,7 +62,7 @@ export function StepDreamJob({ form, errors, update, kasblar }: StepDreamJobProp
           <TabsList className="w-full justify-start">
             {categories.map((c) => (
               <TabsTrigger key={c.value} value={c.value}>
-                <span className="text-base leading-none">{c.icon}</span>
+                <EntityIcon name={c.value} className="h-4 w-4 shrink-0" />
                 {c.label}
               </TabsTrigger>
             ))}
@@ -69,7 +71,7 @@ export function StepDreamJob({ form, errors, update, kasblar }: StepDreamJobProp
       </Field>
 
       {/* Kasb kartochkalari */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2.5 xs:gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {visible.map((kasb, index) => {
           const isSelected = form.dreamJob === kasb.name;
           const theme = categoryTheme(kasb.category);
@@ -88,31 +90,47 @@ export function StepDreamJob({ form, errors, update, kasblar }: StepDreamJobProp
                 isSelected
                   ? {
                       borderColor: theme.color,
-                      backgroundColor: theme.soft,
-                      boxShadow: `0 14px 32px -14px ${theme.color}88`,
+                      background: `color-mix(in srgb, ${theme.color} 14%, transparent)`,
+                      boxShadow: `0 0 0 1px ${theme.color}, 0 14px 34px -16px ${theme.color}`,
                     }
                   : undefined
               }
               className={cn(
-                'flex min-h-[132px] flex-col items-center justify-center gap-2.5 rounded-3xl border-2 p-4 text-center transition-all',
-                'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-100',
-                isSelected
-                  ? 'scale-[1.02]'
-                  : 'border-cream-deep bg-white hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-soft'
+                'relative flex min-h-[110px] flex-col items-center justify-center gap-2.5 rounded-md border p-3 text-center',
+                'transition-[color,background-color,border-color,box-shadow,transform] duration-200',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-canvas',
+                !isSelected && 'glass hover:-translate-y-[2px] hover:border-line-strong'
               )}
             >
-              <span className="text-[42px] leading-none">{kasb.icon}</span>
+              <EntityIcon
+                name={kasb.name}
+                strokeWidth={1.6}
+                className="h-7 w-7 shrink-0"
+                {...({ style: { color: isSelected ? theme.color : 'var(--text-faint)' } } as object)}
+              />
               <span
-                className="font-display text-sm font-bold leading-tight"
-                style={{ color: isSelected ? theme.color : '#3D556B' }}
+                className="font-display text-[12px] font-semibold leading-tight xs:text-[13px]"
+                style={{ color: isSelected ? 'var(--text)' : 'var(--text-muted)' }}
               >
                 {kasb.name}
               </span>
+
+              {isSelected && (
+                <motion.span
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: 'spring', stiffness: 520, damping: 22 }}
+                  className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full text-white"
+                  style={{ backgroundColor: theme.color }}
+                >
+                  <Check className="h-3 w-3 stroke-[3.5]" />
+                </motion.span>
+              )}
             </motion.button>
           );
         })}
         {visible.length === 0 && (
-          <p className="col-span-full rounded-2xl bg-cream-deep/60 p-6 text-center text-sm text-ink-faint">
+          <p className="col-span-full rounded-md border border-line bg-surface p-6 text-center text-sm text-ink-faint">
             Bu yo&apos;nalishda hozircha kasblar qo&apos;shilmagan.
           </p>
         )}
@@ -127,22 +145,30 @@ export function StepDreamJob({ form, errors, update, kasblar }: StepDreamJobProp
           className="space-y-4 overflow-hidden"
         >
           <div
-            className="flex items-center gap-4 rounded-3xl border-2 p-4"
+            className="flex items-center gap-4 rounded-md border p-4"
             style={{
-              borderColor: `${selectedTheme.color}33`,
-              backgroundColor: selectedTheme.soft,
+              borderColor: `color-mix(in srgb, ${selectedTheme.color} 45%, transparent)`,
+              background: `color-mix(in srgb, ${selectedTheme.color} 10%, transparent)`,
             }}
           >
-            <span className="text-4xl leading-none">{selected?.icon ?? '⭐'}</span>
+            <span
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md border"
+              style={{
+                borderColor: `color-mix(in srgb, ${selectedTheme.color} 45%, transparent)`,
+                color: selectedTheme.color,
+              }}
+            >
+              <EntityIcon name={form.dreamJob} strokeWidth={1.6} className="h-6 w-6" />
+            </span>
             <div className="min-w-0">
               <p
-                className="text-[11px] font-bold uppercase tracking-[0.14em]"
+                className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em]"
                 style={{ color: selectedTheme.color }}
               >
                 Sening tanlovingiz
               </p>
-              <p className="font-display text-xl font-extrabold text-ink">{form.dreamJob}</p>
-              <p className="mt-0.5 text-sm text-ink-soft">{selectedTheme.cheer}</p>
+              <p className="font-display text-lg font-bold text-ink">{form.dreamJob}</p>
+              <p className="mt-0.5 text-sm text-ink-muted">{selectedTheme.cheer}</p>
             </div>
           </div>
 

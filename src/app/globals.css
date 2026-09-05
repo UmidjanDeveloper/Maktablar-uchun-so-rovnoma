@@ -2,32 +2,154 @@
 @tailwind components;
 @tailwind utilities;
 
+/* =====================================================================
+   KELAJAK EGASI — DIZAYN TOKENLARI
+
+   Barcha ranglar, radiuslar va soyalar shu yerda CSS o'zgaruvchisi
+   sifatida belgilangan. Komponentlar hech qachon to'g'ridan-to'g'ri
+   rang yozmaydi — faqat shu tokenlarga murojaat qiladi. Shu sababli
+   yorug'/qorong'i temani almashtirish uchun bitta atribut yetarli.
+
+   Tema uch holatda ishlaydi:
+     - :root                      -> qorong'i (asosiy ko'rinish)
+     - prefers-color-scheme:light -> tizim yorug' bo'lsa
+     - [data-theme]               -> foydalanuvchi tanlovi (eng ustun)
+   ===================================================================== */
+
 @layer base {
   :root {
-    --background: 42 47% 97%;
-    --foreground: 209 60% 14%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 210 74% 35%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222 47% 11%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 210 74% 35%;
-    --radius: 0.75rem;
+    /* --- Fon qatlamlari --- */
+    --bg-base: #0b1120;
+    --bg-elev: #131b3a;
+    --bg-deep: #070c17;
+
+    /* Aurora fonining uch nuqtasi */
+    --mesh-1: rgba(59, 130, 246, 0.28);
+    --mesh-2: rgba(139, 92, 246, 0.24);
+    --mesh-3: rgba(34, 211, 238, 0.18);
+
+    /* --- Shisha yuzalar --- */
+    --surface: rgba(255, 255, 255, 0.055);
+    --surface-strong: rgba(255, 255, 255, 0.09);
+    --surface-solid: #141c33;
+    --border: rgba(255, 255, 255, 0.1);
+    --border-strong: rgba(255, 255, 255, 0.18);
+
+    /* --- Matn --- */
+    --text: #e8edf9;
+    --text-muted: #a7b6d9;
+    --text-faint: #7c8bad;
+
+    /* --- Urg'u ranglari --- */
+    --accent: #60a5fa;
+    --accent-solid: #2563eb;
+    --accent-2: #22d3ee;
+    --accent-3: #a78bfa;
+    --accent-contrast: #ffffff;
+
+    /* --- Holat ranglari (urg'udan alohida) --- */
+    --ok: #34d399;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --ok-bg: rgba(52, 211, 153, 0.12);
+    --warn-bg: rgba(251, 191, 36, 0.12);
+    --danger-bg: rgba(248, 113, 113, 0.12);
+
+    /* --- Radius shkalasi: pill emas, zamonaviy to'rtburchak --- */
+    --r-sm: 8px;
+    --r-md: 12px;
+    --r-lg: 16px;
+    --r-xl: 22px;
+
+    /* --- Soyalar va porlash --- */
+    --shadow-float: 0 18px 44px -20px rgba(2, 6, 23, 0.9);
+    --shadow-glow: 0 0 0 1px rgba(96, 165, 250, 0.35), 0 12px 32px -12px rgba(59, 130, 246, 0.55);
+
+    color-scheme: dark;
+  }
+
+  /* Tizim yorug' rejimda — foydalanuvchi qorong'ini tanlamagan bo'lsa */
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme='dark']) {
+      --bg-base: #f7f9fc;
+      --bg-elev: #ffffff;
+      --bg-deep: #eef2f9;
+
+      --mesh-1: rgba(37, 99, 235, 0.16);
+      --mesh-2: rgba(124, 58, 237, 0.13);
+      --mesh-3: rgba(14, 116, 144, 0.1);
+
+      --surface: rgba(255, 255, 255, 0.72);
+      --surface-strong: rgba(255, 255, 255, 0.92);
+      --surface-solid: #ffffff;
+      --border: rgba(15, 23, 42, 0.09);
+      --border-strong: rgba(15, 23, 42, 0.16);
+
+      --text: #0b1120;
+      --text-muted: #475569;
+      --text-faint: #64748b;
+
+      --accent: #1d4ed8;
+      --accent-solid: #1d4ed8;
+      --accent-2: #0e7490;
+      --accent-3: #6d28d9;
+      --accent-contrast: #ffffff;
+
+      --ok: #047857;
+      --warn: #b45309;
+      --danger: #b91c1c;
+      --ok-bg: rgba(4, 120, 87, 0.1);
+      --warn-bg: rgba(180, 83, 9, 0.1);
+      --danger-bg: rgba(185, 28, 28, 0.09);
+
+      --shadow-float: 0 18px 40px -22px rgba(15, 23, 42, 0.35);
+      --shadow-glow: 0 0 0 1px rgba(29, 78, 216, 0.28), 0 12px 30px -14px rgba(29, 78, 216, 0.4);
+
+      color-scheme: light;
+    }
+  }
+
+  /* Foydalanuvchi yorug'ni tanlagan — tizimdan qat'i nazar */
+  :root[data-theme='light'] {
+    --bg-base: #f7f9fc;
+    --bg-elev: #ffffff;
+    --bg-deep: #eef2f9;
+
+    --mesh-1: rgba(37, 99, 235, 0.16);
+    --mesh-2: rgba(124, 58, 237, 0.13);
+    --mesh-3: rgba(14, 116, 144, 0.1);
+
+    --surface: rgba(255, 255, 255, 0.72);
+    --surface-strong: rgba(255, 255, 255, 0.92);
+    --surface-solid: #ffffff;
+    --border: rgba(15, 23, 42, 0.09);
+    --border-strong: rgba(15, 23, 42, 0.16);
+
+    --text: #0b1120;
+    --text-muted: #475569;
+    --text-faint: #64748b;
+
+    --accent: #1d4ed8;
+    --accent-solid: #1d4ed8;
+    --accent-2: #0e7490;
+    --accent-3: #6d28d9;
+    --accent-contrast: #ffffff;
+
+    --ok: #047857;
+    --warn: #b45309;
+    --danger: #b91c1c;
+    --ok-bg: rgba(4, 120, 87, 0.1);
+    --warn-bg: rgba(180, 83, 9, 0.1);
+    --danger-bg: rgba(185, 28, 28, 0.09);
+
+    --shadow-float: 0 18px 40px -22px rgba(15, 23, 42, 0.35);
+    --shadow-glow: 0 0 0 1px rgba(29, 78, 216, 0.28), 0 12px 30px -14px rgba(29, 78, 216, 0.4);
+
+    color-scheme: light;
   }
 
   * {
-    @apply border-border;
+    border-color: var(--border);
   }
 
   html {
@@ -35,68 +157,124 @@
   }
 
   body {
-    @apply bg-cream text-ink antialiased;
+    background: var(--bg-base);
+    color: var(--text);
     font-feature-settings: 'rlig' 1, 'calt' 1;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
   }
 
-  /* Sarlavhalar — display shrifti, zich va ishonchli */
-  h1, h2, h3 {
+  h1,
+  h2,
+  h3 {
     font-family: var(--font-display), system-ui, sans-serif;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.025em;
     text-wrap: balance;
   }
 
-  /* Kiosk rejimi: tasodifiy matn belgilash va kontekst menyusi chalg'itmasligi uchun */
+  /* Fokus holati — klaviatura bilan yuruvchilar uchun har doim ko'rinadi */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: var(--r-sm);
+  }
+
+  /* Kiosk rejimi: tasodifiy matn belgilash chalg'itmasligi uchun */
   .kiosk-noselect {
     -webkit-user-select: none;
     user-select: none;
   }
-
-  /* Eski kompyuterlarda animatsiyalar sekinlashtirmasligi uchun */
-  @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-    }
-  }
 }
 
 @layer components {
-  /* Nozik fon naqshi */
+  /* ---------------------------------------------------------------
+     Shisha yuza (glassmorphism)
+
+     `backdrop-filter` eski videokartalarda og'ir. Shuning uchun
+     [data-fx="lite"] rejimida u o'chiriladi va o'rniga qattiq fon
+     qo'yiladi — ko'rinish sal soddalashadi, lekin sayt ravon ishlaydi.
+     --------------------------------------------------------------- */
+  .glass {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    backdrop-filter: blur(16px) saturate(140%);
+    box-shadow: var(--shadow-float);
+  }
+
+  .glass-strong {
+    background: var(--surface-strong);
+    border: 1px solid var(--border-strong);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    backdrop-filter: blur(20px) saturate(150%);
+    box-shadow: var(--shadow-float);
+  }
+
+  [data-fx='lite'] .glass,
+  [data-fx='lite'] .glass-strong {
+    background: var(--surface-solid);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  /* Sarlavhalardagi gradient matn */
+  .text-gradient {
+    background-image: linear-gradient(
+      110deg,
+      var(--text) 0%,
+      var(--accent) 45%,
+      var(--accent-3) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Nozik to'r naqshi — fonning ikkinchi qatlami */
   .bg-grid {
     background-image:
-      radial-gradient(circle at 1px 1px, rgb(214 205 186) 1px, transparent 0);
-    background-size: 28px 28px;
-  }
-
-  /**
-   * Tong foni — gerbdagi quyosh chiqishi metaforasi.
-   * Bosh sahifa va tabrik ekranida ishlatiladi.
-   */
-  .bg-sunrise {
-    background:
-      radial-gradient(1100px 520px at 50% -8%, #FDECC3 0%, rgba(253,236,195,0) 62%),
-      radial-gradient(760px 420px at 88% 8%, #E4F1E7 0%, rgba(228,241,231,0) 60%),
-      #FBF8F1;
-  }
-
-  /* Ko'tarinki tugma — asosiy harakat uchun */
-  .btn-glow {
-    box-shadow:
-      0 10px 26px -10px rgba(23, 85, 155, 0.55),
-      inset 0 1px 0 rgba(255, 255, 255, 0.22);
-  }
-
-  /* Diagrammalar konteynerining umumiy ko'rinishi */
-  .chart-card {
-    @apply rounded-2xl border border-slate-200/80 bg-white p-5 shadow-soft;
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 46px 46px;
   }
 }
 
-/* Ingichka, chiroyli scrollbar */
+/* ---------------------------------------------------------------
+   Animatsiyalar
+   --------------------------------------------------------------- */
+@keyframes aurora-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  33% {
+    transform: translate3d(4%, -3%, 0) scale(1.08);
+  }
+  66% {
+    transform: translate3d(-3%, 4%, 0) scale(0.95);
+  }
+}
+
+@keyframes node-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 12px transparent;
+  }
+}
+
+@keyframes sheen {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -105,15 +283,33 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background-color: rgb(198 188 168);
+  background-color: var(--border-strong);
   border-radius: 9999px;
-  border: 2px solid #FBF8F1;
-}
-::-webkit-scrollbar-thumb:hover {
-  background-color: rgb(163 152 130);
+  border: 2px solid var(--bg-base);
 }
 
-/* Chop etishda (PDF) keraksiz elementlarni yashirish */
+/* ---------------------------------------------------------------
+   Harakatni kamaytirish
+
+   Ikki holatda: foydalanuvchi tizimda so'ragan bo'lsa yoki kompyuter
+   zaif deb aniqlangan bo'lsa. Ikkalasida ham sayt to'liq ishlaydi,
+   faqat bezak animatsiyalari to'xtaydi.
+   --------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+[data-fx='lite'] .aurora-layer {
+  animation: none !important;
+}
+
 @media print {
   .no-print {
     display: none !important;

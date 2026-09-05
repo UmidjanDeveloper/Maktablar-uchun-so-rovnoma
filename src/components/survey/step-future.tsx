@@ -54,21 +54,21 @@ export function StepFuture({ form, errors, update }: StepFutureProps) {
       {/* Rozilik — majburiy */}
       <div
         className={cn(
-          'flex items-start gap-3 rounded-2xl border-2 p-4 transition-colors',
-          errors.consent ? 'border-red-300 bg-red-50' : 'border-cream-deep bg-cream-deep/50'
+          'flex items-start gap-3 rounded-md border p-4 transition-colors',
+          errors.consent ? 'border-danger bg-danger-bg' : 'border-line bg-surface'
         )}
       >
         <Checkbox
           id="consent"
           checked={form.consent}
           onCheckedChange={(checked) => update({ consent: checked === true })}
-          className="mt-0.5 bg-white"
+          className="mt-0.5 shrink-0"
         />
-        <label htmlFor="consent" className="cursor-pointer select-none text-sm leading-relaxed text-ink-soft">
+        <label htmlFor="consent" className="cursor-pointer select-none text-sm leading-relaxed text-ink-muted">
           <span className="font-semibold text-ink">
             Ma&apos;lumotlarim ta&apos;lim loyihalari uchun ishlatilishiga roziman
           </span>
-          <span className="ml-1 text-red-500">*</span>
+          <span className="ml-1 text-danger">*</span>
           <span className="mt-1 block text-ink-faint">
             Ma&apos;lumotlaringiz faqat tumandagi to&apos;garaklar va o&apos;quv dasturlarini
             rejalashtirish uchun ishlatiladi.
@@ -76,7 +76,7 @@ export function StepFuture({ form, errors, update }: StepFutureProps) {
         </label>
       </div>
       {errors.consent && (
-        <p className="-mt-6 text-sm font-medium text-red-600">{errors.consent}</p>
+        <p className="-mt-6 text-sm font-medium text-danger">{errors.consent}</p>
       )}
     </div>
   );

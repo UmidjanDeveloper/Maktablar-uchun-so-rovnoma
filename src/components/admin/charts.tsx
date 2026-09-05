@@ -15,36 +15,30 @@ import {
 import { ChartShell, ChartTooltip } from './chart-shell';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import {
-  CHART_PRIMARY,
-  GENDER_COLORS,
-  KASB_KATEGORIYALARI,
-  RAMP_AMBER,
-  RAMP_BLUE,
-} from '@/lib/constants';
+import { useChartTheme, type ChartTheme } from '@/lib/chart-theme';
+import { EntityIcon } from '@/lib/icons';
 import { percent, truncate } from '@/lib/utils';
 import type { DashboardStats, NameValue } from '@/types';
 
-/** O'qi va to'r chiziqlari uchun umumiy uslub — ular fonda qolishi kerak */
-/** Yo'nalish nomiga qarab emoji topish uchun xarita */
-const CATEGORY_ICONS: Record<string, string> = KASB_KATEGORIYALARI.reduce(
-  (acc, c) => {
-    acc[c.value] = c.icon;
-    return acc;
-  },
-  {} as Record<string, string>
-);
-
-const AXIS_STYLE = {
-  tick: { fill: '#64748b', fontSize: 11 },
-  axisLine: { stroke: '#e2e8f0' },
-  tickLine: false,
-} as const;
+/**
+ * O'q uslubi — temaga bog'liq bo'lgani uchun funksiya sifatida.
+ * O'qlar fonda qolishi kerak: ular ma'lumot emas, o'lchov birligi.
+ */
+function axisStyle(theme: ChartTheme) {
+  return {
+    tick: { fill: theme.axisText, fontSize: 11 },
+    axisLine: { stroke: theme.axisLine },
+    tickLine: false,
+  } as const;
+}
 
 /* ------------------------------------------------------------------ */
 /* 1. TOP 10 KASBLAR — vertikal ustunli diagramma (bitta seriya)       */
 /* ------------------------------------------------------------------ */
 export function TopJobsChart({ data }: { data: NameValue[] }) {
+  const theme = useChartTheme();
+  const axis = axisStyle(theme);
+
   return (
     <ChartShell
       title="Top 10 kasblar"
@@ -56,19 +50,19 @@ export function TopJobsChart({ data }: { data: NameValue[] }) {
         <BarChart data={data} margin={{ top: 16, right: 8, left: -18, bottom: 46 }}>
           <XAxis
             dataKey="name"
-            {...AXIS_STYLE}
+            {...axis}
             interval={0}
             angle={-35}
             textAnchor="end"
             height={70}
             tickFormatter={(value: string) => truncate(value, 16)}
           />
-          <YAxis {...AXIS_STYLE} allowDecimals={false} />
-          <Tooltip content={<ChartTooltip />} cursor={{ fill: '#f8fafc' }} />
+          <YAxis {...axis} allowDecimals={false} />
+          <Tooltip content={<ChartTooltip />} cursor={{ fill: theme.cursor }} />
           <Bar
             dataKey="value"
             name="O'quvchilar"
-            fill={CHART_PRIMARY}
+            fill={theme.primary}
             radius={[4, 4, 0, 0]}
             maxBarSize={44}
           />
@@ -82,6 +76,9 @@ export function TopJobsChart({ data }: { data: NameValue[] }) {
 /* 2. QIZLAR vs O'G'IL BOLALAR — guruhlangan ustunli diagramma         */
 /* ------------------------------------------------------------------ */
 export function GenderJobsChart({ data }: { data: DashboardStats['genderJobs'] }) {
+  const theme = useChartTheme();
+  const axis = axisStyle(theme);
+
   return (
     <ChartShell
       title="Qizlar va o'g'il bolalar tanlovi"
@@ -93,34 +90,34 @@ export function GenderJobsChart({ data }: { data: DashboardStats['genderJobs'] }
         <BarChart data={data} margin={{ top: 16, right: 8, left: -18, bottom: 46 }} barGap={2}>
           <XAxis
             dataKey="name"
-            {...AXIS_STYLE}
+            {...axis}
             interval={0}
             angle={-35}
             textAnchor="end"
             height={70}
             tickFormatter={(value: string) => truncate(value, 16)}
           />
-          <YAxis {...AXIS_STYLE} allowDecimals={false} />
-          <Tooltip content={<ChartTooltip />} cursor={{ fill: '#f8fafc' }} />
+          <YAxis {...axis} allowDecimals={false} />
+          <Tooltip content={<ChartTooltip />} cursor={{ fill: theme.cursor }} />
           <Legend
             verticalAlign="top"
             align="right"
             height={28}
             iconType="circle"
             iconSize={9}
-            wrapperStyle={{ fontSize: 12, color: '#475569' }}
+            wrapperStyle={{ fontSize: 12, color: theme.axisText }}
           />
           <Bar
             dataKey="ogil"
             name="O'g'il bolalar"
-            fill={GENDER_COLORS["O'g'il bola"]}
+            fill={theme.gender["O'g'il bola"]}
             radius={[4, 4, 0, 0]}
             maxBarSize={22}
           />
           <Bar
             dataKey="qiz"
             name="Qizlar"
-            fill={GENDER_COLORS['Qiz bola']}
+            fill={theme.gender['Qiz bola']}
             radius={[4, 4, 0, 0]}
             maxBarSize={22}
           />
@@ -134,6 +131,9 @@ export function GenderJobsChart({ data }: { data: DashboardStats['genderJobs'] }
 /* 3. MAHALLALAR — gorizontal ustunli diagramma                        */
 /* ------------------------------------------------------------------ */
 export function MahallaChart({ data }: { data: NameValue[] }) {
+  const theme = useChartTheme();
+  const axis = axisStyle(theme);
+
   // Ro'yxat uzun bo'lgani uchun eng faol 15 tasini ko'rsatamiz
   const visible = data.slice(0, 15);
 
@@ -150,20 +150,20 @@ export function MahallaChart({ data }: { data: NameValue[] }) {
           layout="vertical"
           margin={{ top: 4, right: 28, left: 8, bottom: 4 }}
         >
-          <XAxis type="number" {...AXIS_STYLE} allowDecimals={false} />
+          <XAxis type="number" {...axis} allowDecimals={false} />
           <YAxis
             type="category"
             dataKey="name"
-            {...AXIS_STYLE}
+            {...axis}
             width={104}
             interval={0}
             tickFormatter={(value: string) => truncate(value, 14)}
           />
-          <Tooltip content={<ChartTooltip />} cursor={{ fill: '#f8fafc' }} />
+          <Tooltip content={<ChartTooltip />} cursor={{ fill: theme.cursor }} />
           <Bar
             dataKey="value"
             name="O'quvchilar"
-            fill={CHART_PRIMARY}
+            fill={theme.primary}
             radius={[0, 4, 4, 0]}
             maxBarSize={16}
           />
@@ -184,9 +184,9 @@ export function SchoolTopJobsTable({ data }: { data: DashboardStats['bySchool'] 
       empty={data.length === 0}
       className="lg:col-span-2"
     >
-      <div className="max-h-[360px] overflow-y-auto rounded-xl border border-slate-100">
+      <div className="max-h-[360px] overflow-y-auto rounded-md border border-line">
         <Table>
-          <TableHeader className="sticky top-0 bg-white">
+          <TableHeader className="sticky top-0 z-10 bg-surface-solid">
             <TableRow>
               <TableHead>Maktab</TableHead>
               <TableHead className="w-24 text-right">Anketa</TableHead>
@@ -197,11 +197,13 @@ export function SchoolTopJobsTable({ data }: { data: DashboardStats['bySchool'] 
           <TableBody>
             {data.map((row) => (
               <TableRow key={row.school}>
-                <TableCell className="font-semibold text-slate-900">{row.school}</TableCell>
-                <TableCell className="text-right tabular-nums">{row.total}</TableCell>
+                <TableCell className="font-medium">{row.school}</TableCell>
+                <TableCell className="text-right font-mono tabular-nums text-ink-muted">
+                  {row.total}
+                </TableCell>
                 <TableCell>
-                  <span className="flex items-center gap-1.5">
-                    <span aria-hidden="true">{row.topJobIcon}</span>
+                  <span className="flex items-center gap-2">
+                    <EntityIcon name={row.topJob} className="h-4 w-4 shrink-0 text-accent" />
                     {row.topJob}
                   </span>
                 </TableCell>
@@ -235,6 +237,7 @@ interface DonutProps {
  * Har bir bo'lak yonida nomi va ulushi yozib qo'yiladi.
  */
 function DonutChart({ title, description, data, ramp, unit = "o'quvchi" }: DonutProps) {
+  const theme = useChartTheme();
   const total = data.reduce((sum, item) => sum + item.value, 0);
 
   return (
@@ -252,7 +255,7 @@ function DonutChart({ title, description, data, ramp, unit = "o'quvchi" }: Donut
                 innerRadius={48}
                 outerRadius={80}
                 paddingAngle={2}
-                stroke="#ffffff"
+                stroke={theme.pieStroke}
                 strokeWidth={2}
                 isAnimationActive={false}
               >
@@ -272,15 +275,15 @@ function DonutChart({ title, description, data, ramp, unit = "o'quvchi" }: Donut
           {data.map((entry, index) => (
             <li key={entry.name} className="flex items-center gap-2 py-[3px]">
               <span
-                className="h-2.5 w-2.5 shrink-0 rounded-sm"
+                className="h-2.5 w-2.5 shrink-0 rounded-[3px]"
                 style={{ backgroundColor: ramp[index % ramp.length] }}
                 aria-hidden="true"
               />
-              <span className="min-w-0 flex-1 truncate text-slate-600">{entry.name}</span>
-              <span className="shrink-0 font-bold tabular-nums text-slate-900">
+              <span className="min-w-0 flex-1 truncate text-ink-muted">{entry.name}</span>
+              <span className="shrink-0 font-mono font-semibold tabular-nums text-ink">
                 {entry.value}
               </span>
-              <span className="w-11 shrink-0 text-right text-xs tabular-nums text-slate-400">
+              <span className="w-11 shrink-0 text-right font-mono text-xs tabular-nums text-ink-faint">
                 {percent(entry.value, total)}%
               </span>
             </li>
@@ -295,12 +298,14 @@ function DonutChart({ title, description, data, ramp, unit = "o'quvchi" }: Donut
 /* 5. SINFLAR BO'YICHA TAQSIMOT                                        */
 /* ------------------------------------------------------------------ */
 export function GradesChart({ data }: { data: NameValue[] }) {
+  const theme = useChartTheme();
+
   return (
     <DonutChart
       title="Sinflar bo'yicha taqsimot"
       description="Anketa to'ldirgan o'quvchilar sinflari"
       data={data}
-      ramp={RAMP_BLUE}
+      ramp={theme.rampBlue}
     />
   );
 }
@@ -309,12 +314,14 @@ export function GradesChart({ data }: { data: NameValue[] }) {
 /* 6. FANLAR BO'YICHA QIZIQISH                                         */
 /* ------------------------------------------------------------------ */
 export function SubjectsChart({ data }: { data: NameValue[] }) {
+  const theme = useChartTheme();
+
   return (
     <DonutChart
       title="Fanlar bo'yicha qiziqish"
       description="O'quvchilar yoqtirgan fanlar"
       data={data}
-      ramp={RAMP_AMBER}
+      ramp={theme.rampAmber}
       unit="tanlov"
     />
   );
@@ -337,18 +344,18 @@ export function CategoryOverview({ data }: { data: NameValue[] }) {
           const share = percent(item.value, total);
           return (
             <li key={item.name}>
-              <div className="mb-1 flex items-baseline justify-between gap-2 text-sm">
-                <span className="flex min-w-0 items-center gap-1.5 truncate font-medium text-slate-700">
-                  <span aria-hidden="true">{CATEGORY_ICONS[item.name] ?? '📌'}</span>
+              <div className="mb-1.5 flex items-baseline justify-between gap-2 text-sm">
+                <span className="flex min-w-0 items-center gap-2 truncate font-medium text-ink-muted">
+                  <EntityIcon name={item.name} className="h-4 w-4 shrink-0 text-accent" />
                   {item.name}
                 </span>
-                <span className="shrink-0 tabular-nums text-slate-500">
-                  <strong className="text-slate-900">{item.value}</strong> · {share}%
+                <span className="shrink-0 font-mono text-xs tabular-nums text-ink-faint">
+                  <strong className="text-ink">{item.value}</strong> · {share}%
                 </span>
               </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-strong">
                 <div
-                  className="h-full rounded-full bg-brand-600"
+                  className="h-full rounded-full bg-[linear-gradient(90deg,var(--accent-solid),var(--accent-3))]"
                   style={{ width: `${Math.max(share, 1)}%` }}
                 />
               </div>

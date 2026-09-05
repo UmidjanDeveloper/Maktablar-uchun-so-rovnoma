@@ -5,7 +5,8 @@ import { motion } from 'framer-motion';
 import { RotateCcw, Volume2, VolumeX, WifiOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Confetti } from './confetti';
-import { categoryTheme, KASB_ICON_MAP } from '@/lib/constants';
+import { categoryTheme } from '@/lib/constants';
+import { EntityIcon } from '@/lib/icons';
 import { isMuted, playCelebration, setMuted } from '@/lib/sound';
 
 /**
@@ -55,7 +56,6 @@ export function SuccessScreen({
   const [muted, setMutedState] = useState(false);
 
   const theme = useMemo(() => categoryTheme(jobCategory), [jobCategory]);
-  const icon = KASB_ICON_MAP[dreamJob] ?? '⭐';
 
   // Ovoz holatini o'qiymiz va tabrik ovozini chalamiz
   useEffect(() => {
@@ -81,10 +81,15 @@ export function SuccessScreen({
   };
 
   return (
-    <div
-      className="relative flex min-h-[80vh] flex-col items-center justify-center overflow-hidden px-4 py-12 text-center"
-      style={{ backgroundColor: theme.soft }}
-    >
+    <div className="relative flex min-h-[80vh] flex-col items-center justify-center overflow-hidden px-4 py-12 text-center">
+      {/* Tanlangan yo'nalish rangidagi porlash — butun ekranni egallaydi */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-10"
+        style={{
+          background: `radial-gradient(90vmin 70vmin at 50% 32%, color-mix(in srgb, ${theme.color} 30%, transparent) 0%, transparent 70%)`,
+        }}
+      />
       <Confetti count={80} />
 
       {/* Ovozni o'chirish — kompyuter sinfida shovqin bo'lmasligi uchun */}
@@ -92,7 +97,7 @@ export function SuccessScreen({
         type="button"
         onClick={toggleSound}
         aria-label={muted ? 'Ovozni yoqish' : "Ovozni o'chirish"}
-        className="absolute right-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-2xl bg-white/70 text-ink-soft shadow-soft backdrop-blur transition-colors hover:bg-white"
+        className="glass absolute right-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-md text-ink-muted transition-colors hover:text-ink"
       >
         {muted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
       </button>
@@ -105,14 +110,21 @@ export function SuccessScreen({
         className="relative mb-7"
       >
         <span
-          className="absolute inset-0 -z-10 animate-pulse-ring rounded-full"
-          style={{ backgroundColor: theme.color, opacity: 0.28 }}
+          className="absolute inset-0 -z-10 rounded-full blur-2xl"
+          style={{ backgroundColor: theme.color, opacity: 0.4 }}
         />
         <span
-          className="flex h-36 w-36 items-center justify-center rounded-full bg-white text-[68px] shadow-soft-lg sm:h-40 sm:w-40 sm:text-[76px]"
-          style={{ boxShadow: `0 18px 44px -14px ${theme.color}66` }}
+          className="glass-strong flex h-32 w-32 items-center justify-center rounded-full sm:h-40 sm:w-40"
+          style={{
+            borderColor: `color-mix(in srgb, ${theme.color} 55%, transparent)`,
+            boxShadow: `0 0 0 1px color-mix(in srgb, ${theme.color} 40%, transparent), 0 20px 50px -16px ${theme.color}`,
+          }}
         >
-          {icon}
+          <EntityIcon
+            name={dreamJob}
+            strokeWidth={1.5}
+            className="h-14 w-14 sm:h-16 sm:w-16"
+          />
         </span>
       </motion.div>
 
@@ -120,7 +132,7 @@ export function SuccessScreen({
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.16, duration: 0.45 }}
-        className="font-display text-4xl font-extrabold tracking-tight text-ink sm:text-5xl"
+        className="font-display text-[2rem] font-bold tracking-tight text-ink xs:text-4xl sm:text-5xl"
       >
         Rahmat, {firstName}!
       </motion.h1>
@@ -129,7 +141,7 @@ export function SuccessScreen({
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.28, duration: 0.45 }}
-        className="mt-4 max-w-2xl text-balance font-display text-2xl font-semibold leading-snug text-ink sm:text-3xl"
+        className="mt-4 max-w-2xl text-balance font-display text-xl font-semibold leading-snug text-ink xs:text-2xl sm:text-3xl"
       >
         Sen kelajakda ajoyib{' '}
         <span style={{ color: theme.color }}>{dreamJob}</span> bo&apos;lasan!
@@ -140,7 +152,7 @@ export function SuccessScreen({
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.42, duration: 0.45 }}
-        className="mt-4 max-w-xl text-balance text-lg text-ink-soft sm:text-xl"
+        className="mt-4 max-w-xl text-balance text-[15px] text-ink-muted sm:text-lg"
       >
         {theme.cheer}
       </motion.p>
@@ -155,7 +167,7 @@ export function SuccessScreen({
       </motion.p>
 
       {savedOffline && (
-        <div className="mt-7 flex max-w-md items-center gap-2 rounded-2xl border-2 border-sun-200 bg-sun-50 px-4 py-3 text-sm font-medium text-sun-700">
+        <div className="mt-7 flex max-w-md items-center gap-2 rounded-md border border-warn/40 bg-warn-bg px-4 py-3 text-sm font-medium text-warn">
           <WifiOff className="h-4 w-4 shrink-0" />
           Internet yo&apos;q — anketang kompyuterda saqlandi va aloqa
           tiklanishi bilan yuboriladi.
@@ -166,17 +178,13 @@ export function SuccessScreen({
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.66, duration: 0.45 }}
-        className="mt-11 flex flex-col items-center gap-3"
+        className="mt-10 flex flex-col items-center gap-3"
       >
-        <Button
-          onClick={onReset}
-          size="xl"
-          className="h-[76px] rounded-[28px] px-14 text-xl"
-        >
-          <RotateCcw className="h-6 w-6" />
+        <Button onClick={onReset} size="xl" className="h-14 px-10 text-base">
+          <RotateCcw className="h-5 w-5" />
           Yangi anketa to&apos;ldirish
         </Button>
-        <p className="text-sm text-ink-faint" aria-live="polite">
+        <p className="font-mono text-xs tabular-nums text-ink-faint" aria-live="polite">
           {seconds} soniyadan so&apos;ng keyingi o&apos;quvchi uchun tayyorlanadi
         </p>
       </motion.div>

@@ -58,12 +58,21 @@ export function LoginForm() {
       className="w-full max-w-md"
     >
       <div className="mb-8 text-center">
-        <Logo className="mx-auto mb-5 h-16 w-16" />
-        <h1 className="text-2xl font-extrabold tracking-tight text-ink">
+        <div className="relative mx-auto mb-5 w-fit">
+          <span
+            className="absolute inset-0 -z-10 rounded-full blur-2xl"
+            style={{ background: 'radial-gradient(circle, var(--mesh-1), transparent 70%)' }}
+          />
+          <Logo className="h-16 w-16" />
+        </div>
+        <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.28em] text-accent">
+          Xatirchi tumani hokimligi
+        </p>
+        <h1 className="mt-2 font-display text-2xl font-bold tracking-tight text-ink">
           Boshqaruv paneli
         </h1>
         <p className="mt-1 text-sm text-ink-faint">
-          &laquo;Kelajak Egasi&raquo; — Xatirchi tumani
+          &laquo;Kelajak Egasi&raquo; — kirish faqat vakolatli xodimlar uchun
         </p>
       </div>
 
@@ -73,7 +82,7 @@ export function LoginForm() {
             <div className="space-y-2">
               <Label htmlFor="username">Login</Label>
               <div className="relative">
-                <User className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <User className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
                 <Input
                   id="username"
                   value={username}
@@ -88,7 +97,7 @@ export function LoginForm() {
             <div className="space-y-2">
               <Label htmlFor="password">Parol</Label>
               <div className="relative">
-                <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
                 <Input
                   id="password"
                   type="password"
@@ -102,7 +111,7 @@ export function LoginForm() {
             </div>
 
             {error && (
-              <div className="flex items-start gap-2 rounded-xl border-2 border-red-200 bg-red-50 p-3 text-sm font-medium text-red-700">
+              <div className="flex items-start gap-2 rounded-md border border-danger/40 bg-danger-bg p-3 text-sm font-medium text-danger">
                 <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
                 {error}
               </div>
@@ -128,7 +137,7 @@ export function LoginForm() {
       <div className="mt-6 text-center">
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 transition-colors hover:text-slate-800"
+          className="inline-flex items-center gap-1.5 rounded-sm text-sm font-semibold text-ink-faint transition-colors hover:text-ink"
         >
           <ArrowLeft className="h-4 w-4" />
           Anketa sahifasiga qaytish

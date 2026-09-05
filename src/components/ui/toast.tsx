@@ -21,9 +21,9 @@ interface ToastContextValue {
 const ToastContext = React.createContext<ToastContextValue | null>(null);
 
 const VARIANT_STYLES: Record<ToastVariant, { icon: React.ElementType; ring: string; iconColor: string }> = {
-  success: { icon: CheckCircle2, ring: 'border-emerald-200', iconColor: 'text-emerald-600' },
-  error: { icon: AlertTriangle, ring: 'border-red-200', iconColor: 'text-red-600' },
-  info: { icon: Info, ring: 'border-brand-200', iconColor: 'text-brand-600' },
+  success: { icon: CheckCircle2, ring: 'border-ok/40', iconColor: 'text-ok' },
+  error: { icon: AlertTriangle, ring: 'border-danger/40', iconColor: 'text-danger' },
+  info: { icon: Info, ring: 'border-accent/40', iconColor: 'text-accent' },
 };
 
 /**
@@ -66,21 +66,21 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 exit={{ opacity: 0, x: 24, scale: 0.96 }}
                 transition={{ duration: 0.22, ease: 'easeOut' }}
                 className={cn(
-                  'pointer-events-auto flex items-start gap-3 rounded-2xl border-2 bg-white p-4 shadow-soft-lg',
+                  'pointer-events-auto flex items-start gap-3 rounded-lg border bg-surface-solid p-4 shadow-float',
                   ring
                 )}
               >
                 <Icon className={cn('mt-0.5 h-5 w-5 shrink-0', iconColor)} />
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-bold text-slate-900">{item.title}</p>
+                  <p className="text-sm font-bold text-ink">{item.title}</p>
                   {item.description ? (
-                    <p className="mt-0.5 text-sm text-slate-600">{item.description}</p>
+                    <p className="mt-0.5 text-sm text-ink-muted">{item.description}</p>
                   ) : null}
                 </div>
                 <button
                   type="button"
                   onClick={() => remove(item.id)}
-                  className="rounded-lg p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+                  className="rounded-lg p-1 text-ink-faint transition-colors hover:bg-surface-strong hover:text-ink-muted"
                   aria-label="Yopish"
                 >
                   <X className="h-4 w-4" />

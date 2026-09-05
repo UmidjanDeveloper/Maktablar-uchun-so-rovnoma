@@ -2,10 +2,12 @@
 
 import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
+import { EntityIcon } from '@/lib/icons';
 import { cn } from '@/lib/utils';
 
 export interface ChipOption {
   name: string;
+  /** Eski emoji maydoni — endi ishlatilmaydi, ikona nom bo'yicha topiladi */
   icon?: string;
 }
 
@@ -24,8 +26,14 @@ interface ChipGroupProps {
 }
 
 /**
- * Katta, bosish oson bo'lgan chiplar guruhi.
- * Sensorli ekran va sichqonchada ham qulay — bolalar uchun mo'ljallangan.
+ * Katta, bosish oson chiplar guruhi.
+ *
+ * MUHIM — joylashuv siljimasligi:
+ * Ilgari tanlanganda ichkariga belgi qo'shilar edi va chip kengayib,
+ * qatordagi qolgan chiplar joyidan siljirdi. Endi belgi `absolute`
+ * holatda, chipdan tashqarida "suzadi" va chegara qalinligi doimo
+ * bir xil (1px) qoladi — faqat rangi va porlashi o'zgaradi.
+ * Ya'ni chip o'lchami tanlanganda ham, tanlanmaganda ham aynan bir xil.
  */
 export function ChipGroup({
   options,
@@ -57,24 +65,42 @@ export function ChipGroup({
     <div className={cn('flex flex-wrap gap-2.5', className)}>
       {options.map((option) => {
         const selected = values.includes(option.name);
+
         return (
           <motion.button
             key={option.name}
             type="button"
             onClick={() => handleClick(option.name)}
-            whileTap={{ scale: 0.95 }}
+            whileTap={{ scale: 0.96 }}
+            transition={{ type: 'spring', stiffness: 420, damping: 26 }}
             aria-pressed={selected}
             className={cn(
-              'flex items-center gap-2 rounded-2xl border-2 px-4 py-3 text-[15px] font-semibold transition-all',
-              'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-100',
+              // Chegara doimo 1px — tanlov holati o'lchamga ta'sir qilmaydi
+              'relative flex items-center gap-2 rounded-md border px-3.5 py-2.5',
+              'text-sm font-medium transition-[color,background-color,border-color,box-shadow] duration-200',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-canvas',
               selected
-                ? 'border-brand-600 bg-brand-600 text-white shadow-soft'
-                : 'border-cream-deep bg-white text-ink-soft hover:border-brand-200 hover:bg-brand-50'
+                ? 'border-accent bg-[color-mix(in_srgb,var(--accent)_14%,transparent)] text-ink shadow-glow'
+                : 'glass text-ink-muted hover:border-line-strong hover:text-ink'
             )}
           >
-            {option.icon && <span className="text-lg leading-none">{option.icon}</span>}
-            <span>{option.name}</span>
-            {selected && <Check className="h-4 w-4 stroke-[3]" />}
+            <EntityIcon
+              name={option.name}
+              className={cn('h-[18px] w-[18px] shrink-0', selected ? 'text-accent' : 'text-ink-faint')}
+            />
+            <span className="leading-none">{option.name}</span>
+
+            {/* Belgi oqimdan tashqarida — chip kengaymaydi */}
+            {selected && (
+              <motion.span
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: 'spring', stiffness: 520, damping: 22 }}
+                className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-accent-solid text-accent-contrast shadow-glow"
+              >
+                <Check className="h-3 w-3 stroke-[3.5]" />
+              </motion.span>
+            )}
           </motion.button>
         );
       })}
