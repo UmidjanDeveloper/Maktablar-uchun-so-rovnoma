@@ -142,7 +142,7 @@ ADMIN_SESSION_SECRET="bu-kalitni-albatta-ozgartiring-kamida-32-belgi"
 **A varianti — terminalsiz (tavsiya etiladi).**
 `prisma/supabase-setup.sql` faylini oching, hammasini nusxalang va
 Supabase loyihangizdagi **SQL Editor** ga qo'yib, **RUN** ni bosing.
-U jadvallarni yaratadi hamda 70 mahalla, 94 maktab va 35 kasbni yozadi.
+U jadvallarni yaratadi hamda 70 mahalla, 94 maktab va 148 kasbni yozadi.
 Demo (soxta) anketalar qo'shilmaydi, shuning uchun keyin tozalash
 shart emas. Faylni qayta ishga tushirish xavfsiz.
 
@@ -152,6 +152,21 @@ shart emas. Faylni qayta ishga tushirish xavfsiz.
 npm run db:push    # Jadvallarni yaratadi
 npm run db:seed    # Kataloglar + 150 ta demo anketa (sinov uchun)
 ```
+
+### 4.1. Kasblar ro'yxati yangilanganda
+
+Kasblar bazada saqlanadi, shuning uchun ro'yxat kengaytirilganda uni
+bazaga ham yozish kerak — aks holda anketada eski ro'yxat ko'rinaveradi.
+
+`prisma/kasblar-yangilash.sql` faylini nusxalang va Supabase **SQL
+Editor** da ishga tushiring. U yangi kasblarni qo'shadi, mavjudlarining
+yo'nalishi yoki belgisi o'zgargan bo'lsa tuzatadi, hech narsani
+o'chirmaydi. Anketalarga umuman tegmaydi. Faylni bir necha marta ishga
+tushirish xavfsiz — ikkinchi marta hech narsa o'zgarmaydi.
+
+> Fanlar va to'garaklar ro'yxati bazada emas, kodda saqlanadi
+> (`src/lib/constants.ts`) — ular Vercel'ga yangi versiya chiqishi
+> bilan o'zi yangilanadi, SQL kerak emas.
 
 ### 4.1. Mahallalar va maktablar ro'yxati haqida
 
@@ -269,6 +284,7 @@ Maktablar-uchun-so-rovnoma/
 ├── prisma/
 │   ├── schema.prisma              # Ma'lumotlar bazasi sxemasi
 │   ├── supabase-setup.sql         # Terminalsiz o'rnatish (SQL Editor uchun)
+│   ├── kasblar-yangilash.sql      # Kasblar ro'yxatini bazada yangilash
 │   └── seed.ts                    # Kataloglar + 150 ta demo anketa
 │
 ├── public/

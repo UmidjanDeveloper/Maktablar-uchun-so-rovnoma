@@ -210,43 +210,174 @@ export interface ProfessionSeed {
   icon: string;
 }
 
-/** Kasblar katalogi — emoji ikonkalari bolalar uchun qiziqarli qilib tanlangan */
+/**
+ * Kasblar katalogi.
+ *
+ * Ikonka sifatida emoji saqlanadi — u faqat eksport fayllari uchun
+ * zaxira belgi. Interfeysda kasb nomi bo'yicha SVG ikona chiziladi
+ * (src/lib/icons.tsx). Yangi kasb qo'shsangiz, o'sha reyestrga ham
+ * ikona qo'shing, aks holda zaxira ikona ko'rinadi.
+ */
 export const KASBLAR: ProfessionSeed[] = [
-  { name: "Dasturchi", category: "IT & Texnologiya", icon: "💻" },
-  { name: "Sun'iy Intellekt mutaxassisi", category: "IT & Texnologiya", icon: "🤖" },
-  { name: "Kiberxavfsizlik mutaxassisi", category: "IT & Texnologiya", icon: "🛡️" },
-  { name: "Grafik Dizayner", category: "IT & Texnologiya", icon: "🎨" },
-  { name: "Mobil ilova yaratuvchi", category: "IT & Texnologiya", icon: "📱" },
-  { name: "O'yin yaratuvchi", category: "IT & Texnologiya", icon: "🎮" },
-  { name: "Shifokor", category: "Tibbiyot", icon: "🩺" },
-  { name: "Jarroh", category: "Tibbiyot", icon: "🏥" },
-  { name: "Stomatolog", category: "Tibbiyot", icon: "🦷" },
-  { name: "Hamshira", category: "Tibbiyot", icon: "💉" },
-  { name: "Psixolog", category: "Tibbiyot", icon: "🧠" },
-  { name: "Farmatsevt", category: "Tibbiyot", icon: "💊" },
-  { name: "Veterinar", category: "Tibbiyot", icon: "🐾" },
-  { name: "O'qituvchi", category: "Ta'lim & Ilm", icon: "📚" },
-  { name: "Olim", category: "Ta'lim & Ilm", icon: "🔬" },
-  { name: "Tarbiyachi", category: "Ta'lim & Ilm", icon: "👶" },
-  { name: "Harbiy xizmatchi", category: "Harbiy & Huquq", icon: "🎖️" },
-  { name: "IIB xodimi", category: "Harbiy & Huquq", icon: "👮" },
-  { name: "Huquqshunos", category: "Harbiy & Huquq", icon: "⚖️" },
-  { name: "Qutqaruvchi (FVV)", category: "Harbiy & Huquq", icon: "🚒" },
-  { name: "Muhandis", category: "Muhandislik", icon: "⚙️" },
-  { name: "Arxitektor", category: "Muhandislik", icon: "🏗️" },
-  { name: "Quruvchi", category: "Muhandislik", icon: "👷" },
-  { name: "Elektrchi", category: "Muhandislik", icon: "💡" },
-  { name: "Uchuvchi", category: "Muhandislik", icon: "✈️" },
-  { name: "Rassom", category: "Ijodkorlik", icon: "🖌️" },
-  { name: "Musiqachi", category: "Ijodkorlik", icon: "🎵" },
-  { name: "Jurnalist", category: "Ijodkorlik", icon: "🎤" },
-  { name: "Bloger/Youtuber", category: "Ijodkorlik", icon: "🎥" },
-  { name: "Oshpaz", category: "Ijodkorlik", icon: "👨‍🍳" },
-  { name: "Tikuvchi/Dizayner", category: "Ijodkorlik", icon: "✂️" },
-  { name: "Fermer", category: "Tadbirkorlik", icon: "🚜" },
-  { name: "Tadbirkor", category: "Tadbirkorlik", icon: "💼" },
-  { name: "Bank xodimi", category: "Tadbirkorlik", icon: "🏦" },
-  { name: "Sportchi/Murabbiy", category: "Tadbirkorlik", icon: "⚽" },
+  // IT & Texnologiya
+  { name: 'Dasturchi', category: 'IT & Texnologiya', icon: '💻' },
+  { name: "Sun'iy Intellekt mutaxassisi", category: 'IT & Texnologiya', icon: '🤖' },
+  { name: 'Kiberxavfsizlik mutaxassisi', category: 'IT & Texnologiya', icon: '🛡️' },
+  { name: 'Grafik Dizayner', category: 'IT & Texnologiya', icon: '🎨' },
+  { name: 'Mobil ilova yaratuvchi', category: 'IT & Texnologiya', icon: '📱' },
+  { name: "O'yin yaratuvchi", category: 'IT & Texnologiya', icon: '🎮' },
+  { name: 'Veb-dasturchi', category: 'IT & Texnologiya', icon: '🌐' },
+  { name: "Ma'lumotlar tahlilchisi", category: 'IT & Texnologiya', icon: '📊' },
+  { name: 'Tarmoq muhandisi', category: 'IT & Texnologiya', icon: '🕸️' },
+  { name: 'Robototexnik', category: 'IT & Texnologiya', icon: '🦾' },
+  { name: '3D modelchi', category: 'IT & Texnologiya', icon: '🧊' },
+  { name: 'Dastur sinovchisi (QA)', category: 'IT & Texnologiya', icon: '🐞' },
+  { name: 'Kompyuter ustasi', category: 'IT & Texnologiya', icon: '🔌' },
+  { name: 'Dron uchuvchisi', category: 'IT & Texnologiya', icon: '🚁' },
+  // Tibbiyot
+  { name: 'Shifokor', category: 'Tibbiyot', icon: '🩺' },
+  { name: 'Jarroh', category: 'Tibbiyot', icon: '🏥' },
+  { name: 'Stomatolog', category: 'Tibbiyot', icon: '🦷' },
+  { name: 'Hamshira', category: 'Tibbiyot', icon: '💉' },
+  { name: 'Psixolog', category: 'Tibbiyot', icon: '🧠' },
+  { name: 'Farmatsevt', category: 'Tibbiyot', icon: '💊' },
+  { name: 'Veterinar', category: 'Tibbiyot', icon: '🐾' },
+  { name: 'Pediatr', category: 'Tibbiyot', icon: '👶' },
+  { name: 'Kardiolog', category: 'Tibbiyot', icon: '❤️' },
+  { name: "Ko'z shifokori", category: 'Tibbiyot', icon: '👁️' },
+  { name: 'Laborant', category: 'Tibbiyot', icon: '🧪' },
+  { name: 'Rentgenolog', category: 'Tibbiyot', icon: '📡' },
+  { name: 'Tez yordam feldsheri', category: 'Tibbiyot', icon: '🚑' },
+  { name: 'Reabilitolog', category: 'Tibbiyot', icon: '🦯' },
+  { name: 'Dietolog', category: 'Tibbiyot', icon: '🍎' },
+  // Ta'lim & Ilm
+  { name: "O'qituvchi", category: "Ta'lim & Ilm", icon: '📚' },
+  { name: 'Olim', category: "Ta'lim & Ilm", icon: '🔬' },
+  { name: 'Tarbiyachi', category: "Ta'lim & Ilm", icon: '🧸' },
+  { name: "Boshlang'ich sinf o'qituvchisi", category: "Ta'lim & Ilm", icon: '✏️' },
+  { name: 'Maktab direktori', category: "Ta'lim & Ilm", icon: '🏫' },
+  { name: 'Kutubxonachi', category: "Ta'lim & Ilm", icon: '📖' },
+  { name: 'Tarjimon', category: "Ta'lim & Ilm", icon: '🗣️' },
+  { name: 'Arxeolog', category: "Ta'lim & Ilm", icon: '⛏️' },
+  { name: 'Geolog', category: "Ta'lim & Ilm", icon: '🏔️' },
+  { name: 'Astronom', category: "Ta'lim & Ilm", icon: '🔭' },
+  { name: 'Matematik', category: "Ta'lim & Ilm", icon: '➗' },
+  { name: 'Biolog', category: "Ta'lim & Ilm", icon: '🧬' },
+  { name: 'Tarixchi', category: "Ta'lim & Ilm", icon: '📜' },
+  // Harbiy & Huquq
+  { name: 'Harbiy xizmatchi', category: 'Harbiy & Huquq', icon: '🎖️' },
+  { name: 'IIB xodimi', category: 'Harbiy & Huquq', icon: '👮' },
+  { name: 'Huquqshunos', category: 'Harbiy & Huquq', icon: '⚖️' },
+  { name: 'Qutqaruvchi (FVV)', category: 'Harbiy & Huquq', icon: '🚒' },
+  { name: 'Chegarachi', category: 'Harbiy & Huquq', icon: '🚩' },
+  { name: 'Sudya', category: 'Harbiy & Huquq', icon: '🔨' },
+  { name: 'Prokuror', category: 'Harbiy & Huquq', icon: '📕' },
+  { name: 'Advokat', category: 'Harbiy & Huquq', icon: '📗' },
+  { name: 'Tergovchi', category: 'Harbiy & Huquq', icon: '🔍' },
+  { name: 'Xavfsizlik xodimi', category: 'Harbiy & Huquq', icon: '🛡️' },
+  { name: 'Harbiy shifokor', category: 'Harbiy & Huquq', icon: '⚕️' },
+  { name: 'Notarius', category: 'Harbiy & Huquq', icon: '🖋️' },
+  { name: 'Bojxona xodimi', category: 'Harbiy & Huquq', icon: '📦' },
+  // Muhandislik
+  { name: 'Muhandis', category: 'Muhandislik', icon: '⚙️' },
+  { name: 'Arxitektor', category: 'Muhandislik', icon: '🏗️' },
+  { name: 'Quruvchi', category: 'Muhandislik', icon: '👷' },
+  { name: 'Elektrchi', category: 'Muhandislik', icon: '💡' },
+  { name: 'Uchuvchi', category: 'Muhandislik', icon: '✈️' },
+  { name: 'Payvandchi', category: 'Muhandislik', icon: '🔥' },
+  { name: 'Santexnik', category: 'Muhandislik', icon: '🔧' },
+  { name: 'Avtomobil ustasi', category: 'Muhandislik', icon: '🚗' },
+  { name: 'Energetik', category: 'Muhandislik', icon: '🔋' },
+  { name: 'Neft va gaz muhandisi', category: 'Muhandislik', icon: '⛽' },
+  { name: 'Kon muhandisi', category: 'Muhandislik', icon: '⛏️' },
+  { name: 'Konstruktor', category: 'Muhandislik', icon: '📐' },
+  { name: "Suv xo'jaligi muhandisi", category: 'Muhandislik', icon: '🌊' },
+  { name: "Yo'l qurilishi muhandisi", category: 'Muhandislik', icon: '🚧' },
+  { name: 'Iqlim texnikasi ustasi', category: 'Muhandislik', icon: '❄️' },
+  // Ijodkorlik
+  { name: 'Rassom', category: 'Ijodkorlik', icon: '🖌️' },
+  { name: 'Musiqachi', category: 'Ijodkorlik', icon: '🎵' },
+  { name: 'Jurnalist', category: 'Ijodkorlik', icon: '🎤' },
+  { name: 'Bloger/Youtuber', category: 'Ijodkorlik', icon: '🎥' },
+  { name: 'Oshpaz', category: 'Ijodkorlik', icon: '👨‍🍳' },
+  { name: 'Tikuvchi/Dizayner', category: 'Ijodkorlik', icon: '✂️' },
+  { name: 'Fotograf', category: 'Ijodkorlik', icon: '📷' },
+  { name: 'Video montajchi', category: 'Ijodkorlik', icon: '🎬' },
+  { name: 'Aktyor', category: 'Ijodkorlik', icon: '🎭' },
+  { name: 'Rejissyor', category: 'Ijodkorlik', icon: '🎞️' },
+  { name: 'Yozuvchi/Shoir', category: 'Ijodkorlik', icon: '🖊️' },
+  { name: 'Xonanda', category: 'Ijodkorlik', icon: '🎙️' },
+  { name: 'Raqqosa', category: 'Ijodkorlik', icon: '💃' },
+  { name: 'Interyer dizayneri', category: 'Ijodkorlik', icon: '🛋️' },
+  { name: 'Animator', category: 'Ijodkorlik', icon: '✨' },
+  { name: 'Ovoz rejissyori', category: 'Ijodkorlik', icon: '🔊' },
+  { name: 'SMM mutaxassisi', category: 'Ijodkorlik', icon: '📣' },
+  // Tadbirkorlik
+  { name: 'Fermer', category: 'Tadbirkorlik', icon: '🚜' },
+  { name: 'Tadbirkor', category: 'Tadbirkorlik', icon: '💼' },
+  { name: 'Bank xodimi', category: 'Tadbirkorlik', icon: '🏦' },
+  { name: 'Sportchi/Murabbiy', category: 'Tadbirkorlik', icon: '⚽' },
+  { name: 'Buxgalter', category: 'Tadbirkorlik', icon: '🧮' },
+  { name: 'Iqtisodchi', category: 'Tadbirkorlik', icon: '📈' },
+  { name: 'Marketolog', category: 'Tadbirkorlik', icon: '🎯' },
+  { name: 'Menejer', category: 'Tadbirkorlik', icon: '📋' },
+  { name: 'Savdo mutaxassisi', category: 'Tadbirkorlik', icon: '🛒' },
+  { name: 'Auditor', category: 'Tadbirkorlik', icon: '🗂️' },
+  { name: "Sug'urta agenti", category: 'Tadbirkorlik', icon: '📄' },
+  { name: 'Investor', category: 'Tadbirkorlik', icon: '🐖' },
+  { name: 'Loyiha rahbari', category: 'Tadbirkorlik', icon: '✅' },
+  // Qishloq xo'jaligi
+  { name: 'Agronom', category: "Qishloq xo'jaligi", icon: '🌱' },
+  { name: 'Chorvador', category: "Qishloq xo'jaligi", icon: '🐄' },
+  { name: "Bog'bon", category: "Qishloq xo'jaligi", icon: '🌳' },
+  { name: 'Pillachi', category: "Qishloq xo'jaligi", icon: '🐛' },
+  { name: 'Asalarichi', category: "Qishloq xo'jaligi", icon: '🍯' },
+  { name: 'Paxtakor', category: "Qishloq xo'jaligi", icon: '🌸' },
+  { name: 'Sabzavotchi', category: "Qishloq xo'jaligi", icon: '🥕' },
+  { name: 'Mexanizator', category: "Qishloq xo'jaligi", icon: '🚜' },
+  { name: "Suv xo'jaligi mutaxassisi", category: "Qishloq xo'jaligi", icon: '💧' },
+  { name: 'Baliqchi', category: "Qishloq xo'jaligi", icon: '🐟' },
+  { name: 'Parrandachi', category: "Qishloq xo'jaligi", icon: '🥚' },
+  { name: 'Zootexnik', category: "Qishloq xo'jaligi", icon: '🐓' },
+  { name: 'Issiqxona egasi', category: "Qishloq xo'jaligi", icon: '🏡' },
+  { name: "Don va g'alla mutaxassisi", category: "Qishloq xo'jaligi", icon: '🌾' },
+  // Transport & Logistika
+  { name: 'Haydovchi', category: 'Transport & Logistika', icon: '🚙' },
+  { name: 'Yuk mashinasi haydovchisi', category: 'Transport & Logistika', icon: '🚚' },
+  { name: "Temiryo'l mashinisti", category: 'Transport & Logistika', icon: '🚆' },
+  { name: 'Avtobus haydovchisi', category: 'Transport & Logistika', icon: '🚌' },
+  { name: 'Taksi haydovchisi', category: 'Transport & Logistika', icon: '🚕' },
+  { name: 'Logistika menejeri', category: 'Transport & Logistika', icon: '📦' },
+  { name: 'Ombor mudiri', category: 'Transport & Logistika', icon: '🗃️' },
+  { name: 'Kuryer', category: 'Transport & Logistika', icon: '🚲' },
+  { name: 'Dispetcher', category: 'Transport & Logistika', icon: '🎧' },
+  { name: 'Aviatsiya texnigi', category: 'Transport & Logistika', icon: '🛫' },
+  { name: 'Yuk qabul qiluvchi', category: 'Transport & Logistika', icon: '📝' },
+  // Xizmat ko'rsatish
+  { name: 'Ofitsiant', category: "Xizmat ko'rsatish", icon: '🍽️' },
+  { name: 'Barista', category: "Xizmat ko'rsatish", icon: '☕' },
+  { name: 'Qandolatchi', category: "Xizmat ko'rsatish", icon: '🍰' },
+  { name: 'Novvoy', category: "Xizmat ko'rsatish", icon: '🥐' },
+  { name: 'Sartarosh', category: "Xizmat ko'rsatish", icon: '💈' },
+  { name: 'Kosmetolog', category: "Xizmat ko'rsatish", icon: '💎' },
+  { name: 'Mehmonxona administratori', category: "Xizmat ko'rsatish", icon: '🛏️' },
+  { name: "Gid (yo'lboshchi)", category: "Xizmat ko'rsatish", icon: '🗺️' },
+  { name: 'Turizm menejeri', category: "Xizmat ko'rsatish", icon: '🧳' },
+  { name: 'Sotuvchi', category: "Xizmat ko'rsatish", icon: '🏪' },
+  { name: 'Kassir', category: "Xizmat ko'rsatish", icon: '💳' },
+  { name: 'Tozalash xizmati xodimi', category: "Xizmat ko'rsatish", icon: '🧴' },
+  // Davlat xizmati
+  { name: 'Davlat xizmatchisi', category: 'Davlat xizmati', icon: '🏛️' },
+  { name: 'Hokim yordamchisi', category: 'Davlat xizmati', icon: '🏢' },
+  { name: 'Mahalla raisi', category: 'Davlat xizmati', icon: '👥' },
+  { name: 'Diplomat', category: 'Davlat xizmati', icon: '🌍' },
+  { name: 'Statistik', category: 'Davlat xizmati', icon: '📉' },
+  { name: 'Soliq inspektori', category: 'Davlat xizmati', icon: '🧾' },
+  { name: 'Ijtimoiy xodim', category: 'Davlat xizmati', icon: '🤝' },
+  { name: 'Ekolog', category: 'Davlat xizmati', icon: '🍃' },
+  { name: 'Arxivchi', category: 'Davlat xizmati', icon: '🗄️' },
+  { name: 'Pochta xodimi', category: 'Davlat xizmati', icon: '✉️' },
+  { name: 'FHDYo xodimi', category: 'Davlat xizmati', icon: '📃' },
 ];
 
 /**
@@ -256,35 +387,147 @@ export const KASBLAR: ProfessionSeed[] = [
 export const KASB_KATEGORIYALARI: { label: string; value: string; icon: string }[] = [
   { label: 'IT', value: 'IT & Texnologiya', icon: '💻' },
   { label: 'Tibbiyot', value: 'Tibbiyot', icon: '🩺' },
-  { label: 'Harbiy', value: 'Harbiy & Huquq', icon: '🎖️' },
   { label: "Ta'lim", value: "Ta'lim & Ilm", icon: '📚' },
+  { label: 'Harbiy', value: 'Harbiy & Huquq', icon: '🎖️' },
   { label: 'Muhandislik', value: 'Muhandislik', icon: '⚙️' },
   { label: 'Ijodkorlik', value: 'Ijodkorlik', icon: '🎨' },
   { label: 'Tadbirkorlik', value: 'Tadbirkorlik', icon: '💼' },
+  { label: "Qishloq xo'jaligi", value: "Qishloq xo'jaligi", icon: '🌾' },
+  { label: 'Transport', value: 'Transport & Logistika', icon: '🚚' },
+  { label: 'Xizmat', value: "Xizmat ko'rsatish", icon: '🍽️' },
+  { label: 'Davlat xizmati', value: 'Davlat xizmati', icon: '🏛️' },
 ];
 
-/** Maktab fanlari — 2-qadamdagi ko'p tanlovli chiplar */
-export const FANLAR: { name: string; icon: string }[] = [
-  { name: 'Matematika', icon: '➗' },
-  { name: 'Fizika', icon: '🧲' },
-  { name: 'Biologiya', icon: '🌿' },
-  { name: 'Kimyo', icon: '⚗️' },
-  { name: 'Tarix', icon: '🏛️' },
-  { name: 'Ona tili', icon: '📖' },
-  { name: 'Ingliz tili', icon: '🇬🇧' },
-  { name: 'Informatika', icon: '🖥️' },
-  { name: 'Sport', icon: '🏃' },
-  { name: 'Rasm', icon: '🖼️' },
+/**
+ * Maktab fanlari — 2-qadamdagi ko'p tanlovli chiplar.
+ *
+ * Guruhlarga ajratilgan: 22 ta fan bitta uzun qatorda tursa,
+ * o'quvchi kerakligini topolmaydi. Guruh sarlavhalari ro'yxatni
+ * ko'z bilan skanerlashni osonlashtiradi.
+ */
+export const FAN_GURUHLARI: { title: string; items: { name: string; icon: string }[] }[] = [
+  {
+    title: 'Aniq fanlar',
+    items: [
+      { name: 'Matematika', icon: '➗' },
+      { name: 'Algebra', icon: '🔢' },
+      { name: 'Geometriya', icon: '📐' },
+      { name: 'Fizika', icon: '🧲' },
+      { name: 'Astronomiya', icon: '🔭' },
+      { name: 'Informatika', icon: '🖥️' },
+    ],
+  },
+  {
+    title: 'Tabiiy fanlar',
+    items: [
+      { name: 'Kimyo', icon: '⚗️' },
+      { name: 'Biologiya', icon: '🌿' },
+      { name: 'Geografiya', icon: '🗺️' },
+    ],
+  },
+  {
+    title: 'Ijtimoiy fanlar',
+    items: [
+      { name: 'Tarix', icon: '🏛️' },
+      { name: 'Huquq asoslari', icon: '⚖️' },
+      { name: 'Iqtisodiyot asoslari', icon: '📈' },
+      { name: 'Tarbiya', icon: '🤝' },
+    ],
+  },
+  {
+    title: 'Til va adabiyot',
+    items: [
+      { name: 'Ona tili', icon: '📖' },
+      { name: 'Adabiyot', icon: '📚' },
+      { name: 'Ingliz tili', icon: '🇬🇧' },
+      { name: 'Rus tili', icon: '🗣️' },
+    ],
+  },
+  {
+    title: 'Amaliy va ijodiy',
+    items: [
+      { name: 'Chizmachilik', icon: '✏️' },
+      { name: 'Texnologiya', icon: '🔧' },
+      { name: 'Rasm', icon: '🖼️' },
+      { name: 'Musiqa', icon: '🎵' },
+      { name: 'Sport', icon: '🏃' },
+    ],
+  },
 ];
 
-/** To'garaklar */
-export const TOGARAKLAR: { name: string; icon: string }[] = [
-  { name: 'IT', icon: '💻' },
-  { name: 'Sport', icon: '⚽' },
-  { name: 'Musiqa', icon: '🎹' },
-  { name: 'Til kurslari', icon: '🗣️' },
-  { name: 'Hech qaysi', icon: '🚫' },
+/** Barcha fanlar bitta ro'yxatda — seed va tekshiruvlar uchun */
+export const FANLAR: { name: string; icon: string }[] = FAN_GURUHLARI.flatMap(
+  (g) => g.items
+);
+
+/**
+ * To'garaklar — 2-qadamdagi ikkinchi chiplar guruhi.
+ *
+ * «Hech qaysi» alohida guruhda va istisno variant: u tanlansa
+ * qolgan barcha tanlovlar bekor qilinadi.
+ */
+export const TOGARAK_GURUHLARI: { title: string; items: { name: string; icon: string }[] }[] = [
+  {
+    title: 'Sport',
+    items: [
+      { name: 'Futbol', icon: '⚽' },
+      { name: 'Voleybol', icon: '🏐' },
+      { name: 'Basketbol', icon: '🏀' },
+      { name: 'Kurash', icon: '🤼' },
+      { name: 'Boks', icon: '🥊' },
+      { name: 'Karate / Taekvondo', icon: '🥋' },
+      { name: 'Stol tennisi', icon: '🏓' },
+      { name: 'Yengil atletika', icon: '🏃' },
+      { name: 'Shaxmat', icon: '♟️' },
+    ],
+  },
+  {
+    title: 'Ilm va texnika',
+    items: [
+      { name: 'Dasturlash', icon: '💻' },
+      { name: 'Robototexnika', icon: '🦾' },
+      { name: "Matematika to'garagi", icon: '➗' },
+      { name: "Fizika-kimyo to'garagi", icon: '⚗️' },
+      { name: 'Biologiya va ekologiya', icon: '🌿' },
+    ],
+  },
+  {
+    title: 'Til kurslari',
+    items: [
+      { name: 'Ingliz tili kursi', icon: '🇬🇧' },
+      { name: 'Rus tili kursi', icon: '🗣️' },
+      { name: 'Boshqa chet tili', icon: '🌐' },
+    ],
+  },
+  {
+    title: "San'at va ijod",
+    items: [
+      { name: 'Musiqa', icon: '🎹' },
+      { name: 'Ashula', icon: '🎤' },
+      { name: 'Raqs', icon: '💃' },
+      { name: 'Teatr', icon: '🎭' },
+      { name: 'Rassomlik', icon: '🖌️' },
+      { name: 'Hunarmandchilik', icon: '🧵' },
+      { name: 'Tikuvchilik', icon: '✂️' },
+      { name: 'Oshpazlik', icon: '👨‍🍳' },
+    ],
+  },
+  {
+    title: "Boshqa yo'nalishlar",
+    items: [
+      { name: 'Jurnalistika', icon: '📰' },
+      { name: 'Notiqlik va debat', icon: '🗣️' },
+      { name: 'Harbiy-vatanparvarlik', icon: '🎖️' },
+      { name: 'Volontyorlik', icon: '🤝' },
+      { name: 'Hech qaysi', icon: '🚫' },
+    ],
+  },
 ];
+
+/** Barcha to'garaklar bitta ro'yxatda — seed va tekshiruvlar uchun */
+export const TOGARAKLAR: { name: string; icon: string }[] = TOGARAK_GURUHLARI.flatMap(
+  (g) => g.items
+);
 
 /** Sinflar (5-11) */
 export const SINFLAR: number[] = [5, 6, 7, 8, 9, 10, 11];
@@ -366,7 +609,7 @@ export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
   'IT & Texnologiya': {
     color: '#17559B',
     soft: '#E7F0FB',
-    cheer: "Sening kodlaring ertangi kunni yozadi.",
+    cheer: 'Sening kodlaring ertangi kunni yozadi.',
     sound: 'digital',
   },
   Tibbiyot: {
@@ -378,13 +621,13 @@ export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
   "Ta'lim & Ilm": {
     color: '#7A3FBF',
     soft: '#F1EAFB',
-    cheer: 'Sen minglab bolalarning yo’lini yoritasan.',
+    cheer: "Sen minglab bolalarning yo'lini yoritasan.",
     sound: 'bell',
   },
   'Harbiy & Huquq': {
     color: '#1F7A2D',
     soft: '#E8F5EA',
-    cheer: 'Sen xalqimiz tinchligining posboni bo’lasan.',
+    cheer: "Sen xalqimiz tinchligining posboni bo'lasan.",
     sound: 'siren',
   },
   Muhandislik: {
@@ -402,8 +645,32 @@ export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
   Tadbirkorlik: {
     color: '#D89506',
     soft: '#FDF3DF',
-    cheer: 'Sen yaratgan ish o’rinlari oilalarni boqadi.',
+    cheer: "Sen yaratgan ish o'rinlari oilalarni boqadi.",
     sound: 'coins',
+  },
+  "Qishloq xo'jaligi": {
+    color: '#4D7C0F',
+    soft: '#EEF6E3',
+    cheer: "Sening mehnating dasturxonimizga non bo'lib keladi.",
+    sound: 'machine',
+  },
+  'Transport & Logistika': {
+    color: '#0E7C86',
+    soft: '#E3F3F5',
+    cheer: "Sen yo'llarni yaqinlashtirasan, odamlarni bog'laysan.",
+    sound: 'machine',
+  },
+  "Xizmat ko'rsatish": {
+    color: '#B45309',
+    soft: '#FBF0E0',
+    cheer: 'Sening xizmating odamlarga kayfiyat ulashadi.',
+    sound: 'melody',
+  },
+  'Davlat xizmati': {
+    color: '#3730A3',
+    soft: '#E8E9FA',
+    cheer: 'Sen xalq ishonchini oqlaydigan ish qilasan.',
+    sound: 'bell',
   },
 };
 
