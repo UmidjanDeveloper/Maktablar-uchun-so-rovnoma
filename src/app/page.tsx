@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { ShieldCheck } from 'lucide-react';
 import { SurveyWizard } from '@/components/survey/survey-wizard';
 import { LogoLockup } from '@/components/shared/logo';
 import { AuroraBackground } from '@/components/shared/aurora-background';
@@ -18,23 +17,22 @@ export default function HomePage() {
       <AuroraBackground />
 
       {/* Yuqori panel */}
-      <header className="sticky top-0 z-40 border-b border-line bg-[color-mix(in_srgb,var(--bg-canvas)_78%,transparent)] backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-line bg-[color-mix(in_srgb,var(--bg-base)_78%,transparent)] backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
           <Link href="/">
             <LogoLockup />
           </Link>
 
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <Link
-              href="/admin/login"
-              className="glass flex h-11 items-center gap-1.5 rounded-md px-3 text-sm font-medium text-ink-muted transition-colors hover:text-ink"
-              title="Hokimiyat uchun boshqaruv paneli"
-            >
-              <ShieldCheck className="h-4 w-4" />
-              <span className="hidden sm:inline">Admin</span>
-            </Link>
-          </div>
+          {/*
+            Boshqaruv paneliga havola ataylab qo'yilmagan.
+
+            Bu ekran maktab sinfida kun bo'yi ochiq turadi va uni
+            o'quvchilar ko'radi — ularga hokimiyat paneli kerak emas,
+            aksincha, ko'rinib turgan tugma chalg'itadi va ortiqcha
+            e'tibor tortadi. Xodimlar panelga to'g'ridan-to'g'ri
+            /admin manzilini yozib kiradi.
+          */}
+          <ThemeToggle />
         </div>
       </header>
 

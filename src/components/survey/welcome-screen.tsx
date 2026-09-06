@@ -5,13 +5,20 @@ import { ArrowRight, Clock3, ShieldOff, WifiOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/shared/logo';
 import { EntityIcon } from '@/lib/icons';
+import { KASBLAR } from '@/lib/constants';
 
-/** Anketaning to'rt bosqichi — yo'l xaritasi sifatida ko'rsatiladi */
+/**
+ * Anketaning besh bosqichi — yo'l xaritasi sifatida ko'rsatiladi.
+ *
+ * Kasblar soni `KASBLAR` ro'yxatidan olinadi: ro'yxat kengaysa,
+ * bu matn ham o'zi yangilanadi va yolg'on va'da qolib ketmaydi.
+ */
 const JOURNEY = [
   { n: '1', title: "O'zing haqingda", hint: 'Ism, maktab, sinf', icon: 'Otam/Onam' },
   { n: '2', title: 'Nima yoqadi', hint: 'Fanlar va to\'garaklar', icon: 'Matematika' },
-  { n: '3', title: 'Orzu kasbing', hint: '35 ta kasbdan tanlash', icon: 'Dasturchi' },
-  { n: '4', title: 'Kelajak rejang', hint: 'Mahallang uchun niyating', icon: 'Ha' },
+  { n: '3', title: 'Orzu kasbing', hint: `${KASBLAR.length} ta kasbdan tanlash`, icon: 'Dasturchi' },
+  { n: '4', title: 'Qanday kurs kerak', hint: 'Mahallangga nima ochilsin', icon: 'Chet tili kursi' },
+  { n: '5', title: 'Kelajak rejang', hint: 'Mahallang uchun niyating', icon: 'Ha' },
 ] as const;
 
 interface WelcomeScreenProps {
@@ -79,10 +86,13 @@ export function WelcomeScreen({ onStart, pendingCount }: WelcomeScreenProps) {
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4, duration: 0.55 }}
-        className="mt-9 grid w-full max-w-3xl grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3"
+        className="mt-9 grid w-full max-w-4xl grid-cols-2 gap-2.5 sm:grid-cols-5 sm:gap-3"
       >
         {JOURNEY.map((step) => (
-          <li key={step.n} className="glass rounded-md p-3.5 text-left sm:p-4">
+          <li
+            key={step.n}
+            className="glass rounded-md p-3.5 text-left last:col-span-2 sm:p-4 sm:last:col-span-1"
+          >
             <div className="flex items-center justify-between">
               <span className="font-mono text-[11px] font-semibold tabular-nums text-accent">
                 0{step.n}
@@ -117,7 +127,7 @@ export function WelcomeScreen({ onStart, pendingCount }: WelcomeScreenProps) {
           </span>
           <span className="flex items-center gap-1.5">
             <Clock3 className="h-3.5 w-3.5" />
-            Atigi 2 daqiqa
+            Atigi 3 daqiqa
           </span>
         </div>
       </motion.div>

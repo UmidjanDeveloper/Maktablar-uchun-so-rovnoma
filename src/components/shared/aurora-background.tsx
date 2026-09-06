@@ -14,7 +14,7 @@ export function AuroraBackground() {
       <div
         className="absolute inset-0"
         style={{
-          background: 'linear-gradient(165deg, var(--bg-canvas) 0%, var(--bg-elev) 55%, var(--bg-deep) 100%)',
+          background: 'linear-gradient(165deg, var(--bg-base) 0%, var(--bg-elev) 55%, var(--bg-deep) 100%)',
         }}
       />
 
