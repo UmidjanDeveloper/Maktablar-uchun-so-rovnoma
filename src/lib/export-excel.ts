@@ -27,6 +27,12 @@ const HEADERS = [
   'Ilhomlantirgan',
   "Chet elda o'qish",
   'Mahalla uchun rejasi',
+  'Kerakli kurslar',
+  'Kerakli tillar',
+  "Qancha yo'l yuradi",
+  "Hozirgi to'siqlar",
+  'Qulay vaqt',
+  'Uydagi texnika',
   'Telefon',
   'Ota-ona telefoni',
   "To'ldirilgan sana",
@@ -34,7 +40,8 @@ const HEADERS = [
 
 /** Ustunlar kengligi (belgi hisobida) */
 const COL_WIDTHS = [
-  5, 14, 16, 12, 6, 14, 16, 12, 12, 22, 20, 30, 22, 40, 16, 18, 40, 18, 18, 18,
+  5, 14, 16, 12, 6, 14, 16, 12, 12, 22, 20, 30, 22, 40, 16, 18, 40,
+  30, 22, 20, 28, 24, 26, 18, 18, 18,
 ];
 
 /** Bitta anketani massiv qatoriga aylantiradi */
@@ -57,6 +64,12 @@ function toRow(student: StudentRecord, index: number): (string | number)[] {
     student.inspiration ?? '',
     student.studyAbroad ?? '',
     student.futureContribution ?? '',
+    student.wantedCourses.join(', '),
+    student.wantedLanguages.join(', '),
+    student.travelWillingness ?? '',
+    student.barriers.join(', '),
+    student.availableTimes.join(', '),
+    student.homeTech ?? '',
     student.phone ?? '',
     student.parentPhone ?? '',
     formatDate(student.createdAt),

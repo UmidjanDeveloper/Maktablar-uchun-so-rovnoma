@@ -9,7 +9,21 @@
  * ============================================================
  */
 import { PrismaClient } from '@prisma/client';
-import { MAHALLALAR, MAKTABLAR, KASBLAR, FANLAR, TOGARAKLAR } from '../src/lib/constants';
+import {
+  MAHALLALAR,
+  MAKTABLAR,
+  KASBLAR,
+  FANLAR,
+  TOGARAKLAR,
+  KERAKLI_KURSLAR_TEKIS,
+  TILLAR,
+  MASOFA_JAVOBLARI,
+  TOSIQLAR,
+  VAQT_JAVOBLARI,
+  UY_TEXNIKASI,
+  TIL_KERAK_EMAS,
+  TOSIQ_YOQ,
+} from '../src/lib/constants';
 import { buildDedupeKey } from '../src/lib/dedupe';
 
 const prisma = new PrismaClient();
@@ -126,6 +140,12 @@ async function main() {
 
   const fanNomlari = FANLAR.map((f) => f.name);
   const togarakNomlari = TOGARAKLAR.map((t) => t.name).filter((t) => t !== 'Hech qaysi');
+  const kursNomlari = KERAKLI_KURSLAR_TEKIS.map((k) => k.name);
+  const tilNomlari = TILLAR.map((t) => t.name).filter((t) => t !== TIL_KERAK_EMAS);
+  const masofaNomlari = MASOFA_JAVOBLARI.map((m) => m.name);
+  const tosiqNomlari = TOSIQLAR.map((t) => t.name).filter((t) => t !== TOSIQ_YOQ);
+  const vaqtNomlari = VAQT_JAVOBLARI.map((v) => v.name);
+  const texnikaNomlari = UY_TEXNIKASI.map((u) => u.name);
 
   // Takrorlanmas kalitlar to'plami — demo ma'lumotda ham
   // bir xil (ism + familiya + maktab + sinf + kun) uchramasligi uchun
@@ -167,6 +187,14 @@ async function main() {
       inspiration: rand(ILHOM),
       studyAbroad: rand(CHET_EL),
       futureContribution: rand(HISSALAR),
+      // Ta'lim markazi savollari (4-qadam)
+      wantedCourses: randMany(kursNomlari, 3),
+      wantedLanguages:
+        Math.random() > 0.2 ? randMany(tilNomlari, 2) : [TIL_KERAK_EMAS],
+      travelWillingness: rand(masofaNomlari),
+      barriers: Math.random() > 0.35 ? randMany(tosiqNomlari, 2) : [TOSIQ_YOQ],
+      availableTimes: randMany(vaqtNomlari, 2),
+      homeTech: rand(texnikaNomlari),
       createdAt,
     };
   };

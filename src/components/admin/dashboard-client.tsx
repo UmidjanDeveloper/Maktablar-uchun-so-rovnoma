@@ -16,6 +16,7 @@ import {
   TopJobsChart,
 } from './charts';
 import { DashboardEmpty } from './dashboard-empty';
+import { CenterPanel } from './center-panel';
 import { RecommendationsPanel } from './recommendations-panel';
 import { SubmissionsTable } from './submissions-table';
 import { StudentModal } from './student-modal';
@@ -285,6 +286,11 @@ export function DashboardClient() {
         />
       ) : (
         <>
+      {/* Markaz ochish tahlili eng yuqorida: bu panel "qayerga pul
+          qo'yamiz" degan savolga javob beradi, qolgani esa uni
+          asoslaydi */}
+      <CenterPanel stats={stats} loading={statsLoading} />
+
       {/* Tavsiyalar — diagrammalardan oldin, chunki hokim uchun
           "nima qilish kerak" degan savol birinchi o'rinda turadi */}
       <RecommendationsPanel stats={stats} loading={statsLoading} />

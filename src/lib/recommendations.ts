@@ -14,6 +14,7 @@
  * ============================================================
  */
 import { percent } from './utils';
+import { MIN_GROUP } from './center-planning';
 import type { DashboardStats } from '@/types';
 
 /** Qoidalarning sozlanuvchi chegaralari */
@@ -93,6 +94,83 @@ export function buildRecommendations(stats: DashboardStats): Recommendation[] {
         evidence: `Hozircha ${total} ta anketa mavjud`,
       },
     ];
+  }
+
+  // ---------- 0. MARKAZ OCHISH — eng amaliy tavsiya ----------
+  // Bu qoidalar 4-qadam javoblariga tayanadi va boshqalaridan
+  // ustun turadi: ular "qiziqish bor" emas, "guruh to'ladi" deydi.
+  const plan = stats.centerPlan;
+
+  if (plan.answered > 0) {
+    const ready = plan.byMahalla.filter((o) => o.viability === 'viable');
+
+    for (const option of ready.slice(0, 3)) {
+      const course = option.courses[0];
+      out.push({
+        id: `center-${option.location}`,
+        priority: 'high',
+        title: `${option.location} mahallasida «${course.name}» kursini ochish mumkin`,
+        action:
+          `Guruh uchun yetarli o'quvchi bor. Eng qulay vaqt — ` +
+          `${option.bestTime ?? "aniqlanmagan"}. ` +
+          (option.topLanguage
+            ? `Til yo'nalishi qo'shilsa, eng ko'p so'ralgani — ${option.topLanguage}.`
+            : ''),
+        evidence:
+          `${option.topDemand} ta o'quvchi aynan shu kursni so'ragan ` +
+          `(guruh uchun kamida ${MIN_GROUP} kishi kerak), ` +
+          `${option.unservedShare}% hech qanday to'garakka qatnamaydi`,
+      });
+    }
+
+    // Hech qayerda guruh to'lmasa — tuman markazi varianti
+    if (ready.length === 0 && plan.district && plan.district.topDemand > 0) {
+      const d = plan.district;
+      out.push({
+        id: 'center-district',
+        priority: 'medium',
+        title: "Alohida mahallada emas, tuman markazida bitta markaz ochish ma'qul",
+        action:
+          `Birorta mahallada guruh to'ladigan darajada talab to'planmadi, ` +
+          `lekin tuman markaziga qatnashga tayyor o'quvchilar bor. ` +
+          `Eng ko'p so'ralgan kurs — «${d.courses[0]?.name ?? '—'}».`,
+        evidence:
+          `Tuman markazigacha qatnashga ${d.reachable} ta o'quvchi tayyor, ` +
+          `ulardan ${d.topDemand} tasi bitta kursni so'ragan`,
+      });
+    }
+
+    // Talab bor, lekin sabab qatnov bo'lsa — yangi bino yechim emas
+    const farBarrier = plan.barriers.find((b) => b.name === 'Uzoq, qatnash qiyin');
+    if (farBarrier && percent(farBarrier.count, plan.answered) >= 25) {
+      out.push({
+        id: 'center-transport',
+        priority: 'medium',
+        title: "Asosiy to'siq — bino emas, qatnov",
+        action:
+          "Yangi markaz ochishdan oldin qatnov masalasini hal qiling: " +
+          "maktab avtobusi, mahalladagi kichik filiallar yoki onlayn format.",
+        evidence:
+          `${farBarrier.count} ta o'quvchi (${percent(farBarrier.count, plan.answered)}%) ` +
+          `«uzoq, qatnash qiyin» deb javob bergan`,
+      });
+    }
+
+    // Onlayn format mumkinmi
+    const noTech = plan.tech.find((t) => t.name === "Ikkalasi ham yo'q");
+    if (noTech && percent(noTech.count, plan.answered) >= 30) {
+      out.push({
+        id: 'center-offline-only',
+        priority: 'info',
+        title: "Onlayn formatga tayanib bo'lmaydi",
+        action:
+          "Darslarni faqat jonli (oflayn) rejalashtiring, uy vazifalarini " +
+          "kompyuter talab qilmaydigan shaklda bering.",
+        evidence:
+          `${noTech.count} ta o'quvchida (${percent(noTech.count, plan.answered)}%) ` +
+          `uyda na kompyuter, na internet bor`,
+      });
+    }
   }
 
   // ---------- 1. Mahallada bitta yo'nalish ustunlik qilsa ----------

@@ -99,8 +99,32 @@ export const step3Schema = z.object({
   motivation: optionalText(500, 'Javob'),
 });
 
-/** 4-qadam: kelajak rejalari va rozilik */
+/**
+ * 4-qadam: ta'lim markazi.
+ *
+ * Faqat ikkita savol majburiy — qanday kurs kerak va qancha yo'l
+ * yurishga tayyor. Aynan shu ikkisi «qayerda, qanday markaz ochamiz»
+ * degan qarorni hal qiladi; qolganlari qarorni aniqlashtiradi,
+ * lekin ularsiz ham qaror chiqarish mumkin.
+ */
 export const step4Schema = z.object({
+  wantedCourses: z
+    .array(z.string())
+    .min(1, { message: 'Kamida bitta kursni tanlang' })
+    .max(10, { message: "Ko'pi bilan 10 ta kurs tanlash mumkin" }),
+  wantedLanguages: z.array(z.string()).max(10).default([]),
+  travelWillingness: z
+    .string({ required_error: 'Qancha yo\'l yurishga tayyorligingizni tanlang' })
+    .trim()
+    .min(1, { message: "Qancha yo'l yurishga tayyorligingizni tanlang" })
+    .max(60),
+  barriers: z.array(z.string()).max(10).default([]),
+  availableTimes: z.array(z.string()).max(10).default([]),
+  homeTech: optionalText(60, 'Javob'),
+});
+
+/** 5-qadam: kelajak rejalari va rozilik */
+export const step5Schema = z.object({
   inspiration: optionalText(100, 'Javob'),
   studyAbroad: optionalText(50, 'Javob'),
   futureContribution: optionalText(500, 'Javob'),
@@ -115,13 +139,15 @@ export const step4Schema = z.object({
 export const studentSchema = step1Schema
   .merge(step2Schema)
   .merge(step3Schema)
-  .merge(step4Schema);
+  .merge(step4Schema)
+  .merge(step5Schema);
 
 export type StudentInput = z.infer<typeof studentSchema>;
 export type Step1Input = z.infer<typeof step1Schema>;
 export type Step2Input = z.infer<typeof step2Schema>;
 export type Step3Input = z.infer<typeof step3Schema>;
 export type Step4Input = z.infer<typeof step4Schema>;
+export type Step5Input = z.infer<typeof step5Schema>;
 
 /** Admin panelga kirish sxemasi */
 export const loginSchema = z.object({

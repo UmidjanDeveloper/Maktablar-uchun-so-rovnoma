@@ -12,6 +12,7 @@
 import type { jsPDF } from 'jspdf';
 import { formatDate } from './utils';
 import { buildRecommendations, PRIORITY_LABELS } from './recommendations';
+import { MIN_GROUP } from './center-planning';
 import type { DashboardFilters, DashboardStats } from '@/types';
 
 /** A4 o'lchamlari (mm) va chekka bo'shliqlar */
@@ -289,9 +290,80 @@ export async function exportDashboardToPdf(
     theme: 'grid',
   });
 
+  // ---------- Ta'lim markazi ochish tahlili ----------
+  // Hisobotning eng amaliy qismi: qayerda, qanday markaz ochish mumkin.
+  // Diagrammalar holatni tasvirlaydi, bu bo'lim esa qarorni taklif qiladi.
+  const plan = stats.centerPlan;
+  const afterSchools = (doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable;
+  let cursor = (afterSchools?.finalY ?? y) + 10;
+
+  if (plan.answered > 0) {
+    cursor = ensureSpace(doc, cursor, 60);
+    cursor = sectionTitle(doc, "7. Ta'lim markazi ochish tahlili", cursor);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(...SLATE);
+    const planIntro = doc.splitTextToSize(
+      safe(
+        `Quyidagi jadval ${plan.answered} ta o'quvchining javobiga tayanadi. ` +
+          `"Guruh" ustuni - bitta joyda aynan bir xil kursni so'ragan o'quvchilar soni; ` +
+          `kurs guruh to'lgandagina ishga tushadi (kamida ${MIN_GROUP} kishi). ` +
+          `"To'garaksiz" ustuni - yaqin atrofda hech qanday to'garak yo'q deganlar ulushi.`
+      ),
+      PAGE_W - M * 2
+    );
+    doc.text(planIntro, M, cursor);
+    cursor += planIntro.length * 4.2 + 3;
+
+    const rows = plan.byMahalla.slice(0, 15);
+    if (rows.length > 0) {
+      autoTable(doc, {
+        startY: cursor,
+        head: [['Mahalla', 'Kurs', 'Guruh', "To'garaksiz", 'Qulay vaqt', 'Holat']],
+        body: rows.map((o) => [
+          safe(o.location),
+          safe(o.courses[0]?.name ?? '-'),
+          o.topDemand,
+          `${o.unservedShare}%`,
+          safe(o.bestTime ?? '-'),
+          o.viability === 'viable'
+            ? "Guruh to'ladi"
+            : o.viability === 'close'
+              ? 'Biroz yetmaydi'
+              : 'Hozircha kam',
+        ]),
+        styles: { font: 'helvetica', fontSize: 8, cellPadding: 2, textColor: DARK },
+        headStyles: { fillColor: BRAND, textColor: [255, 255, 255], fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [248, 250, 252] },
+        margin: { left: M, right: M, bottom: 20 },
+        theme: 'grid',
+      });
+      const afterPlan = (doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable;
+      cursor = (afterPlan?.finalY ?? cursor) + 8;
+    }
+
+    // Til talabi — til markazi uchun alohida qator
+    if (plan.languageDemand.length > 0) {
+      cursor = ensureSpace(doc, cursor, 16);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8.5);
+      doc.setTextColor(...DARK);
+      doc.text(safe("Qaysi til so'ralmoqda:"), M, cursor);
+      cursor += 4.5;
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(...SLATE);
+      const langLine = doc.splitTextToSize(
+        safe(plan.languageDemand.map((l) => `${l.name} - ${l.count}`).join(';  ')),
+        PAGE_W - M * 2
+      );
+      doc.text(langLine, M, cursor);
+      cursor += langLine.length * 4.2 + 6;
+    }
+  }
+
   // ---------- Xulosa va tavsiyalar ----------
-  const afterTable = (doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable;
-  let cursor = (afterTable?.finalY ?? y) + 10;
+  cursor = ensureSpace(doc, cursor, 40);
   cursor = sectionTitle(doc, 'Xulosa va tavsiyalar', cursor);
 
   doc.setFont('helvetica', 'normal');

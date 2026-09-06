@@ -529,7 +529,142 @@ export const TOGARAKLAR: { name: string; icon: string }[] = TOGARAK_GURUHLARI.fl
   (g) => g.items
 );
 
+/**
+ * ============================================================
+ *  TA'LIM MARKAZI SAVOLLARI (5-qadam)
+ *
+ *  Bu savollar «bola kim bo'lishni orzu qiladi?» dan farq qiladi —
+ *  ular «qayerda, qanday markaz ochsak, kim keladi?» degan qarorni
+ *  raqam bilan ta'minlaydi.
+ *
+ *  Eng muhimi: «qanday to'garakka BORASAN» emas, «qanday kurs
+ *  OCHILSA borasan». Birinchisi mavjud imkoniyatni o'lchaydi,
+ *  ikkinchisi qondirilmagan talabni. To'garagi yo'q mahalla
+ *  birinchi savolda «qiziqish past» bo'lib ko'rinadi — aslida
+ *  u yerda talab eng yuqori bo'lishi mumkin.
+ * ============================================================
+ */
+
+/** Ochilishi so'ralayotgan kurslar — guruhlangan ko'p tanlov */
+export const KERAKLI_KURSLAR: { title: string; items: { name: string; icon: string }[] }[] = [
+  {
+    title: 'Til',
+    items: [{ name: 'Chet tili kursi', icon: '🗣️' }],
+  },
+  {
+    title: 'Fanga tayyorlov',
+    items: [
+      { name: 'Matematika', icon: '➗' },
+      { name: 'Fizika va kimyo', icon: '⚗️' },
+      { name: 'Biologiya', icon: '🧬' },
+      { name: 'Ona tili va adabiyot', icon: '📖' },
+      { name: 'Tarix', icon: '🏛️' },
+    ],
+  },
+  {
+    title: 'IT va texnologiya',
+    items: [
+      { name: 'Dasturlash', icon: '💻' },
+      { name: 'Robototexnika', icon: '🦾' },
+      { name: 'Grafik dizayn', icon: '🎨' },
+      { name: 'SMM va marketing', icon: '📣' },
+    ],
+  },
+  {
+    title: 'Kasb-hunar',
+    items: [
+      { name: 'Tikuvchilik', icon: '🧵' },
+      { name: 'Oshpazlik', icon: '👨‍🍳' },
+      { name: 'Hunarmandchilik', icon: '🪚' },
+      { name: 'Avtomobil ustaligi', icon: '🚗' },
+      { name: 'Elektrik va payvandchilik', icon: '⚡' },
+      { name: "Qishloq xo'jaligi", icon: '🌾' },
+    ],
+  },
+  {
+    title: "San'at va sport",
+    items: [
+      { name: 'Rassomlik', icon: '🖌️' },
+      { name: 'Musiqa', icon: '🎹' },
+      { name: 'Sport', icon: '⚽' },
+      { name: 'Raqs', icon: '💃' },
+    ],
+  },
+  {
+    title: 'Shaxsiy rivojlanish',
+    items: [
+      { name: 'Notiqlik va liderlik', icon: '🎤' },
+      { name: 'Moliyaviy savodxonlik', icon: '🧮' },
+    ],
+  },
+];
+
+/** Barcha kurslar bitta ro'yxatda */
+export const KERAKLI_KURSLAR_TEKIS: { name: string; icon: string }[] =
+  KERAKLI_KURSLAR.flatMap((g) => g.items);
+
+/** Qaysi tilni o'rganmoqchi — til markazi ochish uchun */
+export const TILLAR: { name: string; icon: string }[] = [
+  { name: 'Ingliz tili', icon: '🇬🇧' },
+  { name: 'Rus tili', icon: '🇷🇺' },
+  { name: 'Koreys tili', icon: '🇰🇷' },
+  { name: 'Turk tili', icon: '🇹🇷' },
+  { name: 'Arab tili', icon: '🇸🇦' },
+  { name: 'Xitoy tili', icon: '🇨🇳' },
+  { name: 'Nemis tili', icon: '🇩🇪' },
+  { name: 'Til kursi kerak emas', icon: '🚫' },
+];
+
+/** Til kerak emasligini bildiruvchi istisno variant */
+export const TIL_KERAK_EMAS = 'Til kursi kerak emas';
+
+/**
+ * Qatnashish uchun qancha yo'l yurishga tayyor.
+ * Markazni qayerga qurish kerakligini shu javob hal qiladi:
+ * hech kim yurmasa — har mahallada kichik markaz, yursa — bitta katta.
+ */
+export const MASOFA_JAVOBLARI: { name: string; icon: string }[] = [
+  { name: 'Faqat maktabimda', icon: '🏫' },
+  { name: 'Mahallamda', icon: '🏘️' },
+  { name: "Qo'shni mahallaga ham", icon: '🚶' },
+  { name: 'Tuman markazigacha', icon: '🚌' },
+];
+
+/**
+ * Hozir to'garakka bormaslik sabablari.
+ * Agar sabab qatnov bo'lsa, yangi bino ochish muammoni yechmaydi —
+ * shuning uchun bu savol markaz ochishdan oldin beriladi.
+ */
+export const TOSIQLAR: { name: string; icon: string }[] = [
+  { name: "Yaqin atrofda bunday to'garak yo'q", icon: '🚫' },
+  { name: 'Uzoq, qatnash qiyin', icon: '🛣️' },
+  { name: "Vaqtim yo'q", icon: '⏰' },
+  { name: 'Ota-onam ruxsat bermaydi', icon: '🙅' },
+  { name: 'Qiziqarli emas', icon: '😐' },
+  { name: 'Hozir ham qatnayapman', icon: '✅' },
+];
+
+/** «Hozir ham qatnayapman» — qolgan sabablarni bekor qiladi */
+export const TOSIQ_YOQ = 'Hozir ham qatnayapman';
+
+/** Qachon qatnasha oladi — smena va o'qituvchi rejalashtirish uchun */
+export const VAQT_JAVOBLARI: { name: string; icon: string }[] = [
+  { name: 'Darsdan keyin (kunduzi)', icon: '🌤️' },
+  { name: 'Kechqurun', icon: '🌙' },
+  { name: 'Dam olish kunlari', icon: '📅' },
+  { name: "Yozgi ta'tilda", icon: '☀️' },
+];
+
+/** Uydagi texnika — onlayn yoki aralash format mumkinmi */
+export const UY_TEXNIKASI: { name: string; icon: string }[] = [
+  { name: 'Kompyuter ham, internet ham bor', icon: '🖥️' },
+  { name: 'Faqat telefon va internet bor', icon: '📱' },
+  { name: 'Faqat kompyuter bor', icon: '💻' },
+  { name: "Ikkalasi ham yo'q", icon: '❌' },
+];
+
 /** Sinflar (5-11) */
+
 export const SINFLAR: number[] = [5, 6, 7, 8, 9, 10, 11];
 
 /** Jins variantlari */

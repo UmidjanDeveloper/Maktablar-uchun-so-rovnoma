@@ -125,6 +125,66 @@ export function StudentModal({ student, onClose }: StudentModalProps) {
 
         <Separator />
 
+        {/* Ta'lim markazi savollari — markaz ochish qarori uchun */}
+        <div className="space-y-3">
+          <Row
+            label="Qanday kurs kerak"
+            value={
+              student.wantedCourses.length ? (
+                <span className="flex flex-wrap gap-1.5">
+                  {student.wantedCourses.map((c) => (
+                    <Badge key={c} variant="default">
+                      {c}
+                    </Badge>
+                  ))}
+                </span>
+              ) : (
+                '—'
+              )
+            }
+          />
+          <Row
+            label="Qaysi til"
+            value={
+              student.wantedLanguages.length ? (
+                <span className="flex flex-wrap gap-1.5">
+                  {student.wantedLanguages.map((l) => (
+                    <Badge key={l} variant="secondary">
+                      {l}
+                    </Badge>
+                  ))}
+                </span>
+              ) : (
+                '—'
+              )
+            }
+          />
+          <Row label="Qancha yo'l yuradi" value={student.travelWillingness || '—'} />
+          <Row
+            label="Hozirgi to'siqlar"
+            value={
+              student.barriers.length ? (
+                <span className="flex flex-wrap gap-1.5">
+                  {student.barriers.map((b) => (
+                    <Badge key={b} variant="outline">
+                      {b}
+                    </Badge>
+                  ))}
+                </span>
+              ) : (
+                '—'
+              )
+            }
+          />
+          <Row
+            label="Qachon qatnasha oladi"
+            value={student.availableTimes.length ? student.availableTimes.join(', ') : '—'}
+          />
+          <Row label="Uydagi texnika" value={student.homeTech || '—'} />
+        </div>
+
+        <Separator />
+
         <div className="space-y-3">
           <Row label="Kasb tanlash sababi" value={student.motivation || '—'} />
           <Row label="Ilhomlantirgan" value={student.inspiration || '—'} />

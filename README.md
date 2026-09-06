@@ -153,7 +153,20 @@ npm run db:push    # Jadvallarni yaratadi
 npm run db:seed    # Kataloglar + 150 ta demo anketa (sinov uchun)
 ```
 
-### 4.1. Kasblar ro'yxati yangilanganda
+### 4.1. Ta'lim markazi savollari (majburiy, bir marta)
+
+Anketaga 4-qadam qo'shildi: «qanday kurs ochilsa borar eding», «qancha
+yo'l yurishga tayyorsan», «hozir nega bormaysan» va boshqalar. Bu
+javoblar bazada yangi ustunlarda saqlanadi, shuning uchun ular
+qo'shilishi kerak.
+
+`prisma/markaz-savollari.sql` faylini Supabase **SQL Editor** da ishga
+tushiring. U faqat yangi ustun qo'shadi, mavjud anketalarga tegmaydi.
+Bir necha marta ishga tushirish xavfsiz.
+
+> Bu SQL ishga tushirilmasa, anketa yuborilganda xatolik beradi.
+
+### 4.2. Kasblar ro'yxati yangilanganda
 
 Kasblar bazada saqlanadi, shuning uchun ro'yxat kengaytirilganda uni
 bazaga ham yozish kerak — aks holda anketada eski ro'yxat ko'rinaveradi.
@@ -168,7 +181,7 @@ tushirish xavfsiz — ikkinchi marta hech narsa o'zgarmaydi.
 > (`src/lib/constants.ts`) — ular Vercel'ga yangi versiya chiqishi
 > bilan o'zi yangilanadi, SQL kerak emas.
 
-### 4.1. Mahallalar va maktablar ro'yxati haqida
+### 4.3. Mahallalar va maktablar ro'yxati haqida
 
 Tizimga rasmiy hujjatlar asosida kiritilgan:
 
@@ -185,7 +198,7 @@ lotinga o'girilgan va aniq imlo xatolari to'g'rilangan (`Xatirchi tumsni`
 Ro'yxat o'zgarsa, `/admin/settings` bo'limidan qo'shing yoki tahrirlang —
 kodga tegish shart emas, o'zgarish anketada darhol ko'rinadi.
 
-### 4.2. Qo'lda kiritilgan nomlarni nazorat qilish
+### 4.4. Qo'lda kiritilgan nomlarni nazorat qilish
 
 O'quvchi mahalla yoki maktabini ro'yxatdan topa olmasa, nomini o'zi
 yozishi mumkin — shunda hech kim anketani to'ldirmasdan ketib qolmaydi.
@@ -285,6 +298,7 @@ Maktablar-uchun-so-rovnoma/
 │   ├── schema.prisma              # Ma'lumotlar bazasi sxemasi
 │   ├── supabase-setup.sql         # Terminalsiz o'rnatish (SQL Editor uchun)
 │   ├── kasblar-yangilash.sql      # Kasblar ro'yxatini bazada yangilash
+│   ├── markaz-savollari.sql       # 4-qadam ustunlarini qo'shish
 │   └── seed.ts                    # Kataloglar + 150 ta demo anketa
 │
 ├── public/

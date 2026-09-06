@@ -9,6 +9,7 @@ import { useToast } from '@/components/ui/toast';
 import { StepPersonal } from './step-personal';
 import { StepInterests } from './step-interests';
 import { StepDreamJob } from './step-dream-job';
+import { StepCenter } from './step-center';
 import { StepFuture } from './step-future';
 import { SuccessScreen } from './success-screen';
 import { WelcomeScreen } from './welcome-screen';
@@ -18,6 +19,7 @@ import {
   step2Schema,
   step3Schema,
   step4Schema,
+  step5Schema,
   studentSchema,
   fieldErrors,
 } from '@/lib/validation';
@@ -30,6 +32,7 @@ const STEPS = [
   { title: "Shaxsiy ma'lumot", subtitle: "O'zing haqingda qisqacha", short: 'Ma\'lumot' },
   { title: 'Qiziqishlar', subtitle: 'Nimalar seni qiziqtiradi?', short: 'Qiziqish' },
   { title: 'Orzu kasb', subtitle: "Kim bo'lishni orzu qilasan?", short: 'Kasb' },
+  { title: 'Qanday kurs kerak?', subtitle: 'Mahallangda nima ochilsin?', short: 'Kurslar' },
   { title: 'Kelajak', subtitle: 'Rejalaring haqida', short: 'Kelajak' },
 ] as const;
 
@@ -39,7 +42,7 @@ const STEP_LABELS = STEPS.map((s) => s.short);
 export function SurveyWizard() {
   const { toast } = useToast();
 
-  // 0 — kutib olish ekrani, 1..4 — anketa qadamlari, 5 — tabrik ekrani
+  // 0 — kutib olish ekrani, 1..5 — anketa qadamlari, 6 — tabrik ekrani
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -118,8 +121,8 @@ export function SurveyWizard() {
   /** Joriy qadamni tekshiradi */
   const validateStep = useCallback(
     (target: number): boolean => {
-      const schema =
-        target === 1 ? step1Schema : target === 2 ? step2Schema : target === 3 ? step3Schema : step4Schema;
+      const schemas = [step1Schema, step2Schema, step3Schema, step4Schema, step5Schema];
+      const schema = schemas[target - 1] ?? step5Schema;
       const result = schema.safeParse(form);
       if (!result.success) {
         setErrors(fieldErrors(result.error));
@@ -161,7 +164,7 @@ export function SurveyWizard() {
 
   /** Anketani serverga yuborish (internet bo'lmasa — navbatga saqlash) */
   const handleSubmit = async () => {
-    if (!validateStep(4)) {
+    if (!validateStep(5)) {
       toast({
         title: 'Rozilik kerak',
         description: "Anketani yuborish uchun rozilik katagini belgilang.",
@@ -195,7 +198,7 @@ export function SurveyWizard() {
 
       if (res.ok) {
         setSavedOffline(false);
-        setStep(5);
+        setStep(6);
         return;
       }
 
@@ -246,14 +249,14 @@ export function SurveyWizard() {
 
       setPendingCount(queueSize());
       setSavedOffline(true);
-      setStep(5);
+      setStep(6);
     } finally {
       setSubmitting(false);
     }
   };
 
   // ---------- Tabrik ekrani ----------
-  if (step === 5) {
+  if (step === 6) {
     return (
       <SuccessScreen
         firstName={form.firstName}
@@ -277,11 +280,11 @@ export function SurveyWizard() {
     <div className="mx-auto w-full max-w-3xl px-4 pb-16 pt-6 sm:px-6 sm:pt-10">
       {/* Qadam ko'rsatkichi */}
       <div className="mb-7">
-        <StepNodes current={step} total={4} labels={STEP_LABELS} />
+        <StepNodes current={step} total={STEPS.length} labels={STEP_LABELS} />
 
         <div className="mt-6">
           <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">
-            {step}-qadam / 4
+            {step}-qadam / {STEPS.length}
           </p>
           <h2 className="mt-1.5 font-display text-2xl font-bold tracking-tight text-ink sm:text-3xl">
             {current.title}
@@ -322,7 +325,8 @@ export function SurveyWizard() {
             {step === 3 && (
               <StepDreamJob form={form} errors={errors} update={update} kasblar={kasblar} />
             )}
-            {step === 4 && <StepFuture form={form} errors={errors} update={update} />}
+            {step === 4 && <StepCenter form={form} errors={errors} update={update} />}
+            {step === 5 && <StepFuture form={form} errors={errors} update={update} />}
           </motion.div>
         </AnimatePresence>
       </div>
@@ -334,7 +338,7 @@ export function SurveyWizard() {
           Orqaga
         </Button>
 
-        {step < 4 ? (
+        {step < STEPS.length ? (
           <Button size="lg" onClick={goNext} className="px-8">
             Davom etish
             <ArrowRight className="h-4 w-4" />

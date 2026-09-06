@@ -18,6 +18,12 @@ CREATE TABLE IF NOT EXISTS "Student" (
     "inspiration" TEXT,
     "studyAbroad" TEXT,
     "futureContribution" TEXT,
+    "wantedCourses" TEXT[] NOT NULL DEFAULT '{}',
+    "wantedLanguages" TEXT[] NOT NULL DEFAULT '{}',
+    "travelWillingness" TEXT,
+    "barriers" TEXT[] NOT NULL DEFAULT '{}',
+    "availableTimes" TEXT[] NOT NULL DEFAULT '{}',
+    "homeTech" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "dedupeKey" TEXT,
 

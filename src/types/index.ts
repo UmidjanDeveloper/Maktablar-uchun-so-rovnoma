@@ -3,6 +3,9 @@
  *  Ilova bo'ylab ishlatiladigan umumiy TypeScript tiplari
  * ============================================================
  */
+import type { CenterPlan } from '@/lib/center-planning';
+
+export type { CenterPlan };
 
 /** API orqali qaytadigan o'quvchi yozuvi (sanalar ISO satr ko'rinishida) */
 export interface StudentRecord {
@@ -25,6 +28,12 @@ export interface StudentRecord {
   inspiration: string | null;
   studyAbroad: string | null;
   futureContribution: string | null;
+  wantedCourses: string[];
+  wantedLanguages: string[];
+  travelWillingness: string | null;
+  barriers: string[];
+  availableTimes: string[];
+  homeTech: string | null;
   createdAt: string;
 }
 
@@ -115,6 +124,8 @@ export interface DashboardStats {
   studyAbroad: NameValue[];
   byClub: NameValue[];
   mahallaInsights: MahallaInsight[];
+  /** Ta'lim markazi ochish tahlili (5-qadam javoblari asosida) */
+  centerPlan: CenterPlan;
   categoryGender: CategoryGenderStat[];
 }
 

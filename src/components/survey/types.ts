@@ -18,7 +18,14 @@ export interface FormState {
   dreamJob: string;
   jobCategory: string;
   motivation: string;
-  // 4-qadam
+  // 4-qadam — ta'lim markazi
+  wantedCourses: string[];
+  wantedLanguages: string[];
+  travelWillingness: string;
+  barriers: string[];
+  availableTimes: string[];
+  homeTech: string;
+  // 5-qadam
   inspiration: string;
   studyAbroad: string;
   futureContribution: string;
@@ -42,6 +49,12 @@ export const EMPTY_FORM: FormState = {
   dreamJob: '',
   jobCategory: '',
   motivation: '',
+  wantedCourses: [],
+  wantedLanguages: [],
+  travelWillingness: '',
+  barriers: [],
+  availableTimes: [],
+  homeTech: '',
   inspiration: '',
   studyAbroad: '',
   futureContribution: '',

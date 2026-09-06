@@ -12,14 +12,14 @@ import { isMuted, playCelebration, setMuted } from '@/lib/sound';
 /**
  * Kiosk rejimida ekran avtomatik tozalanadigan vaqt (soniya).
  *
- * 40 soniya — bola tabrikni, o'z kasbini va unga atalgan jumlani
+ * 25 soniya — bola tabrikni, o'z kasbini va unga atalgan jumlani
  * shoshilmasdan o'qib ulgurishi uchun. Amalda 12 soniya kam bo'lib
  * chiqdi: matn tugamasdan ekran tozalanardi.
  *
  * Keyingi o'quvchi kutib qolmaydi — "Yangi anketa to'ldirish"
  * tugmasi hisoblagichni kutmasdan darhol keyingisiga o'tkazadi.
  */
-const AUTO_RESET_SECONDS = 40;
+const AUTO_RESET_SECONDS = 25;
 
 interface SuccessScreenProps {
   firstName: string;

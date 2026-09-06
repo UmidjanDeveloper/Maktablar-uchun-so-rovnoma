@@ -125,6 +125,12 @@ export async function POST(request: NextRequest) {
         inspiration: data.inspiration ?? null,
         studyAbroad: data.studyAbroad ?? null,
         futureContribution: data.futureContribution ?? null,
+        wantedCourses: data.wantedCourses,
+        wantedLanguages: data.wantedLanguages,
+        travelWillingness: data.travelWillingness,
+        barriers: data.barriers,
+        availableTimes: data.availableTimes,
+        homeTech: data.homeTech ?? null,
       },
       select: { id: true, firstName: true, dreamJob: true },
     });

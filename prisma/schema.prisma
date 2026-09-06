@@ -47,6 +47,23 @@ model Student {
   /// Mahalla uchun kelajakdagi rejasi
   futureContribution String?
 
+  // ─── Ta'lim markazi ochish qarori uchun (5-qadam) ───
+
+  /// «Qanday kurs ochilsa borar eding?» — qondirilmagan talab.
+  /// `clubs` dan farqi: u mavjud imkoniyatni, bu esa kerakli
+  /// imkoniyatni o'lchaydi. Markazni qayerda ochish shu ustunga tayanadi.
+  wantedCourses   String[]
+  /// Qaysi tillarni o'rganmoqchi (til markazi uchun)
+  wantedLanguages String[]
+  /// Qancha yo'l yurishga tayyor — markaz joylashuvini hal qiladi
+  travelWillingness String?
+  /// Hozir to'garakka bormaslik sabablari
+  barriers        String[]
+  /// Qachon qatnasha oladi — smena rejalashtirish uchun
+  availableTimes  String[]
+  /// Uyda kompyuter/internet bormi — onlayn format mumkinmi
+  homeTech        String?
+
   createdAt DateTime @default(now())
 
   /// Takroriy anketani bazaning o'zida bloklaydigan kalit:

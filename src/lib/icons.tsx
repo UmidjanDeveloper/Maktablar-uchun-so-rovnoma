@@ -43,6 +43,7 @@ import {
   TestTube, Tractor, TrainFront, TreeDeciduous, TrendingUp, Trophy,
   Truck, Users, Utensils, Video, Volleyball, Volume2,
   Wand2, Warehouse, Waves, Wheat, Wrench, Zap,
+  CalendarDays, CircleCheck, CircleOff, Clock3, Home, Meh, Milestone, Moon, MonitorSmartphone, Palmtree, Sun, X,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -288,6 +289,69 @@ export const ABROAD_ICONS: Record<string, LucideIcon> = {
   "O'ylab ko'rmaganman": Sparkles,
 };
 
+
+/* ---------- TA'LIM MARKAZI: KERAKLI KURSLAR ---------- */
+export const COURSE_ICONS: Record<string, LucideIcon> = {
+  'Chet tili kursi': Languages,
+  'Fizika va kimyo': FlaskConical,
+  'Ona tili va adabiyot': BookOpen,
+  Dasturlash: Code2,
+  Robototexnika: Bot,
+  'Grafik dizayn': Palette,
+  'SMM va marketing': Megaphone,
+  Tikuvchilik: Scissors,
+  Oshpazlik: ChefHat,
+  Hunarmandchilik: Hammer,
+  'Avtomobil ustaligi': Car,
+  'Elektrik va payvandchilik': Zap,
+  "Qishloq xo'jaligi": Wheat,
+  Rassomlik: Brush,
+  Raqs: PersonStanding,
+  'Notiqlik va liderlik': Mic,
+  'Moliyaviy savodxonlik': Calculator,
+};
+
+/* ---------- TA'LIM MARKAZI: TILLAR ---------- */
+export const LANGUAGE_ICONS: Record<string, LucideIcon> = {
+  'Ingliz tili': Languages,
+  'Rus tili': Languages,
+  'Koreys tili': Globe,
+  'Turk tili': Globe,
+  'Arab tili': Globe,
+  'Xitoy tili': Globe,
+  'Nemis tili': Globe,
+  'Til kursi kerak emas': Circle,
+};
+
+/* ---------- TA'LIM MARKAZI: MASOFA, TO'SIQ, VAQT, TEXNIKA ---------- */
+export const CENTER_ICONS: Record<string, LucideIcon> = {
+  // Qancha yo'l yurishga tayyor
+  'Faqat maktabimda': School,
+  Mahallamda: Home,
+  "Qo'shni mahallaga ham": Footprints,
+  'Tuman markazigacha': Bus,
+
+  // Hozir nega bormaydi
+  "Yaqin atrofda bunday to'garak yo'q": CircleOff,
+  'Uzoq, qatnash qiyin': Milestone,
+  "Vaqtim yo'q": Clock3,
+  'Ota-onam ruxsat bermaydi': Users,
+  'Qiziqarli emas': Meh,
+  'Hozir ham qatnayapman': CircleCheck,
+
+  // Qachon qatnasha oladi
+  'Darsdan keyin (kunduzi)': Sun,
+  Kechqurun: Moon,
+  'Dam olish kunlari': CalendarDays,
+  "Yozgi ta'tilda": Palmtree,
+
+  // Uydagi texnika
+  'Kompyuter ham, internet ham bor': MonitorSmartphone,
+  'Faqat telefon va internet bor': Smartphone,
+  'Faqat kompyuter bor': Monitor,
+  "Ikkalasi ham yo'q": X,
+};
+
 /* ------------------------------------------------------------------ */
 /* Yagona kirish nuqtasi                                               */
 /* ------------------------------------------------------------------ */
@@ -298,6 +362,9 @@ export const ABROAD_ICONS: Record<string, LucideIcon> = {
  * to'garakda uchraydi; birinchi mos kelgani ishlatiladi.
  */
 const REGISTRIES = [
+  COURSE_ICONS,
+  LANGUAGE_ICONS,
+  CENTER_ICONS,
   JOB_ICONS,
   CATEGORY_ICONS,
   SUBJECT_ICONS,

@@ -4,6 +4,7 @@ import { buildWhere, parseFilters } from '@/lib/filters';
 import { requireAdmin } from '@/lib/api-auth';
 import { percent } from '@/lib/utils';
 import { KASB_ICON_MAP } from '@/lib/constants';
+import { buildCenterPlan } from '@/lib/center-planning';
 import type { DashboardStats, MahallaInsight, NameValue, SchoolTopJob } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -48,6 +49,12 @@ export async function GET(request: NextRequest) {
         clubs: true,
         inspiration: true,
         studyAbroad: true,
+        wantedCourses: true,
+        wantedLanguages: true,
+        travelWillingness: true,
+        barriers: true,
+        availableTimes: true,
+        homeTech: true,
       },
     });
 
@@ -208,6 +215,7 @@ export async function GET(request: NextRequest) {
       byClub: toSorted(clubs),
       mahallaInsights,
       categoryGender: categoryGenderStats,
+      centerPlan: buildCenterPlan(rows),
     };
 
     return NextResponse.json(stats);
