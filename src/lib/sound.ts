@@ -100,77 +100,132 @@ function tone(ac: AudioContext, o: ToneOptions): void {
 
 /** Nota chastotalari (A4 = 440 Gs) */
 const NOTE = {
+  C3: 130.81, G3: 196.0,
   C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.0, A4: 440.0,
-  C5: 523.25, D5: 587.33, E5: 659.25, G5: 783.99, C6: 1046.5,
+  C5: 523.25, D5: 587.33, E5: 659.25, G5: 783.99,
+  C6: 1046.5, E6: 1318.5, G6: 1568.0, C7: 2093.0,
 };
 
-/** Har bir yo'nalish uchun ovoz retsepti */
-const RECIPES: Record<SoundName, (ac: AudioContext) => void> = {
+/**
+ * Har bir yo'nalish uchun ovoz retsepti.
+ *
+ * `t0` — boshlanish vaqti. Retsept fanfaradan keyin chalinishi kerak,
+ * aks holda ikkalasi bir vaqtda yangrab, ikkalasi ham eshitilmay qoladi.
+ */
+const RECIPES: Record<SoundName, (ac: AudioContext, t0: number) => void> = {
   /** Militsiya, harbiy, qutqaruvchi — sirena */
-  siren: (ac) => {
+  siren: (ac, t0) => {
     for (let i = 0; i < 3; i++) {
-      const at = i * 0.42;
+      const at = t0 + i * 0.42;
       tone(ac, { freq: [660, 990], at, dur: 0.2, type: 'sawtooth', gain: 0.1 });
       tone(ac, { freq: [990, 660], at: at + 0.21, dur: 0.2, type: 'sawtooth', gain: 0.1 });
     }
   },
 
   /** Shifokor, hamshira — yurak urishi va tinch signal */
-  heartbeat: (ac) => {
+  heartbeat: (ac, t0) => {
     for (let i = 0; i < 3; i++) {
-      const at = i * 0.62;
+      const at = t0 + i * 0.62;
       tone(ac, { freq: 62, at, dur: 0.14, type: 'sine', gain: 0.34 });
       tone(ac, { freq: 52, at: at + 0.2, dur: 0.18, type: 'sine', gain: 0.26 });
     }
-    tone(ac, { freq: NOTE.E5, at: 1.85, dur: 0.5, gain: 0.12 });
+    tone(ac, { freq: NOTE.E5, at: t0 + 1.85, dur: 0.5, gain: 0.12 });
   },
 
-  /** Dasturchi, muhandis-dasturchi — raqamli signallar */
-  digital: (ac) => {
+  /** Dasturchi, sun'iy intellekt — raqamli signallar */
+  digital: (ac, t0) => {
     const seq = [NOTE.C5, NOTE.E5, NOTE.G5, NOTE.C6];
     seq.forEach((f, i) =>
-      tone(ac, { freq: f, at: i * 0.1, dur: 0.09, type: 'square', gain: 0.07 })
+      tone(ac, { freq: f, at: t0 + i * 0.1, dur: 0.09, type: 'square', gain: 0.07 })
     );
-    tone(ac, { freq: [NOTE.C5, NOTE.C6], at: 0.46, dur: 0.42, type: 'square', gain: 0.06 });
+    tone(ac, { freq: [NOTE.C5, NOTE.C6], at: t0 + 0.46, dur: 0.42, type: 'square', gain: 0.06 });
   },
 
-  /** Muhandis, quruvchi, uchuvchi — mexanizm ovozi */
-  machine: (ac) => {
+  /** Muhandis, quruvchi, mexanizator — mexanizm ovozi */
+  machine: (ac, t0) => {
     for (let i = 0; i < 4; i++) {
-      tone(ac, { freq: 120 + i * 18, at: i * 0.13, dur: 0.1, type: 'square', gain: 0.09 });
+      tone(ac, { freq: 120 + i * 18, at: t0 + i * 0.13, dur: 0.1, type: 'square', gain: 0.09 });
     }
-    tone(ac, { freq: [180, 520], at: 0.56, dur: 0.6, type: 'sawtooth', gain: 0.08 });
+    tone(ac, { freq: [180, 520], at: t0 + 0.56, dur: 0.6, type: 'sawtooth', gain: 0.08 });
   },
 
-  /** Rassom, musiqachi, jurnalist — ko'tarinki ohang */
-  melody: (ac) => {
+  /** Rassom, musiqachi, oshpaz — ko'tarinki ohang */
+  melody: (ac, t0) => {
     const seq = [NOTE.C5, NOTE.D5, NOTE.E5, NOTE.G5, NOTE.C6];
     seq.forEach((f, i) =>
-      tone(ac, { freq: f, at: i * 0.13, dur: 0.34, type: 'triangle', gain: 0.13 })
+      tone(ac, { freq: f, at: t0 + i * 0.13, dur: 0.34, type: 'triangle', gain: 0.13 })
     );
   },
 
-  /** O'qituvchi, olim — maktab qo'ng'irog'i */
-  bell: (ac) => {
+  /** O'qituvchi, olim, sudya — maktab qo'ng'irog'i */
+  bell: (ac, t0) => {
     [0, 0.34, 0.68].forEach((at) => {
-      tone(ac, { freq: NOTE.G5, at, dur: 0.55, type: 'sine', gain: 0.13 });
-      tone(ac, { freq: NOTE.C6, at, dur: 0.45, type: 'sine', gain: 0.07 });
+      tone(ac, { freq: NOTE.G5, at: t0 + at, dur: 0.55, type: 'sine', gain: 0.13 });
+      tone(ac, { freq: NOTE.C6, at: t0 + at, dur: 0.45, type: 'sine', gain: 0.07 });
     });
   },
 
   /** Tadbirkor, bank xodimi — tanga jarangi */
-  coins: (ac) => {
+  coins: (ac, t0) => {
     [0, 0.09, 0.19, 0.3].forEach((at, i) => {
-      tone(ac, { freq: NOTE.C6 + i * 90, at, dur: 0.16, type: 'triangle', gain: 0.1 });
+      tone(ac, { freq: NOTE.C6 + i * 90, at: t0 + at, dur: 0.16, type: 'triangle', gain: 0.1 });
     });
-    tone(ac, { freq: NOTE.G5, at: 0.44, dur: 0.5, type: 'sine', gain: 0.12 });
+    tone(ac, { freq: NOTE.G5, at: t0 + 0.44, dur: 0.5, type: 'sine', gain: 0.12 });
+  },
+
+  /** Uchuvchi, dron uchuvchisi, aviatsiya texnigi — parvoz */
+  flight: (ac, t0) => {
+    // Pastdan yuqoriga uzun ko'tarilish — samolyot ko'tarilgandek
+    tone(ac, { freq: [140, 900], at: t0, dur: 1.1, type: 'sine', gain: 0.1 });
+    tone(ac, { freq: [70, 450], at: t0 + 0.05, dur: 1.1, type: 'triangle', gain: 0.07 });
+    // Yuqorida ochilib ketadigan nota
+    tone(ac, { freq: NOTE.G5, at: t0 + 0.95, dur: 0.7, type: 'sine', gain: 0.1 });
+    tone(ac, { freq: NOTE.C6, at: t0 + 1.05, dur: 0.6, type: 'sine', gain: 0.07 });
+  },
+
+  /** Sportchi, murabbiy — stadion g'alabasi */
+  victory: (ac, t0) => {
+    // Hakam hushtagi
+    tone(ac, { freq: [2200, 2600], at: t0, dur: 0.1, type: 'square', gain: 0.05 });
+    tone(ac, { freq: [2600, 2200], at: t0 + 0.1, dur: 0.12, type: 'square', gain: 0.05 });
+    // G'alaba signali — takrorlanuvchi ko'tarinki uchlik
+    [0.35, 0.62].forEach((at) => {
+      tone(ac, { freq: NOTE.C5, at: t0 + at, dur: 0.14, type: 'square', gain: 0.09 });
+      tone(ac, { freq: NOTE.E5, at: t0 + at + 0.08, dur: 0.14, type: 'square', gain: 0.09 });
+      tone(ac, { freq: NOTE.G5, at: t0 + at + 0.16, dur: 0.22, type: 'square', gain: 0.1 });
+    });
+    tone(ac, { freq: NOTE.C6, at: t0 + 0.92, dur: 0.7, type: 'triangle', gain: 0.12 });
   },
 };
 
-/** Barcha yo'nalishlar uchun umumiy tantanavor akkord */
+/**
+ * Barcha yo'nalishlar uchun umumiy tantanavor kirish.
+ *
+ * Uch qatlamdan iborat, chunki bitta akkord "bayram" hissini bermaydi:
+ *   1. KO'TARILISH — qisqa yugurik nota, e'tiborni tortadi
+ *   2. AKKORD      — bas bilan birga to'liq major akkordi
+ *   3. JIMIRLASH   — yuqori notalar sharshara bo'lib tushadi
+ *
+ * Har bir notaning balandligi ataylab past (0.05-0.13): ular
+ * qo'shilganda ovoz to'liq chiqadi, lekin karnayni "yorib" yubormaydi.
+ */
 function fanfare(ac: AudioContext): void {
-  [NOTE.C4, NOTE.E4, NOTE.G4, NOTE.C5].forEach((f, i) =>
-    tone(ac, { freq: f, at: i * 0.07, dur: 0.9, type: 'triangle', gain: 0.09 })
+  // 1. Ko'tarilish
+  [NOTE.G4, NOTE.C5, NOTE.E5].forEach((f, i) =>
+    tone(ac, { freq: f, at: i * 0.075, dur: 0.16, type: 'triangle', gain: 0.09 })
+  );
+
+  // 2. Katta akkord — bas ostidan ushlab turadi
+  const at = 0.24;
+  tone(ac, { freq: NOTE.C3, at, dur: 1.7, type: 'sine', gain: 0.13 });
+  tone(ac, { freq: NOTE.G3, at: at + 0.02, dur: 1.6, type: 'sine', gain: 0.08 });
+  [NOTE.C4, NOTE.E4, NOTE.G4, NOTE.C5, NOTE.E5].forEach((f, i) =>
+    tone(ac, { freq: f, at: at + i * 0.035, dur: 1.5 - i * 0.1, type: 'triangle', gain: 0.075 })
+  );
+
+  // 3. Jimirlash — yuqoridan tushuvchi yorug' notalar
+  [NOTE.G5, NOTE.C6, NOTE.E6, NOTE.G6, NOTE.C7].forEach((f, i) =>
+    tone(ac, { freq: f, at: 0.5 + i * 0.085, dur: 0.5, type: 'sine', gain: 0.055 })
   );
 }
 
@@ -187,7 +242,8 @@ export function playCelebration(sound: SoundName): void {
 
   try {
     fanfare(ac);
-    RECIPES[sound]?.(ac);
+    // Kasbga xos ovoz fanfara cho'qqisidan keyin kiradi
+    RECIPES[sound]?.(ac, 1.15);
   } catch {
     // Ovoz chalinmasa ham anketa muvaffaqiyatli yuborilgan — muhimi shu
   }

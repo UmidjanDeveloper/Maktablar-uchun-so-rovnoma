@@ -6,8 +6,9 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Field } from './field';
 import { cn } from '@/lib/utils';
+import { useTheme } from '@/components/shared/theme-provider';
 import { Check } from 'lucide-react';
-import { categoryTheme, KASB_KATEGORIYALARI } from '@/lib/constants';
+import { categoryTheme, jobTheme, KASB_KATEGORIYALARI } from '@/lib/constants';
 import { EntityIcon } from '@/lib/icons';
 import type { FormState } from './types';
 
@@ -27,6 +28,7 @@ interface StepDreamJobProps {
 /** 3-qadam: orzudagi kasbni tanlash */
 export function StepDreamJob({ form, errors, update, kasblar }: StepDreamJobProps) {
   // Boshlang'ich yo'nalish: tanlangan kasb bo'lsa — uning yo'nalishi, aks holda birinchisi
+  const { resolved } = useTheme();
   const [category, setCategory] = useState<string>(
     form.jobCategory || KASB_KATEGORIYALARI[0].value
   );
@@ -53,7 +55,10 @@ export function StepDreamJob({ form, errors, update, kasblar }: StepDreamJobProp
   );
 
   const selected = kasblar.find((k) => k.name === form.dreamJob);
-  const selectedTheme = categoryTheme(selected?.category ?? form.jobCategory);
+  // Tanlangan kasbning O'Z jumlasi va rangi — yo'nalishniki emas
+  const selectedTheme = jobTheme(form.dreamJob, selected?.category ?? form.jobCategory);
+  const selectedAccent =
+    resolved === 'dark' ? selectedTheme.colorDark : selectedTheme.color;
 
   return (
     <div className="space-y-6">
@@ -75,6 +80,8 @@ export function StepDreamJob({ form, errors, update, kasblar }: StepDreamJobProp
         {visible.map((kasb, index) => {
           const isSelected = form.dreamJob === kasb.name;
           const theme = categoryTheme(kasb.category);
+          // Qorong'i temada to'q rang ko'rinmaydi
+          const accent = resolved === 'dark' ? theme.colorDark : theme.color;
           return (
             <motion.button
               key={kasb.name}
@@ -89,9 +96,9 @@ export function StepDreamJob({ form, errors, update, kasblar }: StepDreamJobProp
               style={
                 isSelected
                   ? {
-                      borderColor: theme.color,
-                      background: `color-mix(in srgb, ${theme.color} 14%, transparent)`,
-                      boxShadow: `0 0 0 1px ${theme.color}, 0 14px 34px -16px ${theme.color}`,
+                      borderColor: accent,
+                      background: `color-mix(in srgb, ${accent} 14%, transparent)`,
+                      boxShadow: `0 0 0 1px ${accent}, 0 14px 34px -16px ${accent}`,
                     }
                   : undefined
               }
@@ -106,7 +113,7 @@ export function StepDreamJob({ form, errors, update, kasblar }: StepDreamJobProp
                 name={kasb.name}
                 strokeWidth={1.6}
                 className="h-7 w-7 shrink-0"
-                {...({ style: { color: isSelected ? theme.color : 'var(--text-faint)' } } as object)}
+                style={{ color: isSelected ? accent : 'var(--text-faint)' }}
               />
               <span
                 className="font-display text-[12px] font-semibold leading-tight xs:text-[13px]"
@@ -121,7 +128,7 @@ export function StepDreamJob({ form, errors, update, kasblar }: StepDreamJobProp
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ type: 'spring', stiffness: 520, damping: 22 }}
                   className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full text-white"
-                  style={{ backgroundColor: theme.color }}
+                  style={{ backgroundColor: accent }}
                 >
                   <Check className="h-3 w-3 stroke-[3.5]" />
                 </motion.span>
@@ -147,15 +154,15 @@ export function StepDreamJob({ form, errors, update, kasblar }: StepDreamJobProp
           <div
             className="flex items-center gap-4 rounded-md border p-4"
             style={{
-              borderColor: `color-mix(in srgb, ${selectedTheme.color} 45%, transparent)`,
-              background: `color-mix(in srgb, ${selectedTheme.color} 10%, transparent)`,
+              borderColor: `color-mix(in srgb, ${selectedAccent} 45%, transparent)`,
+              background: `color-mix(in srgb, ${selectedAccent} 10%, transparent)`,
             }}
           >
             <span
               className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md border"
               style={{
-                borderColor: `color-mix(in srgb, ${selectedTheme.color} 45%, transparent)`,
-                color: selectedTheme.color,
+                borderColor: `color-mix(in srgb, ${selectedAccent} 45%, transparent)`,
+                color: selectedAccent,
               }}
             >
               <EntityIcon name={form.dreamJob} strokeWidth={1.6} className="h-6 w-6" />
@@ -163,7 +170,7 @@ export function StepDreamJob({ form, errors, update, kasblar }: StepDreamJobProp
             <div className="min-w-0">
               <p
                 className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em]"
-                style={{ color: selectedTheme.color }}
+                style={{ color: selectedAccent }}
               >
                 Sening tanlovingiz
               </p>

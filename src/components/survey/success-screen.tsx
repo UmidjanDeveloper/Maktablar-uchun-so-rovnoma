@@ -5,7 +5,8 @@ import { motion } from 'framer-motion';
 import { RotateCcw, Volume2, VolumeX, WifiOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Confetti } from './confetti';
-import { categoryTheme } from '@/lib/constants';
+import { jobTheme } from '@/lib/constants';
+import { useTheme } from '@/components/shared/theme-provider';
 import { EntityIcon } from '@/lib/icons';
 import { isMuted, playCelebration, setMuted } from '@/lib/sound';
 
@@ -24,7 +25,7 @@ const AUTO_RESET_SECONDS = 25;
 interface SuccessScreenProps {
   firstName: string;
   dreamJob: string;
-  /** Kasb yo'nalishi — rang, ovoz va tabrik jumlasi shunga qarab tanlanadi */
+  /** Kasb yo'nalishi — rang shunga qarab tanlanadi (jumla va ovoz kasbning o'zidan) */
   jobCategory: string;
   /** Anketa internetsiz saqlangan bo'lsa — ogohlantirish ko'rsatiladi */
   savedOffline: boolean;
@@ -54,12 +55,22 @@ export function SuccessScreen({
 }: SuccessScreenProps) {
   const [seconds, setSeconds] = useState(AUTO_RESET_SECONDS);
   const [muted, setMutedState] = useState(false);
+  const [lite, setLite] = useState(false);
 
-  const theme = useMemo(() => categoryTheme(jobCategory), [jobCategory]);
+  const { resolved } = useTheme();
+  const theme = useMemo(() => jobTheme(dreamJob, jobCategory), [dreamJob, jobCategory]);
+
+  /**
+   * Kasb rangi temaga qarab tanlanadi.
+   * Qorong'i fonda to'q rang butunlay yo'qoladi — ikona qora doiraga
+   * aylanib qoladi va tabrik "porlamaydi".
+   */
+  const accent = resolved === 'dark' ? theme.colorDark : theme.color;
 
   // Ovoz holatini o'qiymiz va tabrik ovozini chalamiz
   useEffect(() => {
     setMutedState(isMuted());
+    setLite(document.documentElement.dataset.fx === 'lite');
     playCelebration(theme.sound);
   }, [theme.sound]);
 
@@ -87,10 +98,12 @@ export function SuccessScreen({
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 -z-10"
         style={{
-          background: `radial-gradient(90vmin 70vmin at 50% 32%, color-mix(in srgb, ${theme.color} 30%, transparent) 0%, transparent 70%)`,
+          background: `radial-gradient(90vmin 70vmin at 50% 32%, color-mix(in srgb, ${accent} 42%, transparent) 0%, transparent 70%)`,
         }}
       />
-      <Confetti count={80} />
+      {/* Zaif kompyuterda bo'laklar soni kamayadi — [data-fx="lite"]
+          rejimida animatsiya og'irlik qilmasligi uchun */}
+      <Confetti count={lite ? 45 : 140} />
 
       {/* Ovozni o'chirish — kompyuter sinfida shovqin bo'lmasligi uchun */}
       <button
@@ -111,19 +124,23 @@ export function SuccessScreen({
       >
         <span
           className="absolute inset-0 -z-10 rounded-full blur-2xl"
-          style={{ backgroundColor: theme.color, opacity: 0.4 }}
+          style={{ backgroundColor: accent, opacity: 0.55 }}
         />
         <span
           className="glass-strong flex h-32 w-32 items-center justify-center rounded-full sm:h-40 sm:w-40"
           style={{
-            borderColor: `color-mix(in srgb, ${theme.color} 55%, transparent)`,
-            boxShadow: `0 0 0 1px color-mix(in srgb, ${theme.color} 40%, transparent), 0 20px 50px -16px ${theme.color}`,
+            // Doira ichi ham kasb rangiga bo'yaladi — aks holda u
+            // qorong'i fonda "qora tuynuk" bo'lib ko'rinadi
+            backgroundColor: `color-mix(in srgb, ${accent} 16%, transparent)`,
+            borderColor: `color-mix(in srgb, ${accent} 60%, transparent)`,
+            boxShadow: `0 0 0 1px color-mix(in srgb, ${accent} 45%, transparent), 0 24px 60px -14px ${accent}`,
           }}
         >
           <EntityIcon
             name={dreamJob}
-            strokeWidth={1.5}
+            strokeWidth={1.6}
             className="h-14 w-14 sm:h-16 sm:w-16"
+            style={{ color: accent }}
           />
         </span>
       </motion.div>
@@ -144,7 +161,7 @@ export function SuccessScreen({
         className="mt-4 max-w-2xl text-balance font-display text-xl font-semibold leading-snug text-ink xs:text-2xl sm:text-3xl"
       >
         Sen kelajakda ajoyib{' '}
-        <span style={{ color: theme.color }}>{dreamJob}</span> bo&apos;lasan!
+        <span style={{ color: accent }}>{dreamJob}</span> bo&apos;lasan!
       </motion.p>
 
       {/* Yo'nalishga mos shaxsiy jumla */}
@@ -157,14 +174,32 @@ export function SuccessScreen({
         {theme.cheer}
       </motion.p>
 
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.56, duration: 0.45 }}
-        className="mt-2 max-w-md text-sm text-ink-faint"
+      {/* Yakuniy chaqiriq — bola shu gap bilan o'rnidan turadi */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.94 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.6, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        className="mt-8 flex max-w-xl flex-col items-center gap-2"
       >
-        Orzularing sari dadil qadam tashla.
-      </motion.p>
+        <span
+          aria-hidden="true"
+          className="h-px w-24"
+          style={{ background: `linear-gradient(90deg, transparent, ${accent}, transparent)` }}
+        />
+        <p className="font-display text-lg font-bold leading-snug text-ink sm:text-xl">
+          Bugun sen shunchaki anketa to&apos;ldirmading —
+          <br className="hidden sm:block" />{' '}
+          <span style={{ color: accent }}>orzuingni ovoz chiqarib aytding.</span>
+        </p>
+        <p className="text-sm text-ink-muted sm:text-[15px]">
+          Endi unga qarab yur. Xatirchi sendan kuchli odam chiqishini kutmoqda.
+        </p>
+        <span
+          aria-hidden="true"
+          className="h-px w-24"
+          style={{ background: `linear-gradient(90deg, transparent, ${accent}, transparent)` }}
+        />
+      </motion.div>
 
       {savedOffline && (
         <div className="mt-7 flex max-w-md items-center gap-2 rounded-md border border-warn/40 bg-warn-bg px-4 py-3 text-sm font-medium text-warn">
@@ -177,8 +212,8 @@ export function SuccessScreen({
       <motion.div
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.66, duration: 0.45 }}
-        className="mt-10 flex flex-col items-center gap-3"
+        transition={{ delay: 0.8, duration: 0.45 }}
+        className="mt-9 flex flex-col items-center gap-3"
       >
         <Button onClick={onReset} size="xl" className="h-14 px-10 text-base">
           <RotateCcw className="h-5 w-5" />

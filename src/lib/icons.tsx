@@ -16,34 +16,36 @@
  *  ikona qo'shing — aks holda zaxira ikona (Sparkles) ko'rinadi.
  * ============================================================
  */
+import type { CSSProperties } from 'react';
 import {
   Accessibility, Activity, Ambulance, Apple, Archive, Atom,
   Baby, BadgeCheck, Banknote, BarChart3, BatteryCharging, BedDouble,
-  Bike, Bird, BookMarked, BookOpen, Bot, Box,
-  Boxes, Brain, BrainCircuit, Briefcase, Brush, Bug,
-  Building2, Bus, CakeSlice, Calculator, Camera, Car,
-  CarTaxiFront, Carrot, ChefHat, Circle, Clapperboard, ClipboardCheck,
-  ClipboardList, Code2, Coffee, Cog, Construction, Cpu,
-  CreditCard, Croissant, Crown, Dna, Drama, Dribbble,
-  Droplets, Dumbbell, Egg, Eye, Fan, FileCheck,
-  FileSearch, FileText, Film, Fish, Flag, Flame,
-  FlaskConical, Flower, Flower2, Footprints, Fuel, Gamepad2,
-  Gavel, Gem, Globe, GraduationCap, Hammer, HardHat,
-  Headset, Heart, HeartHandshake, HeartPulse, Image, Landmark,
-  Languages, LayoutTemplate, Leaf, Library, ListChecks, Luggage,
-  Mail, MapPinned, Medal, Megaphone, MessagesSquare, Mic,
-  Microscope, Milk, Monitor, Mountain, Music, Music2,
-  Network, Newspaper, PackageCheck, PackageSearch, Palette, PawPrint,
-  PenLine, PenTool, Pencil, PersonStanding, Pickaxe, PiggyBank,
-  Pill, Plane, PlaneTakeoff, Radar, Receipt, Ruler,
-  Scale, ScanLine, School, Scissors, ScrollText, Search,
-  Shield, ShieldAlert, ShieldCheck, ShoppingCart, Shovel, Sigma,
+  Bike, Bird, Blocks, BookMarked, BookOpen, Bot,
+  Box, Boxes, Brain, BrainCircuit, Briefcase, Brush,
+  Bug, Building2, Bus, CakeSlice, Calculator, Camera,
+  Car, CarTaxiFront, Carrot, ChefHat, Circle, Clapperboard,
+  ClipboardCheck, ClipboardList, Code2, Coffee, Cog, Construction,
+  Cpu, CreditCard, Croissant, Crown, Dna, Drama,
+  Dribbble, Droplets, Dumbbell, Egg, Eye, Fan,
+  FileCheck, FileSearch, FileText, Film, FireExtinguisher, Fish,
+  Flag, Flame, FlaskConical, Flower, Flower2, Footprints,
+  Fuel, Gamepad2, Gavel, Gem, Globe, GraduationCap,
+  Hammer, HardHat, Headset, Heart, HeartHandshake, HeartPulse,
+  Image, Landmark, Languages, LayoutTemplate, Leaf, Library,
+  ListChecks, Luggage, Mail, MapPinned, Medal, Megaphone,
+  MessagesSquare, Mic, Microscope, Milk, Monitor, Mountain,
+  Music, Music2, Network, Newspaper, PackageCheck, PackageSearch,
+  Palette, PawPrint, PenLine, PenTool, Pencil, PersonStanding,
+  Pickaxe, PieChart, PiggyBank, Pill, Plane, PlaneTakeoff,
+  Radar, Receipt, Ruler, Scale, ScanLine, School,
+  Scissors, ScrollText, Search, Shield, ShieldAlert, ShieldCheck,
+  ShieldPlus, Shirt, ShoppingCart, Shovel, ShowerHead, Sigma,
   Smartphone, Sofa, Sparkles, SprayCan, Sprout, Stamp,
   Stethoscope, Store, Swords, Syringe, Target, Telescope,
   TestTube, Tractor, TrainFront, TreeDeciduous, TrendingUp, Trophy,
   Truck, Users, Utensils, Video, Volleyball, Volume2,
-  Wand2, Warehouse, Waves, Wheat, Wrench, Zap,
-  CalendarDays, CircleCheck, CircleOff, Clock3, Home, Meh, Milestone, Moon, MonitorSmartphone, Palmtree, Sun, X,
+  Wand2, Warehouse, Waves, Wheat, Worm, Wrench,
+  Zap,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -80,7 +82,7 @@ export const JOB_ICONS: Record<string, LucideIcon> = {
   'Dietolog': Apple,
   "O'qituvchi": GraduationCap,
   'Olim': Microscope,
-  'Tarbiyachi': Baby,
+  'Tarbiyachi': Blocks,
   "Boshlang'ich sinf o'qituvchisi": Pencil,
   'Maktab direktori': School,
   'Kutubxonachi': Library,
@@ -94,14 +96,14 @@ export const JOB_ICONS: Record<string, LucideIcon> = {
   'Harbiy xizmatchi': Medal,
   'IIB xodimi': BadgeCheck,
   'Huquqshunos': Scale,
-  'Qutqaruvchi (FVV)': Flame,
+  'Qutqaruvchi (FVV)': FireExtinguisher,
   'Chegarachi': Flag,
   'Sudya': Gavel,
   'Prokuror': ShieldAlert,
   'Advokat': BookMarked,
   'Tergovchi': Search,
   'Xavfsizlik xodimi': Shield,
-  'Harbiy shifokor': Stethoscope,
+  'Harbiy shifokor': ShieldPlus,
   'Notarius': Stamp,
   'Bojxona xodimi': PackageSearch,
   'Muhandis': Cog,
@@ -110,8 +112,8 @@ export const JOB_ICONS: Record<string, LucideIcon> = {
   'Elektrchi': Zap,
   'Uchuvchi': Plane,
   'Payvandchi': Flame,
-  'Santexnik': Wrench,
-  'Avtomobil ustasi': Car,
+  'Santexnik': ShowerHead,
+  'Avtomobil ustasi': Wrench,
   'Energetik': BatteryCharging,
   'Neft va gaz muhandisi': Fuel,
   'Kon muhandisi': Pickaxe,
@@ -124,7 +126,7 @@ export const JOB_ICONS: Record<string, LucideIcon> = {
   'Jurnalist': Mic,
   'Bloger/Youtuber': Video,
   'Oshpaz': ChefHat,
-  'Tikuvchi/Dizayner': Scissors,
+  'Tikuvchi/Dizayner': Shirt,
   'Fotograf': Camera,
   'Video montajchi': Clapperboard,
   'Aktyor': Drama,
@@ -152,7 +154,7 @@ export const JOB_ICONS: Record<string, LucideIcon> = {
   'Agronom': Sprout,
   'Chorvador': Milk,
   "Bog'bon": TreeDeciduous,
-  'Pillachi': Bug,
+  'Pillachi': Worm,
   'Asalarichi': Flower2,
   'Paxtakor': Flower,
   'Sabzavotchi': Carrot,
@@ -190,7 +192,7 @@ export const JOB_ICONS: Record<string, LucideIcon> = {
   'Hokim yordamchisi': Building2,
   'Mahalla raisi': Users,
   'Diplomat': Globe,
-  'Statistik': BarChart3,
+  'Statistik': PieChart,
   'Soliq inspektori': Receipt,
   'Ijtimoiy xodim': HeartHandshake,
   'Ekolog': Leaf,
@@ -289,69 +291,6 @@ export const ABROAD_ICONS: Record<string, LucideIcon> = {
   "O'ylab ko'rmaganman": Sparkles,
 };
 
-
-/* ---------- TA'LIM MARKAZI: KERAKLI KURSLAR ---------- */
-export const COURSE_ICONS: Record<string, LucideIcon> = {
-  'Chet tili kursi': Languages,
-  'Fizika va kimyo': FlaskConical,
-  'Ona tili va adabiyot': BookOpen,
-  Dasturlash: Code2,
-  Robototexnika: Bot,
-  'Grafik dizayn': Palette,
-  'SMM va marketing': Megaphone,
-  Tikuvchilik: Scissors,
-  Oshpazlik: ChefHat,
-  Hunarmandchilik: Hammer,
-  'Avtomobil ustaligi': Car,
-  'Elektrik va payvandchilik': Zap,
-  "Qishloq xo'jaligi": Wheat,
-  Rassomlik: Brush,
-  Raqs: PersonStanding,
-  'Notiqlik va liderlik': Mic,
-  'Moliyaviy savodxonlik': Calculator,
-};
-
-/* ---------- TA'LIM MARKAZI: TILLAR ---------- */
-export const LANGUAGE_ICONS: Record<string, LucideIcon> = {
-  'Ingliz tili': Languages,
-  'Rus tili': Languages,
-  'Koreys tili': Globe,
-  'Turk tili': Globe,
-  'Arab tili': Globe,
-  'Xitoy tili': Globe,
-  'Nemis tili': Globe,
-  'Til kursi kerak emas': Circle,
-};
-
-/* ---------- TA'LIM MARKAZI: MASOFA, TO'SIQ, VAQT, TEXNIKA ---------- */
-export const CENTER_ICONS: Record<string, LucideIcon> = {
-  // Qancha yo'l yurishga tayyor
-  'Faqat maktabimda': School,
-  Mahallamda: Home,
-  "Qo'shni mahallaga ham": Footprints,
-  'Tuman markazigacha': Bus,
-
-  // Hozir nega bormaydi
-  "Yaqin atrofda bunday to'garak yo'q": CircleOff,
-  'Uzoq, qatnash qiyin': Milestone,
-  "Vaqtim yo'q": Clock3,
-  'Ota-onam ruxsat bermaydi': Users,
-  'Qiziqarli emas': Meh,
-  'Hozir ham qatnayapman': CircleCheck,
-
-  // Qachon qatnasha oladi
-  'Darsdan keyin (kunduzi)': Sun,
-  Kechqurun: Moon,
-  'Dam olish kunlari': CalendarDays,
-  "Yozgi ta'tilda": Palmtree,
-
-  // Uydagi texnika
-  'Kompyuter ham, internet ham bor': MonitorSmartphone,
-  'Faqat telefon va internet bor': Smartphone,
-  'Faqat kompyuter bor': Monitor,
-  "Ikkalasi ham yo'q": X,
-};
-
 /* ------------------------------------------------------------------ */
 /* Yagona kirish nuqtasi                                               */
 /* ------------------------------------------------------------------ */
@@ -362,9 +301,6 @@ export const CENTER_ICONS: Record<string, LucideIcon> = {
  * to'garakda uchraydi; birinchi mos kelgani ishlatiladi.
  */
 const REGISTRIES = [
-  COURSE_ICONS,
-  LANGUAGE_ICONS,
-  CENTER_ICONS,
   JOB_ICONS,
   CATEGORY_ICONS,
   SUBJECT_ICONS,
@@ -392,6 +328,8 @@ interface EntityIconProps {
   name: string;
   className?: string;
   strokeWidth?: number;
+  /** Ikona rangini tashqaridan berish uchun (masalan kasb rangi) */
+  style?: CSSProperties;
 }
 
 /**
@@ -399,7 +337,14 @@ interface EntityIconProps {
  * Rang `currentColor` dan olinadi — ota elementning matn rangi bilan
  * bir xil bo'ladi va tema almashganda o'zi moslashadi.
  */
-export function EntityIcon({ name, className, strokeWidth = 1.75 }: EntityIconProps) {
+export function EntityIcon({
+  name,
+  className,
+  strokeWidth = 1.75,
+  style,
+}: EntityIconProps) {
   const Icon = iconFor(name);
-  return <Icon className={className} strokeWidth={strokeWidth} aria-hidden="true" />;
+  return (
+    <Icon className={className} strokeWidth={strokeWidth} style={style} aria-hidden="true" />
+  );
 }

@@ -388,14 +388,14 @@ export const KASB_KATEGORIYALARI: { label: string; value: string; icon: string }
   { label: 'IT', value: 'IT & Texnologiya', icon: '💻' },
   { label: 'Tibbiyot', value: 'Tibbiyot', icon: '🩺' },
   { label: "Ta'lim", value: "Ta'lim & Ilm", icon: '📚' },
-  { label: 'Harbiy', value: 'Harbiy & Huquq', icon: '🎖️' },
-  { label: 'Muhandislik', value: 'Muhandislik', icon: '⚙️' },
+  { label: 'Harbiy', value: 'Harbiy & Huquq', icon: '🎖' },
+  { label: 'Muhandislik', value: 'Muhandislik', icon: '⚙' },
   { label: 'Ijodkorlik', value: 'Ijodkorlik', icon: '🎨' },
   { label: 'Tadbirkorlik', value: 'Tadbirkorlik', icon: '💼' },
   { label: "Qishloq xo'jaligi", value: "Qishloq xo'jaligi", icon: '🌾' },
   { label: 'Transport', value: 'Transport & Logistika', icon: '🚚' },
-  { label: 'Xizmat', value: "Xizmat ko'rsatish", icon: '🍽️' },
-  { label: 'Davlat xizmati', value: 'Davlat xizmati', icon: '🏛️' },
+  { label: 'Xizmat', value: "Xizmat ko'rsatish", icon: '🍽' },
+  { label: 'Davlat xizmati', value: 'Davlat xizmati', icon: '🏛' },
 ];
 
 /**
@@ -725,6 +725,12 @@ export interface CategoryTheme {
   color: string;
   /** Fon uchun ochiq soya */
   soft: string;
+  /**
+   * Qorong'i temadagi yorqin variant.
+   * Zarur: to'q ranglar qorong'i fonda ko'rinmaydi va tabrik
+   * ekranidagi kasb ikonasi qora doiraga aylanib qolardi.
+   */
+  colorDark: string;
   /** Tabrik ekranidagi shaxsiy jumla */
   cheer: string;
   /** Qaysi ovoz chalinadi (sound.ts dagi nomlar) */
@@ -738,71 +744,84 @@ export type SoundName =
   | 'machine'
   | 'melody'
   | 'bell'
-  | 'coins';
+  | 'coins'
+  | 'flight'
+  | 'victory';
 
 export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
   'IT & Texnologiya': {
     color: '#17559B',
+    colorDark: '#60A5FA',
     soft: '#E7F0FB',
     cheer: 'Sening kodlaring ertangi kunni yozadi.',
     sound: 'digital',
   },
   Tibbiyot: {
     color: '#C2334D',
+    colorDark: '#FB7185',
     soft: '#FCEAED',
     cheer: "Sening qo'llaring odamlarga shifo beradi.",
     sound: 'heartbeat',
   },
   "Ta'lim & Ilm": {
     color: '#7A3FBF',
+    colorDark: '#C084FC',
     soft: '#F1EAFB',
     cheer: "Sen minglab bolalarning yo'lini yoritasan.",
     sound: 'bell',
   },
   'Harbiy & Huquq': {
     color: '#1F7A2D',
+    colorDark: '#4ADE80',
     soft: '#E8F5EA',
     cheer: "Sen xalqimiz tinchligining posboni bo'lasan.",
     sound: 'siren',
   },
   Muhandislik: {
     color: '#B5651D',
+    colorDark: '#FB923C',
     soft: '#FBF0E5',
     cheer: 'Sen quradigan narsalar asrlar qoladi.',
     sound: 'machine',
   },
   Ijodkorlik: {
     color: '#C21E7A',
+    colorDark: '#F472B6',
     soft: '#FCE8F3',
     cheer: 'Sening ijoding odamlar qalbiga yetib boradi.',
     sound: 'melody',
   },
   Tadbirkorlik: {
     color: '#D89506',
+    colorDark: '#FBBF24',
     soft: '#FDF3DF',
     cheer: "Sen yaratgan ish o'rinlari oilalarni boqadi.",
     sound: 'coins',
   },
   "Qishloq xo'jaligi": {
     color: '#4D7C0F',
+    colorDark: '#A3E635',
     soft: '#EEF6E3',
     cheer: "Sening mehnating dasturxonimizga non bo'lib keladi.",
     sound: 'machine',
   },
   'Transport & Logistika': {
     color: '#0E7C86',
+    colorDark: '#22D3EE',
     soft: '#E3F3F5',
     cheer: "Sen yo'llarni yaqinlashtirasan, odamlarni bog'laysan.",
     sound: 'machine',
   },
   "Xizmat ko'rsatish": {
     color: '#B45309',
+    colorDark: '#F59E0B',
     soft: '#FBF0E0',
     cheer: 'Sening xizmating odamlarga kayfiyat ulashadi.',
     sound: 'melody',
   },
   'Davlat xizmati': {
     color: '#3730A3',
+    colorDark: '#818CF8',
     soft: '#E8E9FA',
     cheer: 'Sen xalq ishonchini oqlaydigan ish qilasan.',
     sound: 'bell',
@@ -812,6 +831,7 @@ export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
 /** Noma'lum yo'nalish uchun zaxira mavzu */
 export const DEFAULT_CATEGORY_THEME: CategoryTheme = {
   color: BRAND.river,
+  colorDark: '#60A5FA',
   soft: '#E7F0FB',
   cheer: 'Sening mehnating tumanimizni obod qiladi.',
   sound: 'melody',
@@ -820,6 +840,201 @@ export const DEFAULT_CATEGORY_THEME: CategoryTheme = {
 /** Yo'nalish mavzusini xavfsiz olish */
 export function categoryTheme(category: string): CategoryTheme {
   return CATEGORY_THEMES[category] ?? DEFAULT_CATEGORY_THEME;
+}
+
+/**
+ * ============================================================
+ *  HAR BIR KASB UCHUN ALOHIDA TABRIK
+ *
+ *  Ilgari tabrik jumlasi yo'nalishga bog'langan edi: 148 ta
+ *  kasbga atigi 11 ta jumla to'g'ri kelardi. Natijada dron
+ *  uchuvchisiga "sening kodlaring...", veterinarga esa
+ *  "odamlarga shifo berasan" deb chiqardi.
+ *
+ *  Endi har bir kasbning o'z jumlasi bor. Bola o'zi tanlagan
+ *  kasb haqida aynan o'ziga tegishli gapni o'qiydi — tabrik
+ *  ekrani shu sababli esda qoladi.
+ *
+ *  `sound` faqat yo'nalish ovozi mos kelmagan joyda beriladi
+ *  (masalan uchuvchiga mexanizm emas, parvoz ovozi).
+ * ============================================================
+ */
+export const KASB_TABRIKLARI: Record<string, { cheer: string; sound?: SoundName }> = {
+  // IT & Texnologiya
+  'Dasturchi': { cheer: 'Sening kodlaring minglab odamning ishini osonlashtiradi.' },
+  "Sun'iy Intellekt mutaxassisi": { cheer: "Sen o'rgatgan aql insonlarga xizmat qiladi." },
+  'Kiberxavfsizlik mutaxassisi': { cheer: "Sen ko'rinmas qalqonsan — ming odamning ma'lumoti sen tufayli omon." },
+  'Grafik Dizayner': { cheer: "Sen chizgan har bir shakl odamlarning ko'zini quvontiradi." },
+  'Mobil ilova yaratuvchi': { cheer: 'Sen yaratgan ilova minglab telefonda ochiladi.' },
+  "O'yin yaratuvchi": { cheer: 'Sen yaratgan olamda minglab bola sarguzasht qidiradi.' },
+  'Veb-dasturchi': { cheer: "Sen quradigan sayt butun dunyoga ochiq bo'ladi." },
+  "Ma'lumotlar tahlilchisi": { cheer: 'Sen raqamlar ichidan haqiqatni topib berasan.' },
+  'Tarmoq muhandisi': { cheer: "Sen tufayli odamlar bir-biri bilan uzilmay bog'lanadi." },
+  'Robototexnik': { cheer: 'Sen jonsiz temirga harakat va aql berasan.' },
+  '3D modelchi': { cheer: "Sen xayoldagi narsani qo'l bilan ushlasa bo'ladigan qilasan." },
+  'Dastur sinovchisi (QA)': { cheer: 'Sen topgan har bir xato minglab odamni ovoragarchilikdan saqlaydi.' },
+  'Kompyuter ustasi': { cheer: "Sening qo'ling tegishi bilan to'xtagan mashina yana ishga tushadi.", sound: 'machine' },
+  'Dron uchuvchisi': { cheer: "Sen osmondan turib butun bir dalani bir qarashda ko'rasan.", sound: 'flight' },
+  // Tibbiyot
+  'Shifokor': { cheer: "Sening qo'llaring odamlarga shifo beradi." },
+  'Jarroh': { cheer: 'Sen bir necha soat ichida butun bir umrni qaytarasan.' },
+  'Stomatolog': { cheer: "Sen tufayli odamlar og'riqsiz kuladi." },
+  'Hamshira': { cheer: "Bemor eng qiyin damida birinchi bo'lib seni ko'radi." },
+  'Psixolog': { cheer: "Sen ko'zga ko'rinmaydigan yaralarni davolaysan." },
+  'Farmatsevt': { cheer: "Sening qo'lingdagi dori kimningdir umidiga aylanadi." },
+  'Veterinar': { cheer: "Sen gapira olmaydigan jonivorning og'rig'ini tushunasan." },
+  'Pediatr': { cheer: "Kichkintoylarning sog'lom o'sishi senga bog'liq." },
+  'Kardiolog': { cheer: "Sen to'xtay deb turgan yurakni yana urishga majbur qilasan." },
+  "Ko'z shifokori": { cheer: "Sen tufayli kimdir dunyoni yana aniq ko'radi." },
+  'Laborant': { cheer: "Kasallikning nomini birinchi bo'lib sen aytasan." },
+  'Rentgenolog': { cheer: "Sen boshqalar ko'rmaganini ko'rasan." },
+  'Tez yordam feldsheri': { cheer: 'Sening bir daqiqang kimningdir umrini uzaytiradi.', sound: 'siren' },
+  'Reabilitolog': { cheer: "Sen yiqilgan odamni yana o'z oyog'ida turg'izasan." },
+  'Dietolog': { cheer: "Sen odamlarga sog'lom yashashni o'rgatasan." },
+  // Ta'lim & Ilm
+  "O'qituvchi": { cheer: "Sen minglab bolaning yo'lini yoritasan." },
+  'Olim': { cheer: 'Bugun hech kim bilmagan narsani ertaga sen ochasan.' },
+  'Tarbiyachi': { cheer: "Bola dunyoni birinchi bo'lib sening ko'zing bilan ko'radi." },
+  "Boshlang'ich sinf o'qituvchisi": { cheer: "Birinchi harfni sen o'rgatasan — bu bir umr esda qoladi." },
+  'Maktab direktori': { cheer: 'Butun bir maktabning havosini sen belgilaysan.' },
+  'Kutubxonachi': { cheer: 'Sen minglab kitobni aynan kerakli odamga yetkazasan.' },
+  'Tarjimon': { cheer: 'Sen tufayli boshqa tildagi odamlar bir-birini tushunadi.' },
+  'Arxeolog': { cheer: 'Sen yer ostidan xalqimizning tarixini qazib olasan.' },
+  'Geolog': { cheer: "Sen yerimiz qa'ridagi boylikni topasan." },
+  'Astronom': { cheer: "Sen insoniyat hali bormagan joyni o'rganasan." },
+  'Matematik': { cheer: 'Sen olamning eng aniq tilida gapirasan.' },
+  'Biolog': { cheer: 'Sen tirik olamning sirlarini ochasan.' },
+  'Tarixchi': { cheer: "Sen o'tmishni esda saqlab, kelajakni xatodan asraysan." },
+  // Harbiy & Huquq
+  'Harbiy xizmatchi': { cheer: 'Sen tinch uyqumizning posbonisan.' },
+  'IIB xodimi': { cheer: "Sen bor joyda odamlar o'zini xavfsiz his qiladi." },
+  'Huquqshunos': { cheer: 'Sen haqiqatni qonun tilida himoya qilasan.', sound: 'bell' },
+  'Qutqaruvchi (FVV)': { cheer: 'Hamma qochayotgan tomonga sen yugurasan.' },
+  'Chegarachi': { cheer: 'Vatan chegarasi sening yelkangda turadi.' },
+  'Sudya': { cheer: "Sening bir so'zing odamning taqdirini hal qiladi — adolat bilan ayt.", sound: 'bell' },
+  'Prokuror': { cheer: "Qonun buzilgan joyda birinchi bo'lib sen ovoz chiqarasan.", sound: 'bell' },
+  'Advokat': { cheer: "Sen hech kim eshitmaganning ovozi bo'lasan.", sound: 'bell' },
+  'Tergovchi': { cheer: 'Sen chalkash izlar ichidan haqiqatni topasan.' },
+  'Xavfsizlik xodimi': { cheer: "Sen tinchlikni ko'rinmas holda saqlaysan." },
+  'Harbiy shifokor': { cheer: "Sen eng og'ir sharoitda ham hayot uchun kurashasan.", sound: 'heartbeat' },
+  'Notarius': { cheer: 'Sening imzoing hujjatga kuch beradi.', sound: 'bell' },
+  'Bojxona xodimi': { cheer: 'Mamlakat darvozasida halollik sendan boshlanadi.', sound: 'bell' },
+  // Muhandislik
+  'Muhandis': { cheer: 'Sen chizgan chizma temir va betonga aylanadi.' },
+  'Arxitektor': { cheer: 'Sen chizgan uyda odamlar bir umr yashaydi.' },
+  'Quruvchi': { cheer: 'Sen qurgan bino sendan keyin ham asrlar turadi.' },
+  'Elektrchi': { cheer: "Sen tufayli qorong'i uyga yorug'lik keladi." },
+  'Uchuvchi': { cheer: 'Sen minglab odamni osmon orqali uyiga eltasan.', sound: 'flight' },
+  'Payvandchi': { cheer: "Sening uchqunlaringdan ko'prik va zavod tug'iladi." },
+  'Santexnik': { cheer: 'Sen har bir uyga toza suv olib borasan.' },
+  'Avtomobil ustasi': { cheer: "Sening qo'ling tegsa, to'xtagan mashina yana yo'lga chiqadi." },
+  'Energetik': { cheer: "Butun tumanning yorug'ligi sening navbatchiligingga bog'liq." },
+  'Neft va gaz muhandisi': { cheer: "Sen yer qa'ridagi kuchni odamlar xizmatiga qo'yasan." },
+  'Kon muhandisi': { cheer: 'Sen yer ostidan mamlakat boyligini chiqarasan.' },
+  'Konstruktor': { cheer: "Sen hali dunyoda yo'q narsani qog'ozda yaratasan." },
+  "Suv xo'jaligi muhandisi": { cheer: "Sen suvni cho'lga olib borasan — o'sha yer gullaydi." },
+  "Yo'l qurilishi muhandisi": { cheer: "Sen qurgan yo'l qishloqni shaharga ulaydi." },
+  'Iqlim texnikasi ustasi': { cheer: "Sen tufayli issiqda salqin, sovuqda iliq bo'ladi." },
+  // Ijodkorlik
+  'Rassom': { cheer: "Sening bo'yoqlaring devorda ham, qalbda ham iz qoldiradi." },
+  'Musiqachi': { cheer: "Sening kuying odamlarning kayfiyatini o'zgartiradi." },
+  'Jurnalist': { cheer: 'Sen haqiqatni hech kim aytolmaganda aytasan.' },
+  'Bloger/Youtuber': { cheer: 'Sening bir gaping minglab tengdoshingga yetib boradi.' },
+  'Oshpaz': { cheer: 'Sening taomingdan keyin odamlar kulib turadi.' },
+  'Tikuvchi/Dizayner': { cheer: 'Sen tikkan kiyim odamga ishonch beradi.' },
+  'Fotograf': { cheer: "Sen bir lahzani abadiy qilib qo'yasan." },
+  'Video montajchi': { cheer: 'Sen tarqoq lavhalardan butun bir hikoya yasaysan.' },
+  'Aktyor': { cheer: "Sen sahnada boshqa umrni yashab, zalni yig'latasan va kuldirasan." },
+  'Rejissyor': { cheer: "Sen boshqalar ko'rmagan hikoyani ko'rsatib berasan." },
+  'Yozuvchi/Shoir': { cheer: "Sening bir satring yuz yildan keyin ham o'qiladi." },
+  'Xonanda': { cheer: "Sening ovozing to'ylarda ham, qalblarda ham yangraydi." },
+  'Raqqosa': { cheer: "Sen so'zsiz gapirishni bilasan." },
+  'Interyer dizayneri': { cheer: 'Sen oddiy xonani odam yashagisi keladigan joyga aylantirasan.' },
+  'Animator': { cheer: "Sen chizgan qahramon bolalarning do'stiga aylanadi." },
+  'Ovoz rejissyori': { cheer: 'Sen boshqalar eshitmaganini eshitasan.' },
+  'SMM mutaxassisi': { cheer: 'Sen kichik ishni butun mamlakatga tanitasan.' },
+  // Tadbirkorlik
+  'Fermer': { cheer: "Sen ekkan urug' minglab dasturxonga non bo'lib boradi." },
+  'Tadbirkor': { cheer: "Sen yaratgan ish o'rinlari oilalarni boqadi." },
+  'Bank xodimi': { cheer: 'Odamlar butun mehnatini senga ishonib topshiradi.' },
+  'Sportchi/Murabbiy': { cheer: "Sen bayroq ko'tarib chiqqaningda butun tuman o'rnidan turadi.", sound: 'victory' },
+  'Buxgalter': { cheer: 'Sening aniqliging butun korxonani xatodan saqlaydi.' },
+  'Iqtisodchi': { cheer: "Sen raqamlar orqali ertangi kunni ko'ra olasan." },
+  'Marketolog': { cheer: 'Sen yaxshi mahsulotni aynan kerakli odamga topib berasan.' },
+  'Menejer': { cheer: 'Sen odamlarni bitta maqsad atrofida birlashtirasan.' },
+  'Savdo mutaxassisi': { cheer: 'Sen kerakli narsani kerakli vaqtda yetkazasan.' },
+  'Auditor': { cheer: 'Sen halollikni raqamlar bilan isbotlaysan.' },
+  "Sug'urta agenti": { cheer: 'Kutilmagan kunda odamning yelkasidan sen tutasan.' },
+  'Investor': { cheer: "Sen boshqalar ko'rmagan imkoniyatga ishonasan." },
+  'Loyiha rahbari': { cheer: "Sen g'oyani boshidan oxirigacha yetkazasan." },
+  // Qishloq xo'jaligi
+  'Agronom': { cheer: "Sen tufayli bir tup ko'chat butun bir bog'ga aylanadi." },
+  'Chorvador': { cheer: "Sening mehnating har uyning dasturxoniga sut bo'lib boradi." },
+  "Bog'bon": { cheer: 'Sen ekkan daraxt sendan keyin ham soya beradi.' },
+  'Pillachi': { cheer: 'Sen kichkina qurtdan ipak yaratasan.' },
+  'Asalarichi': { cheer: 'Sen tabiat bilan til topishib, shirinlik yaratasan.' },
+  'Paxtakor': { cheer: 'Sening dalangdan mamlakat kiyimi boshlanadi.' },
+  'Sabzavotchi': { cheer: "Sen yetishtirgan hosil bolalarni sog'lom qiladi." },
+  'Mexanizator': { cheer: 'Sening texnikang bir kunda yuz kishilik ishni bajaradi.' },
+  "Suv xo'jaligi mutaxassisi": { cheer: "Sen suvni to'g'ri taqsimlab, butun dalani tirik qilasan." },
+  'Baliqchi': { cheer: 'Sen suv ostidagi boylikni odamlarga yetkazasan.' },
+  'Parrandachi': { cheer: 'Sening mehnating har kuni har uyning stoliga chiqadi.' },
+  'Zootexnik': { cheer: "Jonivorlarning sog'lig'i uchun sen javobgarsan." },
+  'Issiqxona egasi': { cheer: "Sen qishning o'rtasida yozgi hosil yetishtirasan." },
+  "Don va g'alla mutaxassisi": { cheer: 'Sen tufayli non hech qachon kamaymaydi.' },
+  // Transport & Logistika
+  'Haydovchi': { cheer: 'Sen odamlarni eson-omon manzilga yetkazasan.' },
+  'Yuk mashinasi haydovchisi': { cheer: "Sen tunda yo'lda bo'lasan — ertalab do'konlar to'la bo'ladi." },
+  "Temiryo'l mashinisti": { cheer: "Sening poyezding minglab odamni bir kunda bog'laydi." },
+  'Avtobus haydovchisi': { cheer: 'Har kuni ertalab bolalarni maktabga sen yetkazasan.' },
+  'Taksi haydovchisi': { cheer: 'Shoshgan odamning eng katta yordamchisi — sen.' },
+  'Logistika menejeri': { cheer: 'Sen tufayli yuk kerakli joyga kerakli vaqtda yetadi.' },
+  'Ombor mudiri': { cheer: 'Sening tartibing butun zanjirni ushlab turadi.' },
+  'Kuryer': { cheer: 'Sen kimningdir kutgan xabarini yetkazasan.' },
+  'Dispetcher': { cheer: "Sen ko'rinmaysan, lekin hamma harakat sendan boshlanadi." },
+  'Aviatsiya texnigi': { cheer: "Samolyot osmonga ko'tarilishidan oldin sen ruxsat berasan.", sound: 'flight' },
+  'Yuk qabul qiluvchi': { cheer: "Sening aniqliging hech narsani yo'qotmaydi." },
+  // Xizmat ko'rsatish
+  'Ofitsiant': { cheer: "Sening kulging mehmonning kayfiyatini ko'taradi." },
+  'Barista': { cheer: 'Sen bir piyola bilan odamning kunini boshlab berasan.' },
+  'Qandolatchi': { cheer: 'Sening shirinliging bayramlarni bayram qiladi.' },
+  'Novvoy': { cheer: 'Sen tunda pishirgan non ertalab har uyga boradi.' },
+  'Sartarosh': { cheer: "Sendan chiqqan odam o'ziga ishonib ketadi." },
+  'Kosmetolog': { cheer: "Sen odamlarga o'zini yoqtirishni qaytarasan." },
+  'Mehmonxona administratori': { cheer: 'Mehmon shahar haqidagi birinchi taassurotni sendan oladi.' },
+  "Gid (yo'lboshchi)": { cheer: "Sen tumanimiz tarixini butun dunyoga so'zlab berasan." },
+  'Turizm menejeri': { cheer: 'Sen tufayli mehmonlar yurtimizni sevib qaytadi.' },
+  'Sotuvchi': { cheer: 'Sen har kuni yuzlab odam bilan samimiy muloqot qilasan.' },
+  'Kassir': { cheer: "Sening halolliging do'konning obro'sini saqlaydi." },
+  'Tozalash xizmati xodimi': { cheer: 'Sen tufayli har kuni tong toza boshlanadi.' },
+  // Davlat xizmati
+  'Davlat xizmatchisi': { cheer: 'Sen xalq ishonchini oqlaydigan ish qilasan.' },
+  'Hokim yordamchisi': { cheer: 'Sen odamlarning muammosini rahbargacha yetkazasan.' },
+  'Mahalla raisi': { cheer: 'Mahalladagi har bir xonadon senga ishonadi.' },
+  'Diplomat': { cheer: "Sen mamlakatimizning yuzi bo'lib dunyoga chiqasan." },
+  'Statistik': { cheer: "Sen to'plagan raqamlar asosida qaror qabul qilinadi." },
+  'Soliq inspektori': { cheer: "Sen yig'gan mablag' maktab va yo'lga aylanadi." },
+  'Ijtimoiy xodim': { cheer: "Eng ko'p yordamga muhtoj odamning yonida sen bo'lasan." },
+  'Ekolog': { cheer: 'Sen kelajak avlodga toza havo qoldirasan.' },
+  'Arxivchi': { cheer: "Sen saqlagan hujjat yuz yildan keyin ham kerak bo'ladi." },
+  'Pochta xodimi': { cheer: "Sen odamlar orasidagi eng eski ko'prikni ushlab turasan." },
+  'FHDYo xodimi': { cheer: "Har oilaning eng baxtli kuni sening qo'lingdan o'tadi." },
+};
+
+/**
+ * Kasb uchun rang, ovoz va tabrik jumlasini qaytaradi.
+ *
+ * Jumla va ovoz avval kasbning o'zidan qidiriladi; topilmasa
+ * (masalan admin panel orqali yangi kasb qo'shilgan bo'lsa)
+ * yo'nalish qiymatlari ishlatiladi. Rang esa doim yo'nalishdan
+ * olinadi — bir yo'nalishdagi kasblar bir xil rangda ko'rinishi
+ * uchun.
+ */
+export function jobTheme(dreamJob: string, category: string): CategoryTheme {
+  const base = categoryTheme(category);
+  const own = KASB_TABRIKLARI[dreamJob];
+  if (!own) return base;
+  return { ...base, cheer: own.cheer, sound: own.sound ?? base.sound };
 }
 
 /**
