@@ -259,22 +259,33 @@ const TRACK_URL = '/tabrik.mp3';
 let track: HTMLAudioElement | null = null;
 
 /**
- * Fayl umuman yo'qmi?
+ * Fayl umuman yo'qmi (404 yoki brauzer o'qiy olmaydigan format)?
  *
- *   null  — hali tekshirilmagan
- *   false — yo'q yoki brauzer o'qiy olmadi, boshqa urinilmaydi
- *
- * Bu bayroq bir marta hisoblanadi: har safar 404 so'rovini
- * takrorlash kioskda ortiqcha yuk.
+ * Bir marta aniqlanadi: har safar mavjud bo'lmagan faylni so'rab
+ * turish kiosk kompyuterida ortiqcha yuk.
  */
 let trackYoq = false;
 
 /**
+ * Chaqiruv raqami.
+ *
+ * `play()` tugamasdan turib ikkinchi chaqiruv kelsa yoki musiqa
+ * to'xtatilsa, birinchi `play()` "AbortError" bilan uziladi. Bu
+ * XATO EMAS — shunchaki biz uzdik. Raqam mos kelmasa, generatsiya
+ * qilingan fanfarani chalmaymiz, aks holda o'quvchi bir vaqtda
+ * ikkita ovozni eshitadi.
+ */
+let avlod = 0;
+
+/**
  * Fayldagi musiqani chaladi.
- * `true` — chalindi, `false` — chalinmadi (generatsiyaga qaytish kerak).
+ * `true` — chalindi (yoki ataylab uzildi), `false` — chalinmadi,
+ * generatsiya qilingan tabrikka qaytish kerak.
  */
 function playTrack(): Promise<boolean> {
   if (typeof window === 'undefined' || trackYoq) return Promise.resolve(false);
+
+  const men = ++avlod;
 
   try {
     if (!track) {
@@ -292,15 +303,21 @@ function playTrack(): Promise<boolean> {
       () => true,
       (xato: unknown) => {
         /*
-         * Brauzer avtomatik chalishni taqiqlagan bo'lsa (NotAllowedError)
-         * fayl aybdor emas — uni "yo'q" deb belgilamaymiz, aks holda
-         * keyingi o'quvchilarga ham chalinmay qoladi.
+         * Faylning o'zi o'qilmadimi? Buni istisno nomidan emas,
+         * media elementining holatidan bilamiz: `error` to'lgan
+         * bo'lsa — fayl yo'q yoki buzuq. Taqiqlangan avtomatik
+         * chalish (NotAllowedError) va uzilish (AbortError) da
+         * `error` bo'sh qoladi, ya'ni fayl aybdor emas.
          */
         const nomi = (xato as { name?: string } | null)?.name;
-        if (nomi !== 'NotAllowedError') {
+        if (track?.error || nomi === 'NotSupportedError') {
           trackYoq = true;
           track = null;
         }
+
+        // Bizni yangi chaqiruv yoki to'xtatish uzdi — fanfara kerak emas
+        if (men !== avlod) return true;
+
         return false;
       }
     );
@@ -333,6 +350,8 @@ export function playCelebration(sound: SoundName): void {
  * chalinib turmasligi kerak.
  */
 export function stopCelebration(): void {
+  // Kutilayotgan `play()` uzilganda fanfara chalinib ketmasligi uchun
+  avlod++;
   if (!track) return;
   try {
     track.pause();
