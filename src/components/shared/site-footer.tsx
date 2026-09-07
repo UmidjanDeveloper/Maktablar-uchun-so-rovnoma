@@ -1,14 +1,15 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { Logo } from '@/components/shared/logo';
 
 /**
- * Sahifa pastki qismi: hamkor logotipi va muallif.
+ * Sahifa pastki qismi: hamkor logotiplari va muallif.
  *
- * IT Shaharcha logotipi `public/it-shaharcha.png` faylidan olinadi.
- * Fayl hali qo'yilmagan bo'lsa, rasm o'rnida buzilgan belgi
- * ko'rinmasligi uchun blok butunlay yashiriladi — sayt hech qachon
- * "sinib turgan" ko'rinishga tushmaydi.
+ * IT Shaharcha logotipi `public/it-shaharcha.jpg` faylidan olinadi.
+ * Fayl yo'q bo'lsa yoki yuklanmasa, rasm o'rnida buzilgan belgi
+ * ko'rinmasligi uchun butun "Hamkorlikda" bloki yashiriladi —
+ * sayt hech qachon "sinib turgan" ko'rinishga tushmaydi.
  */
 export function SiteFooter() {
   const [logoBor, setLogoBor] = useState(true);
@@ -32,21 +33,36 @@ export function SiteFooter() {
     <footer className="mt-4 border-t border-line py-8">
       <div className="mx-auto flex max-w-3xl flex-col items-center gap-5 px-4 text-center">
         {logoBor && (
-          <div className="flex flex-col items-center gap-2">
+          <div className="flex flex-col items-center gap-3">
             <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
               Hamkorlikda
             </span>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              ref={rasm}
-              src="/it-shaharcha.png"
-              alt="IT Shaharcha — Yoshlar Axborot Texnologiyalari Markazi"
-              className="h-12 w-auto opacity-90 transition-opacity hover:opacity-100 sm:h-14"
-              onError={() => setLogoBor(false)}
-              onLoad={(e) => {
-                if (e.currentTarget.naturalWidth === 0) setLogoBor(false);
-              }}
-            />
+
+            {/* Ikki logotip yonma-yon: tuman gerbi va hamkor markaz */}
+            <div className="flex items-center gap-5 sm:gap-6">
+              <Logo className="h-14 w-14 sm:h-16 sm:w-16" />
+
+              <span
+                aria-hidden="true"
+                className="h-10 w-px sm:h-12"
+                style={{ background: 'var(--border-strong)' }}
+              />
+
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                ref={rasm}
+                src="/it-shaharcha.jpg"
+                alt="IT Shaharcha — Yoshlar Axborot Texnologiyalari Markazi"
+                title="IT Shaharcha — Yoshlar Axborot Texnologiyalari Markazi"
+                width={480}
+                height={238}
+                className="h-14 w-auto rounded-lg ring-1 ring-line sm:h-16"
+                onError={() => setLogoBor(false)}
+                onLoad={(e) => {
+                  if (e.currentTarget.naturalWidth === 0) setLogoBor(false);
+                }}
+              />
+            </div>
           </div>
         )}
 
