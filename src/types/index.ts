@@ -22,8 +22,9 @@ export interface StudentRecord {
   grade: number;
   favoriteSubjects: string[];
   clubs: string[];
-  dreamJob: string;
-  jobCategory: string;
+  /** Faqat 10-11-sinfda so'raladi — kichik sinflarda bo'sh */
+  dreamJob: string | null;
+  jobCategory: string | null;
   motivation: string | null;
   inspiration: string | null;
   studyAbroad: string | null;

@@ -22,7 +22,6 @@ import {
   VAQT_JAVOBLARI,
   UY_TEXNIKASI,
   TIL_KERAK_EMAS,
-  TOSIQ_YOQ,
 } from '../src/lib/constants';
 import { buildDedupeKey } from '../src/lib/dedupe';
 
@@ -143,7 +142,7 @@ async function main() {
   const kursNomlari = KERAKLI_KURSLAR_TEKIS.map((k) => k.name);
   const tilNomlari = TILLAR.map((t) => t.name).filter((t) => t !== TIL_KERAK_EMAS);
   const masofaNomlari = MASOFA_JAVOBLARI.map((m) => m.name);
-  const tosiqNomlari = TOSIQLAR.map((t) => t.name).filter((t) => t !== TOSIQ_YOQ);
+  const tosiqNomlari = TOSIQLAR.map((t) => t.name);
   const vaqtNomlari = VAQT_JAVOBLARI.map((v) => v.name);
   const texnikaNomlari = UY_TEXNIKASI.map((u) => u.name);
 
@@ -156,9 +155,12 @@ async function main() {
     const gender = isBoy ? "O'g'il bola" : 'Qiz bola';
     const firstName = isBoy ? rand(OGIL_ISMLAR) : rand(QIZ_ISMLAR);
     const lastName = rand(FAMILIYALAR) + (isBoy ? '' : 'a');
-    const kasb = rand(KASBLAR);
     const school = rand(MAKTABLAR);
     const grade = 5 + Math.floor(Math.random() * 7);
+    // Orzu kasb faqat 10-11-sinfda so'raladi
+    const kasb = grade >= 10 ? rand(KASBLAR) : null;
+    // To'siq sababi faqat hech qanday to'garakka qatnamaydiganlarda
+    const qatnaydi = Math.random() > 0.4;
     const createdAt = randomDate(60);
 
     const phone = Math.random() > 0.5 ? randomPhone() : null;
@@ -180,19 +182,15 @@ async function main() {
       school,
       grade,
       favoriteSubjects: randMany(fanNomlari, 4),
-      clubs: Math.random() > 0.25 ? randMany(togarakNomlari, 2) : ['Hech qaysi'],
-      dreamJob: kasb.name,
-      jobCategory: kasb.category,
-      motivation: rand(MOTIVATSIYALAR),
-      inspiration: rand(ILHOM),
-      studyAbroad: rand(CHET_EL),
-      futureContribution: rand(HISSALAR),
+      clubs: qatnaydi ? randMany(togarakNomlari, 2) : ['Hech qaysi'],
+      dreamJob: kasb?.name ?? null,
+      jobCategory: kasb?.category ?? null,
       // Ta'lim markazi savollari (4-qadam)
       wantedCourses: randMany(kursNomlari, 3),
       wantedLanguages:
         Math.random() > 0.2 ? randMany(tilNomlari, 2) : [TIL_KERAK_EMAS],
       travelWillingness: rand(masofaNomlari),
-      barriers: Math.random() > 0.35 ? randMany(tosiqNomlari, 2) : [TOSIQ_YOQ],
+      barriers: qatnaydi ? [] : randMany(tosiqNomlari, 2),
       availableTimes: randMany(vaqtNomlari, 2),
       homeTech: rand(texnikaNomlari),
       createdAt,

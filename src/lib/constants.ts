@@ -524,6 +524,13 @@ export const TOGARAK_GURUHLARI: { title: string; items: { name: string; icon: st
   },
 ];
 
+/**
+ * «Hech qaysi» — to'garakka qatnamaslikni bildiruvchi javob.
+ * Tanlansa: qolgan to'garaklar bekor qilinadi va «nega bormaysan»
+ * savoli ochiladi.
+ */
+export const HECH_QAYSI = 'Hech qaysi';
+
 /** Barcha to'garaklar bitta ro'yxatda — seed va tekshiruvlar uchun */
 export const TOGARAKLAR: { name: string; icon: string }[] = TOGARAK_GURUHLARI.flatMap(
   (g) => g.items
@@ -631,21 +638,46 @@ export const MASOFA_JAVOBLARI: { name: string; icon: string }[] = [
 ];
 
 /**
- * Hozir to'garakka bormaslik sabablari.
- * Agar sabab qatnov bo'lsa, yangi bino ochish muammoni yechmaydi —
- * shuning uchun bu savol markaz ochishdan oldin beriladi.
+ * To'garakka qatnamaslik sabablari.
+ *
+ * Bu ro'yxat oddiy statistika uchun emas. Hokimiyat har bir javobga
+ * qarab aniq chora ko'radi:
+ *   - ota-onasi ruxsat bermasa      -> mahalla orqali suhbat
+ *   - oilaviy sharoiti bo'lmasa     -> moddiy yordam, bepul o'rin
+ *   - sog'lig'i yoki nogironligi    -> maxsus sharoit, uyga o'qituvchi
+ *   - yaqin atrofda to'garak yo'q   -> o'sha mahallada markaz ochish
+ *   - uzoq, qatnov qiyin            -> transport yoki filial
+ *
+ * Shu sababli javob bergan o'quvchi boshqaruv panelida ismi, maktabi,
+ * sinfi va telefoni bilan ko'rinadi — uni topib yordam berish uchun.
  */
 export const TOSIQLAR: { name: string; icon: string }[] = [
   { name: "Yaqin atrofda bunday to'garak yo'q", icon: '🚫' },
   { name: 'Uzoq, qatnash qiyin', icon: '🛣️' },
-  { name: "Vaqtim yo'q", icon: '⏰' },
+  { name: "Oilaviy sharoitim yo'q", icon: '🏠' },
   { name: 'Ota-onam ruxsat bermaydi', icon: '🙅' },
+  { name: "Uy ishlari ko'p, vaqtim yo'q", icon: '⏰' },
+  { name: "Sog'lig'im imkon bermaydi", icon: '🩹' },
+  { name: 'Nogironligim bor', icon: '♿' },
+  { name: 'Kerakli kiyim yoki jihoz yo\'q', icon: '🎒' },
   { name: 'Qiziqarli emas', icon: '😐' },
-  { name: 'Hozir ham qatnayapman', icon: '✅' },
+  { name: 'Boshqa sabab', icon: '❓' },
 ];
 
-/** «Hozir ham qatnayapman» — qolgan sabablarni bekor qiladi */
-export const TOSIQ_YOQ = 'Hozir ham qatnayapman';
+/**
+ * Yordam talab qiladigan to'siqlar.
+ *
+ * Bular hokimiyat aralashuvi bilan hal bo'ladi, shuning uchun
+ * boshqaruv panelida alohida ajratib ko'rsatiladi.
+ */
+export const YORDAM_TOSIQLARI = [
+  "Oilaviy sharoitim yo'q",
+  'Ota-onam ruxsat bermaydi',
+  "Sog'lig'im imkon bermaydi",
+  'Nogironligim bor',
+  "Kerakli kiyim yoki jihoz yo'q",
+  'Uzoq, qatnash qiyin',
+] as const;
 
 /** Qachon qatnasha oladi — smena va o'qituvchi rejalashtirish uchun */
 export const VAQT_JAVOBLARI: { name: string; icon: string }[] = [

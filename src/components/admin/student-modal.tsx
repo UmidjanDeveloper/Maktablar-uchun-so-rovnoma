@@ -68,21 +68,28 @@ export function StudentModal({ student, onClose }: StudentModalProps) {
           </div>
         </DialogHeader>
 
-        {/* Orzu kasb — oynadagi eng muhim ma'lumot */}
-        <div className="flex items-center gap-4 rounded-md border border-accent/35 bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] p-4">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-[color-mix(in_srgb,var(--accent)_16%,transparent)] text-accent">
-            <EntityIcon name={student.dreamJob} className="h-6 w-6" strokeWidth={1.7} />
-          </span>
-          <div className="min-w-0">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-accent">
-              Orzu qilgan kasbi
-            </p>
-            <p className="font-display text-lg font-semibold leading-tight text-ink">
-              {student.dreamJob}
-            </p>
-            <p className="text-xs text-ink-faint">{student.jobCategory}</p>
+        {/* Orzu kasb — faqat 10-11-sinfda so'raladi */}
+        {student.dreamJob ? (
+          <div className="flex items-center gap-4 rounded-md border border-accent/35 bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] p-4">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-[color-mix(in_srgb,var(--accent)_16%,transparent)] text-accent">
+              <EntityIcon name={student.dreamJob} className="h-6 w-6" strokeWidth={1.7} />
+            </span>
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-accent">
+                Orzu qilgan kasbi
+              </p>
+              <p className="font-display text-lg font-semibold leading-tight text-ink">
+                {student.dreamJob}
+              </p>
+              <p className="text-xs text-ink-faint">{student.jobCategory}</p>
+            </div>
           </div>
-        </div>
+        ) : (
+          <p className="rounded-md border border-dashed border-line px-4 py-3 text-sm text-ink-faint">
+            Orzu kasb savoli berilmagan — u faqat 10-11-sinf o&apos;quvchilariga
+            ko&apos;rsatiladi.
+          </p>
+        )}
 
         <Separator />
 
@@ -186,10 +193,6 @@ export function StudentModal({ student, onClose }: StudentModalProps) {
         <Separator />
 
         <div className="space-y-3">
-          <Row label="Kasb tanlash sababi" value={student.motivation || '—'} />
-          <Row label="Ilhomlantirgan" value={student.inspiration || '—'} />
-          <Row label="Chet elda o'qish" value={student.studyAbroad || '—'} />
-          <Row label="Mahalla uchun rejasi" value={student.futureContribution || '—'} />
         </div>
 
         <Separator />

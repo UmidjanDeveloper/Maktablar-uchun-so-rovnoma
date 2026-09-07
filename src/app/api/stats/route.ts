@@ -84,15 +84,19 @@ export async function GET(request: NextRequest) {
     let boys = 0;
 
     for (const row of rows) {
+      // Orzu kasb faqat 10-11-sinfda so'raladi — kichik sinflarda
+      // bo'sh bo'ladi va kasb statistikasiga qo'shilmaydi
+      const dreamJob = row.dreamJob;
+      const jobCategory = row.jobCategory;
       const isGirl = row.gender === 'Qiz bola';
       if (isGirl) girls += 1;
       else boys += 1;
 
-      inc(jobs, row.dreamJob);
+      if (dreamJob) inc(jobs, dreamJob);
       inc(mahallas, row.mahalla);
       inc(schools, row.school);
       inc(grades, `${row.grade}-sinf`);
-      inc(categories, row.jobCategory);
+      if (jobCategory) inc(categories, jobCategory);
       if (row.inspiration) inc(inspirations, row.inspiration);
       if (row.studyAbroad) inc(abroad, row.studyAbroad);
       for (const subject of row.favoriteSubjects) inc(subjects, subject);
@@ -104,17 +108,19 @@ export async function GET(request: NextRequest) {
         catMap = new Map<string, number>();
         mahallaCategories.set(row.mahalla, catMap);
       }
-      inc(catMap, row.jobCategory);
+      if (jobCategory) inc(catMap, jobCategory);
 
       const mg = mahallaGender.get(row.mahalla) ?? { girls: 0, boys: 0 };
       if (isGirl) mg.girls += 1;
       else mg.boys += 1;
       mahallaGender.set(row.mahalla, mg);
 
-      const cg = categoryGender.get(row.jobCategory) ?? { ogil: 0, qiz: 0 };
-      if (isGirl) cg.qiz += 1;
-      else cg.ogil += 1;
-      categoryGender.set(row.jobCategory, cg);
+      if (jobCategory) {
+        const cg = categoryGender.get(jobCategory) ?? { ogil: 0, qiz: 0 };
+        if (isGirl) cg.qiz += 1;
+        else cg.ogil += 1;
+        categoryGender.set(jobCategory, cg);
+      }
 
       // Maktab bo'yicha kasblar
       let jobMap = schoolJobs.get(row.school);
@@ -122,13 +128,15 @@ export async function GET(request: NextRequest) {
         jobMap = new Map<string, number>();
         schoolJobs.set(row.school, jobMap);
       }
-      inc(jobMap, row.dreamJob);
+      if (dreamJob) inc(jobMap, dreamJob);
 
       // Jins bo'yicha kasblar
-      const gj = genderJobs.get(row.dreamJob) ?? { ogil: 0, qiz: 0 };
-      if (isGirl) gj.qiz += 1;
-      else gj.ogil += 1;
-      genderJobs.set(row.dreamJob, gj);
+      if (dreamJob) {
+        const gj = genderJobs.get(dreamJob) ?? { ogil: 0, qiz: 0 };
+        if (isGirl) gj.qiz += 1;
+        else gj.ogil += 1;
+        genderJobs.set(dreamJob, gj);
+      }
     }
 
     const total = rows.length;
@@ -141,7 +149,11 @@ export async function GET(request: NextRequest) {
     });
 
     // Har bir maktabdagi eng ommabop kasb
+    // Diqqat: maktabda faqat 5-9-sinf o'quvchisi bo'lsa, kasblar ro'yxati
+    // bo'sh bo'ladi (ularga orzu kasb savoli berilmaydi) — bunday maktab
+    // jadvalga umuman qo'shilmaydi
     const bySchool: SchoolTopJob[] = Array.from(schoolJobs.entries())
+      .filter(([, jobMap]) => jobMap.size > 0)
       .map(([school, jobMap]) => {
         const [topJob, topJobCount] = Array.from(jobMap.entries()).sort(
           (a, b) => b[1] - a[1] || a[0].localeCompare(b[0])
@@ -162,7 +174,9 @@ export async function GET(request: NextRequest) {
       );
 
     // Mahalla kesimidagi tahlil — tavsiyalar shu asosda quriladi
+    // Xuddi shunday: yo'nalish javobi yo'q mahalla tahlilga kirmaydi
     const mahallaInsights: MahallaInsight[] = Array.from(mahallaCategories.entries())
+      .filter(([, catMap]) => catMap.size > 0)
       .map(([mahalla, catMap]) => {
         const [topCategory, topCategoryCount] = Array.from(catMap.entries()).sort(
           (a, b) => b[1] - a[1] || a[0].localeCompare(b[0])

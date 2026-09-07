@@ -3,7 +3,7 @@
 import { Sparkles } from 'lucide-react';
 import { ChipGroup } from '@/components/shared/chip-group';
 import { Field } from './field';
-import { FAN_GURUHLARI, TOGARAK_GURUHLARI } from '@/lib/constants';
+import { FAN_GURUHLARI, HECH_QAYSI, TOGARAK_GURUHLARI, TOSIQLAR } from '@/lib/constants';
 import type { FormState } from './types';
 
 interface StepInterestsProps {
@@ -54,6 +54,8 @@ function GroupedChips({ groups, values, onChange, exclusiveOption }: GroupedChip
 
 /** 2-qadam: qiziqishlar — fanlar va to'garaklar */
 export function StepInterests({ form, errors, update }: StepInterestsProps) {
+  const qatnamaydi = form.clubs.includes(HECH_QAYSI);
+
   return (
     <div className="space-y-8">
       <Field
@@ -71,16 +73,48 @@ export function StepInterests({ form, errors, update }: StepInterestsProps) {
 
       <Field
         label="Qanday to'garaklarga borasan?"
+        required
         error={errors.clubs}
         hint="Agar bormasang, «Hech qaysi» ni tanla"
       >
         <GroupedChips
           groups={TOGARAK_GURUHLARI}
           values={form.clubs}
-          onChange={(v) => update({ clubs: v })}
-          exclusiveOption="Hech qaysi"
+          onChange={(v) =>
+            update({
+              clubs: v,
+              // To'garakka qatnaydigan bo'lsa, oldin belgilangan
+              // sabablar keraksiz — tozalab yuboramiz
+              barriers: v.includes(HECH_QAYSI) ? form.barriers : [],
+            })
+          }
+          exclusiveOption={HECH_QAYSI}
         />
       </Field>
+
+      {/*
+        To'siq savoli faqat hech qanday to'garakka qatnamaydiganlarga
+        beriladi. Qatnaydigan bolaga "nega bormaysan" deb so'rash
+        ma'nosiz; qatnamaydiganidan esa sababini bilish shart, chunki
+        hokimiyat aynan shu javob asosida yordam ko'rsatadi:
+        ota-onasi ruxsat bermasa — suhbat, sharoiti bo'lmasa — yordam.
+      */}
+      {qatnamaydi && (
+        <div className="rounded-md border border-warn/40 bg-warn-bg p-4">
+          <Field
+            label="Nega hech qanday to'garakka bormaysan?"
+            required
+            error={errors.barriers}
+            hint="Rostini ayt — bu senga yordam berish uchun so'ralyapti"
+          >
+            <ChipGroup
+              options={TOSIQLAR}
+              values={form.barriers}
+              onChange={(v) => update({ barriers: v })}
+            />
+          </Field>
+        </div>
+      )}
 
       {form.favoriteSubjects.length > 0 && (
         <div className="flex items-center gap-2 rounded-md border border-ok/40 bg-ok-bg px-4 py-3 text-sm font-medium text-ok">

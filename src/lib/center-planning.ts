@@ -17,7 +17,7 @@
  *  hisoblanadi va qaror odamga qoldiriladi.
  * ============================================================
  */
-import { TOSIQ_YOQ, TIL_KERAK_EMAS } from './constants';
+import { TIL_KERAK_EMAS } from './constants';
 import { percent } from './utils';
 
 /** Tahlil uchun kerakli maydonlar — anketaning bir qismi */
@@ -79,6 +79,8 @@ export interface CenterOption {
 export interface CenterPlan {
   /** Yangi savollarga javob bergan o'quvchilar soni */
   answered: number;
+  /** Ulardan nechtasi hech qanday to'garakka qatnamaydi */
+  withBarriers: number;
   /** Mahallada markaz ochish variantlari */
   byMahalla: CenterOption[];
   /** Maktab qoshida ochish variantlari */
@@ -229,6 +231,7 @@ export function buildCenterPlan(rows: CenterRow[]): CenterPlan {
 
   return {
     answered: answered.length,
+    withBarriers: answered.filter((r) => r.barriers.length > 0).length,
     byMahalla,
     bySchool,
     district: districtRows.length
@@ -242,10 +245,13 @@ export function buildCenterPlan(rows: CenterRow[]): CenterPlan {
   };
 }
 
-/** Hozir to'garakka qatnamayotganlar ulushi (%) */
+/**
+ * Hozir hech qanday to'garakka qatnamayotganlar ulushi (%).
+ *
+ * To'siq savoli faqat «Hech qaysi» deganlarga beriladi, shuning uchun
+ * to'siq javobi borlar — aynan qatnamayotganlar.
+ */
 export function unservedPercent(plan: CenterPlan): number {
-  const total = plan.answered;
-  if (!total) return 0;
-  const attending = plan.barriers.find((b) => b.name === TOSIQ_YOQ)?.count ?? 0;
-  return percent(total - attending, total);
+  if (!plan.answered) return 0;
+  return percent(plan.withBarriers, plan.answered);
 }

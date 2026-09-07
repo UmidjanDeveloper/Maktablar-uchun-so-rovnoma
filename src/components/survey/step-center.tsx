@@ -8,8 +8,6 @@ import {
   MASOFA_JAVOBLARI,
   TILLAR,
   TIL_KERAK_EMAS,
-  TOSIQLAR,
-  TOSIQ_YOQ,
   UY_TEXNIKASI,
   VAQT_JAVOBLARI,
 } from '@/lib/constants';
@@ -122,18 +120,6 @@ export function StepCenter({ form, errors, update }: StepCenterProps) {
         />
       </Field>
 
-      <Field
-        label="Hozir to'garakka nega bormaysan?"
-        error={errors.barriers}
-        hint="Qatnayotgan bo'lsang, «Hozir ham qatnayapman» ni tanla"
-      >
-        <ChipGroup
-          options={TOSIQLAR}
-          values={form.barriers}
-          onChange={(v) => update({ barriers: v })}
-          exclusiveOption={TOSIQ_YOQ}
-        />
-      </Field>
 
       <Field
         label="Qachon qatnasha olasan?"

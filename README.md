@@ -166,7 +166,20 @@ Bir necha marta ishga tushirish xavfsiz.
 
 > Bu SQL ishga tushirilmasa, anketa yuborilganda xatolik beradi.
 
-### 4.2. Kasblar ro'yxati yangilanganda
+### 4.2. Orzu kasb maydonini bo'shatish (majburiy, bir marta)
+
+Orzu kasb savoli endi faqat 10-11-sinf o'quvchilariga beriladi —
+kichik sinf bolasi hali kasb tanlay olmaydi va tasodifiy javob
+tahlilni buzadi. Shu sababli bazadagi ustun bo'sh qiymatni ham
+qabul qilishi kerak.
+
+`prisma/orzu-kasb-ixtiyoriy.sql` faylini Supabase **SQL Editor** da
+ishga tushiring. Mavjud anketalarga tegmaydi.
+
+> Bu SQL ishga tushirilmasa, 5-9-sinf o'quvchisining anketasi
+> yuborilmaydi.
+
+### 4.3. Kasblar ro'yxati yangilanganda
 
 Kasblar bazada saqlanadi, shuning uchun ro'yxat kengaytirilganda uni
 bazaga ham yozish kerak — aks holda anketada eski ro'yxat ko'rinaveradi.
@@ -181,7 +194,7 @@ tushirish xavfsiz — ikkinchi marta hech narsa o'zgarmaydi.
 > (`src/lib/constants.ts`) — ular Vercel'ga yangi versiya chiqishi
 > bilan o'zi yangilanadi, SQL kerak emas.
 
-### 4.3. Mahallalar va maktablar ro'yxati haqida
+### 4.4. Mahallalar va maktablar ro'yxati haqida
 
 Tizimga rasmiy hujjatlar asosida kiritilgan:
 
@@ -198,7 +211,7 @@ lotinga o'girilgan va aniq imlo xatolari to'g'rilangan (`Xatirchi tumsni`
 Ro'yxat o'zgarsa, `/admin/settings` bo'limidan qo'shing yoki tahrirlang —
 kodga tegish shart emas, o'zgarish anketada darhol ko'rinadi.
 
-### 4.4. Qo'lda kiritilgan nomlarni nazorat qilish
+### 4.5. Qo'lda kiritilgan nomlarni nazorat qilish
 
 O'quvchi mahalla yoki maktabini ro'yxatdan topa olmasa, nomini o'zi
 yozishi mumkin — shunda hech kim anketani to'ldirmasdan ketib qolmaydi.
@@ -299,6 +312,7 @@ Maktablar-uchun-so-rovnoma/
 │   ├── supabase-setup.sql         # Terminalsiz o'rnatish (SQL Editor uchun)
 │   ├── kasblar-yangilash.sql      # Kasblar ro'yxatini bazada yangilash
 │   ├── markaz-savollari.sql       # 4-qadam ustunlarini qo'shish
+│   ├── orzu-kasb-ixtiyoriy.sql    # Orzu kasb ustunini bo'shatish
 │   └── seed.ts                    # Kataloglar + 150 ta demo anketa
 │
 ├── public/

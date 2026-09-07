@@ -16,12 +16,13 @@ import { WelcomeScreen } from './welcome-screen';
 import { EMPTY_FORM, type FormState } from './types';
 import {
   step1Schema,
-  step2Schema,
-  step3Schema,
+  step2FormSchema,
+  step3RequiredSchema,
   step4Schema,
   step5Schema,
   studentSchema,
   fieldErrors,
+  kasbSavoliKerakmi,
 } from '@/lib/validation';
 import { enqueue, queueSize, syncQueue } from '@/lib/offline';
 import { MAHALLALAR, MAKTABLAR, KASBLAR } from '@/lib/constants';
@@ -33,11 +34,11 @@ const STEPS = [
   { title: 'Qiziqishlar', subtitle: 'Nimalar seni qiziqtiradi?', short: 'Qiziqish' },
   { title: 'Orzu kasb', subtitle: "Kim bo'lishni orzu qilasan?", short: 'Kasb' },
   { title: 'Qanday kurs kerak?', subtitle: 'Mahallangda nima ochilsin?', short: 'Kurslar' },
-  { title: 'Kelajak', subtitle: 'Rejalaring haqida', short: 'Kelajak' },
+  { title: 'Yakunlash', subtitle: 'Oxirgi qadam qoldi', short: 'Yakun' },
 ] as const;
 
-/** Qadam nomlari — step-node ko'rsatkichi uchun */
-const STEP_LABELS = STEPS.map((s) => s.short);
+/** Orzu kasb qadamining raqami — sinfga qarab o'tkazib yuboriladi */
+const KASB_QADAMI = 3;
 
 export function SurveyWizard() {
   const { toast } = useToast();
@@ -121,7 +122,13 @@ export function SurveyWizard() {
   /** Joriy qadamni tekshiradi */
   const validateStep = useCallback(
     (target: number): boolean => {
-      const schemas = [step1Schema, step2Schema, step3Schema, step4Schema, step5Schema];
+      const schemas = [
+        step1Schema,
+        step2FormSchema,
+        step3RequiredSchema,
+        step4Schema,
+        step5Schema,
+      ];
       const schema = schemas[target - 1] ?? step5Schema;
       const result = schema.safeParse(form);
       if (!result.success) {
@@ -143,6 +150,23 @@ export function SurveyWizard() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
+  /**
+   * Berilgan qadamdan keyingi ko'rinadigan qadam raqami.
+   *
+   * Orzu kasb (3-qadam) faqat 10-11-sinf o'quvchilariga ko'rsatiladi:
+   * 5-9-sinf bolasi hali kasb tanlay olmaydi va tasodifiy javob butun
+   * tahlilni buzadi. Shuning uchun u qadam butunlay o'tkazib
+   * yuboriladi — orqaga qaytishda ham.
+   */
+  const nextVisibleStep = useCallback(
+    (from: number, direction: 1 | -1): number => {
+      let next = from + direction;
+      while (next === 3 && !kasbSavoliKerakmi(form.grade)) next += direction;
+      return next;
+    },
+    [form.grade]
+  );
+
   const goNext = () => {
     if (!validateStep(step)) {
       toast({
@@ -152,13 +176,13 @@ export function SurveyWizard() {
       });
       return;
     }
-    setStep((s) => s + 1);
+    setStep((s) => nextVisibleStep(s, 1));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const goBack = () => {
     setErrors({});
-    setStep((s) => Math.max(0, s - 1));
+    setStep((s) => Math.max(0, nextVisibleStep(s, -1)));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -276,15 +300,34 @@ export function SurveyWizard() {
   // ---------- Anketa qadamlari ----------
   const current = STEPS[step - 1];
 
+  /**
+   * Ko'rinadigan qadamlar ro'yxati.
+   *
+   * 5-9-sinf o'quvchisiga orzu kasb qadami ko'rsatilmaydi, shuning
+   * uchun ko'rsatkich ham 4 ta tugundan iborat bo'ladi. Aks holda
+   * bola "3-qadam / 5" ni ko'rib, keyin darrov 4-qadamga o'tib
+   * ketardi — bu chalkash va noto'g'ri.
+   */
+  const visibleNumbers = STEPS.map((_, i) => i + 1).filter(
+    (n) => n !== KASB_QADAMI || kasbSavoliKerakmi(form.grade)
+  );
+  const visibleLabels = visibleNumbers.map((n) => STEPS[n - 1].short);
+  const currentPosition = visibleNumbers.indexOf(step) + 1;
+  const isLastStep = step === visibleNumbers[visibleNumbers.length - 1];
+
   return (
     <div className="mx-auto w-full max-w-3xl px-4 pb-16 pt-6 sm:px-6 sm:pt-10">
       {/* Qadam ko'rsatkichi */}
       <div className="mb-7">
-        <StepNodes current={step} total={STEPS.length} labels={STEP_LABELS} />
+        <StepNodes
+          current={currentPosition}
+          total={visibleNumbers.length}
+          labels={visibleLabels}
+        />
 
         <div className="mt-6">
           <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">
-            {step}-qadam / {STEPS.length}
+            {currentPosition}-qadam / {visibleNumbers.length}
           </p>
           <h2 className="mt-1.5 font-display text-2xl font-bold tracking-tight text-ink sm:text-3xl">
             {current.title}
@@ -338,7 +381,7 @@ export function SurveyWizard() {
           Orqaga
         </Button>
 
-        {step < STEPS.length ? (
+        {!isLastStep ? (
           <Button size="lg" onClick={goNext} className="px-8">
             Davom etish
             <ArrowRight className="h-4 w-4" />

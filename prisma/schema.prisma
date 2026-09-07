@@ -34,10 +34,15 @@ model Student {
   /// Qatnashadigan to'garaklar (IT, Sport, ...)
   clubs            String[]
 
-  /// Orzudagi kasb va uning yo'nalishi
-  dreamJob    String
-  jobCategory String
-  /// "Nima uchun aynan shu kasbni tanlading?"
+  /// Orzudagi kasb va uning yo'nalishi.
+  ///
+  /// Bo'sh bo'lishi mumkin: orzu kasb savoli faqat 10-11-sinf
+  /// o'quvchilariga beriladi. Kichik sinflarda bola hali kasb tanlay
+  /// olmaydi va tasodifiy javob tahlilni buzadi.
+  dreamJob    String?
+  jobCategory String?
+  /// Eski maydon — "nima uchun shu kasbni tanlading?" savoli olib
+  /// tashlandi, lekin ilgari yig'ilgan javoblar saqlanib qoladi.
   motivation  String?
 
   /// Kim ilhom berdi (Otam/Onam, O'qituvchim, ...)

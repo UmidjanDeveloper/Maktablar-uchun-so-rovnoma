@@ -116,13 +116,17 @@ export function SubmissionsTable({
                   <TableCell className="text-ink-muted">{student.school}</TableCell>
                   <TableCell className="text-ink-muted">{student.mahalla}</TableCell>
                   <TableCell>
-                    <span className="flex items-center gap-2">
-                      <EntityIcon
-                        name={student.dreamJob}
-                        className="h-4 w-4 shrink-0 text-accent"
-                      />
-                      {student.dreamJob}
-                    </span>
+                    {student.dreamJob ? (
+                      <span className="flex items-center gap-2">
+                        <EntityIcon
+                          name={student.dreamJob}
+                          className="h-4 w-4 shrink-0 text-accent"
+                        />
+                        {student.dreamJob}
+                      </span>
+                    ) : (
+                      <span className="text-ink-faint">—</span>
+                    )}
                   </TableCell>
                   <TableCell className="font-mono text-[11px] tabular-nums text-ink-faint">
                     {formatDate(student.createdAt)}

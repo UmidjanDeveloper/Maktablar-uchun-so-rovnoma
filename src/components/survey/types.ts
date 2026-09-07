@@ -14,21 +14,18 @@ export interface FormState {
   // 2-qadam
   favoriteSubjects: string[];
   clubs: string[];
-  // 3-qadam
+  /** «Hech qaysi» tanlanganda majburiy */
+  barriers: string[];
+  // 3-qadam (faqat 10-11-sinf)
   dreamJob: string;
   jobCategory: string;
-  motivation: string;
   // 4-qadam — ta'lim markazi
   wantedCourses: string[];
   wantedLanguages: string[];
   travelWillingness: string;
-  barriers: string[];
   availableTimes: string[];
   homeTech: string;
   // 5-qadam
-  inspiration: string;
-  studyAbroad: string;
-  futureContribution: string;
   consent: boolean;
 }
 
@@ -46,17 +43,13 @@ export const EMPTY_FORM: FormState = {
   district: 'Xatirchi',
   favoriteSubjects: [],
   clubs: [],
+  barriers: [],
   dreamJob: '',
   jobCategory: '',
-  motivation: '',
   wantedCourses: [],
   wantedLanguages: [],
   travelWillingness: '',
-  barriers: [],
   availableTimes: [],
   homeTech: '',
-  inspiration: '',
-  studyAbroad: '',
-  futureContribution: '',
   consent: false,
 };

@@ -17,6 +17,7 @@ import {
 } from './charts';
 import { DashboardEmpty } from './dashboard-empty';
 import { CenterPanel } from './center-panel';
+import { HelpPanel } from './help-panel';
 import { RecommendationsPanel } from './recommendations-panel';
 import { SubmissionsTable } from './submissions-table';
 import { StudentModal } from './student-modal';
@@ -286,9 +287,13 @@ export function DashboardClient() {
         />
       ) : (
         <>
-      {/* Markaz ochish tahlili eng yuqorida: bu panel "qayerga pul
-          qo'yamiz" degan savolga javob beradi, qolgani esa uni
-          asoslaydi */}
+      {/* Yordam kerak bo'lgan bolalar eng yuqorida: bu yagona panel
+          bo'lib, undagi har bir qator aniq bitta bolaga tegishli va
+          ertaga qo'ng'iroq qilishni talab qiladi */}
+      <HelpPanel />
+
+      {/* Markaz ochish tahlili: "qayerga pul qo'yamiz" degan savolga
+          javob beradi, qolgani esa uni asoslaydi */}
       <CenterPanel stats={stats} loading={statsLoading} />
 
       {/* Tavsiyalar — diagrammalardan oldin, chunki hokim uchun

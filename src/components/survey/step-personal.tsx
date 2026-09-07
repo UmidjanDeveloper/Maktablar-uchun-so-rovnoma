@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { Check, MapPin } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { PhoneField } from './phone-field';
 import { SearchableSelect } from '@/components/shared/searchable-select';
 import { Field } from './field';
 import { cn } from '@/lib/utils';
@@ -170,33 +171,34 @@ export function StepPersonal({ form, errors, update, mahallalar, maktablar }: St
           label="Telefon raqaming"
           htmlFor="phone"
           error={errors.phone}
-          hint="Majburiy emas. Format: +998 90 123 45 67"
+          hint="Majburiy emas — telefoning bo'lmasa, bo'sh qoldir"
         >
-          <Input
+          <PhoneField
             id="phone"
-            type="tel"
-            inputMode="tel"
             value={form.phone}
-            onChange={(e) => update({ phone: e.target.value })}
-            placeholder="+998 90 123 45 67"
-            className={cn(errors.phone && 'border-danger')}
+            onChange={(v) => update({ phone: v })}
+            hasError={!!errors.phone}
           />
         </Field>
 
+        {/*
+          Ota-onaning raqami MAJBURIY. Sababi: bola to'garakka
+          qatnamasligi sababini aytsa (sharoit yo'q, ruxsat berilmaydi),
+          hokimiyat aynan ota-ona bilan bog'lanadi. Raqamsiz bu javob
+          hech qanday yordamga aylanmaydi.
+        */}
         <Field
           label="Ota-onang telefoni"
           htmlFor="parentPhone"
+          required
           error={errors.parentPhone}
-          hint="Majburiy emas"
+          hint="Bu raqam kerak — sen bilan bog'lanish uchun"
         >
-          <Input
+          <PhoneField
             id="parentPhone"
-            type="tel"
-            inputMode="tel"
             value={form.parentPhone}
-            onChange={(e) => update({ parentPhone: e.target.value })}
-            placeholder="+998 90 123 45 67"
-            className={cn(errors.parentPhone && 'border-danger')}
+            onChange={(v) => update({ parentPhone: v })}
+            hasError={!!errors.parentPhone}
           />
         </Field>
       </div>

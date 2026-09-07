@@ -3,7 +3,6 @@
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Textarea } from '@/components/ui/textarea';
 import { Field } from './field';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/components/shared/theme-provider';
@@ -143,58 +142,6 @@ export function StepDreamJob({ form, errors, update, kasblar }: StepDreamJobProp
         )}
       </div>
 
-      {/* Kasb tanlangandan keyin sabab so'raladi */}
-      {form.dreamJob && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          transition={{ duration: 0.25 }}
-          className="space-y-4 overflow-hidden"
-        >
-          <div
-            className="flex items-center gap-4 rounded-md border p-4"
-            style={{
-              borderColor: `color-mix(in srgb, ${selectedAccent} 45%, transparent)`,
-              background: `color-mix(in srgb, ${selectedAccent} 10%, transparent)`,
-            }}
-          >
-            <span
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md border"
-              style={{
-                borderColor: `color-mix(in srgb, ${selectedAccent} 45%, transparent)`,
-                color: selectedAccent,
-              }}
-            >
-              <EntityIcon name={form.dreamJob} strokeWidth={1.6} className="h-6 w-6" />
-            </span>
-            <div className="min-w-0">
-              <p
-                className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em]"
-                style={{ color: selectedAccent }}
-              >
-                Sening tanlovingiz
-              </p>
-              <p className="font-display text-lg font-bold text-ink">{form.dreamJob}</p>
-              <p className="mt-0.5 text-sm text-ink-muted">{selectedTheme.cheer}</p>
-            </div>
-          </div>
-
-          <Field
-            label="Nima uchun aynan shu kasbni tanlading?"
-            htmlFor="motivation"
-            error={errors.motivation}
-            hint="Fikringni erkin yoz — bu majburiy emas"
-          >
-            <Textarea
-              id="motivation"
-              value={form.motivation}
-              onChange={(e) => update({ motivation: e.target.value })}
-              placeholder="Masalan: Men odamlarga yordam berishni yaxshi ko'raman..."
-              maxLength={500}
-            />
-          </Field>
-        </motion.div>
-      )}
     </div>
   );
 }

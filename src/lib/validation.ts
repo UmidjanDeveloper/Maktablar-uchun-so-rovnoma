@@ -5,31 +5,69 @@
  * ============================================================
  */
 import { z } from 'zod';
-import { JINSLAR, SINFLAR } from './constants';
-import { canonicalizePhone } from './utils';
+import { HECH_QAYSI, JINSLAR, SINFLAR } from './constants';
+import {
+  ismniChiroyliQil,
+  ismTekshir,
+  telefonSaqlashUchun,
+  telefonTekshir,
+} from './inson-tekshiruvi';
+
+/** Orzu kasb savoli shu sinfdan boshlab beriladi */
+export const KASB_SAVOLI_SINFI = 10;
+
+/** Berilgan sinfda orzu kasb savoli ko'rsatiladimi? */
+export function kasbSavoliKerakmi(grade: number | ''): boolean {
+  return typeof grade === 'number' && grade >= KASB_SAVOLI_SINFI;
+}
 
 /**
- * Ixtiyoriy telefon maydoni.
+ * Ism maydoni.
  *
- * O'quvchi raqamni qanday yozishidan qat'i nazar (bo'shliq, defis,
- * qavs, mamlakat kodisiz) qabul qilinadi va bazaga yagona ko'rinishda
- * — `+998901234567` — yoziladi. Bo'sh bo'lsa `undefined` ga aylanadi.
+ * Maktabdagi sinovda bolalar "ajfjdjfjadfj" deb to'ldirdi — bunday
+ * yozuv hokimiyat uchun foydasiz, chunki bolani topib bo'lmaydi.
+ * `ismTekshir` haqiqiy ism tuzilishini tekshiradi va natijada
+ * birinchi harf katta qilib saqlanadi.
  */
-const optionalPhone = z
-  .string()
-  .trim()
-  .optional()
-  .transform((v) => (v === '' || v === undefined ? undefined : v))
-  .superRefine((v, ctx) => {
-    if (v === undefined) return;
-    if (canonicalizePhone(v) === null) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Telefon raqamini to'g'ri kiriting. Masalan: +998 90 123 45 67",
-      });
-    }
-  })
-  .transform((v) => (v === undefined ? undefined : (canonicalizePhone(v) ?? undefined)));
+const ismMaydoni = (label: string) =>
+  z
+    .string({ required_error: `${label}ni kiriting` })
+    .trim()
+    .superRefine((v, ctx) => {
+      const r = ismTekshir(v, label);
+      if (!r.ok) ctx.addIssue({ code: z.ZodIssueCode.custom, message: r.xabar });
+    })
+    .transform(ismniChiroyliQil);
+
+/**
+ * Majburiy telefon maydoni.
+ *
+ * Ota-onaning raqami majburiy: hokimiyat to'siqqa uchragan bola
+ * bo'yicha aynan ota-ona bilan bog'lanadi. Raqam qanday yozilishidan
+ * qat'i nazar bazaga yagona ko'rinishda — `+998901234567` — tushadi.
+ */
+const majburiyTelefon = (label: string) =>
+  z
+    .string({ required_error: `${label}ni kiriting` })
+    .trim()
+    .superRefine((v, ctx) => {
+      const r = telefonTekshir(v, label);
+      if (!r.ok) ctx.addIssue({ code: z.ZodIssueCode.custom, message: r.xabar });
+    })
+    .transform((v) => telefonSaqlashUchun(v) ?? '');
+
+/** Ixtiyoriy telefon — bo'sh qoldirilsa o'tadi, yozilsa tekshiriladi */
+const ixtiyoriyTelefon = (label: string) =>
+  z
+    .string()
+    .trim()
+    .optional()
+    .superRefine((v, ctx) => {
+      if (!v) return;
+      const r = telefonTekshir(v, label);
+      if (!r.ok) ctx.addIssue({ code: z.ZodIssueCode.custom, message: r.xabar });
+    })
+    .transform((v) => (v ? (telefonSaqlashUchun(v) ?? undefined) : undefined));
 
 /** Ixtiyoriy uzun matn maydoni */
 const optionalText = (max: number, label: string) =>
@@ -42,16 +80,8 @@ const optionalText = (max: number, label: string) =>
 
 /** 1-qadam: shaxsiy ma'lumotlar */
 export const step1Schema = z.object({
-  firstName: z
-    .string({ required_error: 'Ismingizni kiriting' })
-    .trim()
-    .min(2, { message: "Ism kamida 2 ta harfdan iborat bo'lishi kerak" })
-    .max(50, { message: 'Ism 50 ta belgidan oshmasligi kerak' }),
-  lastName: z
-    .string({ required_error: 'Familiyangizni kiriting' })
-    .trim()
-    .min(2, { message: "Familiya kamida 2 ta harfdan iborat bo'lishi kerak" })
-    .max(50, { message: 'Familiya 50 ta belgidan oshmasligi kerak' }),
+  firstName: ismMaydoni('Ism'),
+  lastName: ismMaydoni('Familiya'),
   gender: z.enum(JINSLAR, {
     errorMap: () => ({ message: 'Jinsingizni tanlang' }),
   }),
@@ -71,32 +101,76 @@ export const step1Schema = z.object({
   grade: z.coerce
     .number({ required_error: 'Sinfingizni tanlang', invalid_type_error: 'Sinfingizni tanlang' })
     .refine((v) => SINFLAR.includes(v), { message: 'Sinf 5 dan 11 gacha bo\'lishi kerak' }),
-  phone: optionalPhone,
-  parentPhone: optionalPhone,
+  phone: ixtiyoriyTelefon('Telefon raqami'),
+  // Ota-onaning raqami MAJBURIY — to'siqqa uchragan bola bo'yicha
+  // hokimiyat aynan ota-ona bilan bog'lanadi
+  parentPhone: majburiyTelefon("Ota-onangiz telefon raqami"),
   region: z.string().trim().min(1).default('Navoiy'),
   district: z.string().trim().min(1).default('Xatirchi'),
 });
 
-/** 2-qadam: qiziqishlar */
+/**
+ * 2-qadam: qiziqishlar.
+ *
+ * To'siq savoli («nega bormaysan») faqat «Hech qaysi» tanlanganda
+ * majburiy bo'ladi. To'garakka qatnaydigan bolaga bu savolni berish
+ * ma'nosiz, qatnamaydiganidan esa sababini bilish shart — hokimiyat
+ * aynan shu javob asosida yordam ko'rsatadi.
+ */
 export const step2Schema = z.object({
   favoriteSubjects: z
     .array(z.string())
     .min(1, { message: 'Kamida bitta fanni tanlang' })
     .max(10, { message: "Ko'pi bilan 10 ta fan tanlash mumkin" }),
-  clubs: z.array(z.string()).default([]),
+  clubs: z.array(z.string()).min(1, { message: "To'garak javobini tanlang" }),
+  barriers: z.array(z.string()).max(10).default([]),
 });
 
-/** 3-qadam: orzu qilingan kasb */
+/**
+ * «Hech qaysi» tanlanganda to'siq sababi majburiy bo'ladi.
+ *
+ * Zod'da `.superRefine()` natijasini `.merge()` qilib bo'lmaydi,
+ * shuning uchun qoida alohida saqlanadi va ikki joyda ishlatiladi:
+ * qadam tekshiruvida va to'liq anketa tekshiruvida.
+ */
+function tosiqQoidasi(
+  v: { clubs: string[]; barriers: string[] },
+  ctx: z.RefinementCtx
+): void {
+  if (v.clubs.includes(HECH_QAYSI) && v.barriers.length === 0) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['barriers'],
+      message: "Nega qatnamasligingizni belgilang — bu yordam berish uchun kerak",
+    });
+  }
+}
+
+/** 2-qadamning o'zini tekshirish uchun */
+export const step2FormSchema = step2Schema.superRefine(tosiqQoidasi);
+
+/**
+ * 3-qadam: orzu qilingan kasb.
+ *
+ * Bu qadam faqat 10-11-sinf o'quvchilariga ko'rsatiladi, shuning uchun
+ * maydonlar ixtiyoriy. Kichik sinf o'quvchisi hali kasb tanlay olmaydi
+ * va tasodifiy javob butun tahlilni buzadi.
+ */
 export const step3Schema = z.object({
+  dreamJob: z.string().trim().max(100).optional(),
+  jobCategory: z.string().trim().max(100).optional(),
+});
+
+/** Qadam ko'rsatilganda kasb tanlanganini talab qiladi */
+export const step3RequiredSchema = z.object({
   dreamJob: z
     .string({ required_error: 'Orzuingizdagi kasbni tanlang' })
     .trim()
     .min(1, { message: 'Orzuingizdagi kasbni tanlang' }),
   jobCategory: z
-    .string({ required_error: 'Kasb yo\'nalishi aniqlanmadi' })
+    .string({ required_error: "Kasb yo'nalishi aniqlanmadi" })
     .trim()
     .min(1, { message: "Kasb yo'nalishi aniqlanmadi" }),
-  motivation: optionalText(500, 'Javob'),
 });
 
 /**
@@ -118,16 +192,18 @@ export const step4Schema = z.object({
     .trim()
     .min(1, { message: "Qancha yo'l yurishga tayyorligingizni tanlang" })
     .max(60),
-  barriers: z.array(z.string()).max(10).default([]),
   availableTimes: z.array(z.string()).max(10).default([]),
   homeTech: optionalText(60, 'Javob'),
 });
 
-/** 5-qadam: kelajak rejalari va rozilik */
+/**
+ * 5-qadam: rozilik.
+ *
+ * Ilgari bu qadamda "kim ilhom berdi", "chet elda o'qish" va
+ * "mahalla uchun rejang" savollari ham bor edi. Ular qarorga hech
+ * narsa qo'shmadi, faqat anketani uzaytirdi — olib tashlandi.
+ */
 export const step5Schema = z.object({
-  inspiration: optionalText(100, 'Javob'),
-  studyAbroad: optionalText(50, 'Javob'),
-  futureContribution: optionalText(500, 'Javob'),
   consent: z.literal(true, {
     errorMap: () => ({
       message: 'Anketani yuborish uchun rozilikni tasdiqlang',
@@ -140,7 +216,19 @@ export const studentSchema = step1Schema
   .merge(step2Schema)
   .merge(step3Schema)
   .merge(step4Schema)
-  .merge(step5Schema);
+  .merge(step5Schema)
+  .superRefine((v, ctx) => {
+    tosiqQoidasi(v, ctx);
+
+    // 10-11-sinf o'quvchisiga orzu kasb savoli berilgan — javob shart
+    if (kasbSavoliKerakmi(v.grade) && !v.dreamJob) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['dreamJob'],
+        message: 'Orzuingizdagi kasbni tanlang',
+      });
+    }
+  });
 
 export type StudentInput = z.infer<typeof studentSchema>;
 export type Step1Input = z.infer<typeof step1Schema>;
