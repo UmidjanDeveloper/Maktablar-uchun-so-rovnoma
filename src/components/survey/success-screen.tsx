@@ -137,7 +137,7 @@ export function SuccessScreen({
           }}
         >
           <EntityIcon
-            name={dreamJob}
+            name={dreamJob || 'Kelajak'}
             strokeWidth={1.6}
             className="h-14 w-14 sm:h-16 sm:w-16"
             style={{ color: accent }}
@@ -160,18 +160,28 @@ export function SuccessScreen({
         transition={{ delay: 0.28, duration: 0.45 }}
         className="mt-4 max-w-2xl text-balance font-display text-xl font-semibold leading-snug text-ink xs:text-2xl sm:text-3xl"
       >
-        Sen kelajakda ajoyib{' '}
-        <span style={{ color: accent }}>{dreamJob}</span> bo&apos;lasan!
+        {dreamJob ? (
+          <>
+            Sen kelajakda ajoyib{' '}
+            <span style={{ color: accent }}>{dreamJob}</span> bo&apos;lasan!
+          </>
+        ) : (
+          <>
+            Sening <span style={{ color: accent }}>ovozing eshitildi!</span>
+          </>
+        )}
       </motion.p>
 
-      {/* Yo'nalishga mos shaxsiy jumla */}
+      {/* Shaxsiy jumla: kasb tanlagan bo'lsa — o'sha kasbniki */}
       <motion.p
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.42, duration: 0.45 }}
         className="mt-4 max-w-xl text-balance text-[15px] text-ink-muted sm:text-lg"
       >
-        {theme.cheer}
+        {dreamJob
+          ? theme.cheer
+          : "Mahallangda qanday to'garak va kurs ochilishini aynan sen kabi o'quvchilarning javobi hal qiladi."}
       </motion.p>
 
       {/* Yakuniy chaqiriq — bola shu gap bilan o'rnidan turadi */}
@@ -189,10 +199,16 @@ export function SuccessScreen({
         <p className="font-display text-lg font-bold leading-snug text-ink sm:text-xl">
           Bugun sen shunchaki anketa to&apos;ldirmading —
           <br className="hidden sm:block" />{' '}
-          <span style={{ color: accent }}>orzuingni ovoz chiqarib aytding.</span>
+          <span style={{ color: accent }}>
+            {dreamJob
+              ? "orzuingni ovoz chiqarib aytding."
+              : "nima kerakligini ovoz chiqarib aytding."}
+          </span>
         </p>
         <p className="text-sm text-ink-muted sm:text-[15px]">
-          Endi unga qarab yur. Xatirchi sendan kuchli odam chiqishini kutmoqda.
+          {dreamJob
+            ? 'Endi unga qarab yur. Xatirchi sendan kuchli odam chiqishini kutmoqda.'
+            : 'Xatirchi seni eshitdi — va sen uchun ish boshlaydi.'}
         </p>
         <span
           aria-hidden="true"

@@ -3,6 +3,7 @@ import { SurveyWizard } from '@/components/survey/survey-wizard';
 import { LogoLockup } from '@/components/shared/logo';
 import { AuroraBackground } from '@/components/shared/aurora-background';
 import { ThemeToggle } from '@/components/shared/theme-toggle';
+import { SiteFooter } from '@/components/shared/site-footer';
 
 /** Kiosk rejimida ekran har doim yangi ma'lumot ko'rsatishi uchun */
 export const dynamic = 'force-dynamic';
@@ -38,13 +39,7 @@ export default function HomePage() {
 
       <SurveyWizard />
 
-      {/* Pastki matn */}
-      <footer className="border-t border-line py-6">
-        <p className="px-4 text-center text-xs text-ink-faint">
-          © {new Date().getFullYear()} Xatirchi tumani hokimligi · Navoiy viloyati ·
-          &laquo;Kelajak Egasi&raquo; loyihasi
-        </p>
-      </footer>
+      <SiteFooter />
     </main>
   );
 }
