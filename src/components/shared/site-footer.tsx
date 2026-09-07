@@ -6,7 +6,7 @@ import { Logo } from '@/components/shared/logo';
 /**
  * Sahifa pastki qismi: hamkor logotiplari va muallif.
  *
- * IT Shaharcha logotipi `public/it-shaharcha.jpg` faylidan olinadi.
+ * IT Shaharcha logotipi `public/it-shaharcha.png` faylidan olinadi.
  * Fayl yo'q bo'lsa yoki yuklanmasa, rasm o'rnida buzilgan belgi
  * ko'rinmasligi uchun butun "Hamkorlikda" bloki yashiriladi —
  * sayt hech qachon "sinib turgan" ko'rinishga tushmaydi.
@@ -48,15 +48,20 @@ export function SiteFooter() {
                 style={{ background: 'var(--border-strong)' }}
               />
 
+              {/*
+                Nishonning atrofida ~14% shaffof chekka bor, shuning uchun
+                u gerbdan kattaroq qilingan — shundagina ikkala doira
+                KO'ZGA bir xil o'lchamda ko'rinadi.
+              */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 ref={rasm}
-                src="/it-shaharcha.jpg"
+                src="/it-shaharcha.png"
                 alt="IT Shaharcha — Yoshlar Axborot Texnologiyalari Markazi"
                 title="IT Shaharcha — Yoshlar Axborot Texnologiyalari Markazi"
-                width={480}
-                height={238}
-                className="h-14 w-auto rounded-lg ring-1 ring-line sm:h-16"
+                width={500}
+                height={500}
+                className="h-20 w-20 sm:h-[5.5rem] sm:w-[5.5rem]"
                 onError={() => setLogoBor(false)}
                 onLoad={(e) => {
                   if (e.currentTarget.naturalWidth === 0) setLogoBor(false);
