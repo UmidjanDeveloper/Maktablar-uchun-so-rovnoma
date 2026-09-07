@@ -8,7 +8,7 @@ import { Confetti } from './confetti';
 import { jobTheme } from '@/lib/constants';
 import { useTheme } from '@/components/shared/theme-provider';
 import { EntityIcon } from '@/lib/icons';
-import { isMuted, playCelebration, setMuted } from '@/lib/sound';
+import { isMuted, playCelebration, setMuted, stopCelebration } from '@/lib/sound';
 
 /**
  * Kiosk rejimida ekran avtomatik tozalanadigan vaqt (soniya).
@@ -67,11 +67,18 @@ export function SuccessScreen({
    */
   const accent = resolved === 'dark' ? theme.colorDark : theme.color;
 
-  // Ovoz holatini o'qiymiz va tabrik ovozini chalamiz
+  /*
+   * Ovoz holatini o'qiymiz va tabrik ovozini chalamiz.
+   *
+   * Ekran yopilganda musiqa albatta to'xtatiladi: `public/tabrik.mp3`
+   * hisoblagichdan uzunroq bo'lsa, u keyingi o'quvchining anketasi
+   * ustidan chalinib turishi mumkin edi.
+   */
   useEffect(() => {
     setMutedState(isMuted());
     setLite(document.documentElement.dataset.fx === 'lite');
     playCelebration(theme.sound);
+    return () => stopCelebration();
   }, [theme.sound]);
 
   // Kiosk hisoblagichi
@@ -88,7 +95,9 @@ export function SuccessScreen({
     const next = !muted;
     setMuted(next);
     setMutedState(next);
-    if (!next) playCelebration(theme.sound);
+    // O'chirilsa — darhol jim bo'lsin, yoqilsa — boshidan chalinsin
+    if (next) stopCelebration();
+    else playCelebration(theme.sound);
   };
 
   return (

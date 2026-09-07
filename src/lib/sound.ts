@@ -6,11 +6,14 @@
  *  chalinadi: militsiya tanlasa — sirena, shifokor tanlasa —
  *  yurak urishi, dasturchi tanlasa — raqamli signal.
  *
- *  Ovozlar HECH QANDAY FAYLDAN yuklanmaydi — ular brauzerning
- *  o'zida (Web Audio API) generatsiya qilinadi. Sabab:
- *    - internet kerak emas, oflayn rejimda ham ishlaydi
- *    - saytga bir kilobayt ham qo'shmaydi
- *    - eski kompyuterlarda ham darhol chalinadi
+ *  Ovozlar brauzerning o'zida (Web Audio API) generatsiya qilinadi.
+ *  Sabab: internet kerak emas, saytga bir kilobayt ham qo'shmaydi,
+ *  eski kompyuterlarda ham darhol chalinadi.
+ *
+ *  LEKIN: agar `public/tabrik.mp3` fayli qo'yilgan bo'lsa, yakuniy
+ *  ekranda O'SHA musiqa chalinadi va generatsiya qilingan ovozlar
+ *  umuman ishlatilmaydi. Fayl bo'lmasa yoki chalinmasa — generatsiya
+ *  qilingan tabrikka qaytadi, ya'ni ekran hech qachon jim qolmaydi.
  *
  *  Kompyuter sinfida shovqin bo'lmasligi uchun ovozni o'chirib
  *  qo'yish mumkin — tanlov brauzerda saqlanadi.
@@ -229,14 +232,8 @@ function fanfare(ac: AudioContext): void {
   );
 }
 
-/**
- * Tabrik ovozini chaladi.
- * Ovoz o'chirilgan bo'lsa yoki brauzer qo'llab-quvvatlamasa — jimgina
- * o'tkazib yuboriladi, hech qanday xato chiqmaydi.
- */
-export function playCelebration(sound: SoundName): void {
-  if (isMuted()) return;
-
+/** Generatsiya qilingan tabrik: fanfara + kasbga xos ovoz */
+function synthCelebration(sound: SoundName): void {
   const ac = audioContext();
   if (!ac) return;
 
@@ -246,6 +243,102 @@ export function playCelebration(sound: SoundName): void {
     RECIPES[sound]?.(ac, 1.15);
   } catch {
     // Ovoz chalinmasa ham anketa muvaffaqiyatli yuborilgan — muhimi shu
+  }
+}
+
+/* ------------------------------------------------------------------
+ *  O'z musiqangiz
+ *
+ *  `public/tabrik.mp3` faylini qo'ysangiz, yakuniy ekranda o'sha
+ *  chalinadi. Fayl bo'lmasa — yuqoridagi generatsiya qilingan tabrik
+ *  ishlaydi, ya'ni faylni almashtirish uchun kodga tegish shart emas.
+ * ------------------------------------------------------------------ */
+
+const TRACK_URL = '/tabrik.mp3';
+
+let track: HTMLAudioElement | null = null;
+
+/**
+ * Fayl umuman yo'qmi?
+ *
+ *   null  — hali tekshirilmagan
+ *   false — yo'q yoki brauzer o'qiy olmadi, boshqa urinilmaydi
+ *
+ * Bu bayroq bir marta hisoblanadi: har safar 404 so'rovini
+ * takrorlash kioskda ortiqcha yuk.
+ */
+let trackYoq = false;
+
+/**
+ * Fayldagi musiqani chaladi.
+ * `true` — chalindi, `false` — chalinmadi (generatsiyaga qaytish kerak).
+ */
+function playTrack(): Promise<boolean> {
+  if (typeof window === 'undefined' || trackYoq) return Promise.resolve(false);
+
+  try {
+    if (!track) {
+      track = new Audio(TRACK_URL);
+      track.preload = 'auto';
+      track.volume = 0.85;
+    }
+    track.currentTime = 0;
+
+    const started = track.play();
+    // Eski brauzerlar `play()` dan Promise qaytarmaydi
+    if (!started) return Promise.resolve(true);
+
+    return started.then(
+      () => true,
+      (xato: unknown) => {
+        /*
+         * Brauzer avtomatik chalishni taqiqlagan bo'lsa (NotAllowedError)
+         * fayl aybdor emas — uni "yo'q" deb belgilamaymiz, aks holda
+         * keyingi o'quvchilarga ham chalinmay qoladi.
+         */
+        const nomi = (xato as { name?: string } | null)?.name;
+        if (nomi !== 'NotAllowedError') {
+          trackYoq = true;
+          track = null;
+        }
+        return false;
+      }
+    );
+  } catch {
+    trackYoq = true;
+    return Promise.resolve(false);
+  }
+}
+
+/**
+ * Tabrik ovozini chaladi.
+ *
+ * Avval `public/tabrik.mp3` sinab ko'riladi; u bo'lmasa generatsiya
+ * qilingan tabrik chalinadi. Ovoz o'chirilgan bo'lsa yoki brauzer
+ * qo'llab-quvvatlamasa — jimgina o'tkazib yuboriladi.
+ */
+export function playCelebration(sound: SoundName): void {
+  if (isMuted()) return;
+
+  void playTrack().then((chalindi) => {
+    if (!chalindi) synthCelebration(sound);
+  });
+}
+
+/**
+ * Chalinayotgan musiqani to'xtatadi.
+ *
+ * Kerak bo'ladigan joylar: o'quvchi ovozni o'chirsa va ekran
+ * yangi anketaga qaytsa — musiqa keyingi bolaning ustidan
+ * chalinib turmasligi kerak.
+ */
+export function stopCelebration(): void {
+  if (!track) return;
+  try {
+    track.pause();
+    track.currentTime = 0;
+  } catch {
+    // e'tiborsiz
   }
 }
 
