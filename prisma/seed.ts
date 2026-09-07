@@ -23,6 +23,7 @@ import {
   UY_TEXNIKASI,
   TIL_KERAK_EMAS,
 } from '../src/lib/constants';
+import { kasbSavoliKerakmi } from '../src/lib/validation';
 import { buildDedupeKey } from '../src/lib/dedupe';
 
 const prisma = new PrismaClient();
@@ -157,8 +158,8 @@ async function main() {
     const lastName = rand(FAMILIYALAR) + (isBoy ? '' : 'a');
     const school = rand(MAKTABLAR);
     const grade = 5 + Math.floor(Math.random() * 7);
-    // Orzu kasb faqat 10-11-sinfda so'raladi
-    const kasb = grade >= 10 ? rand(KASBLAR) : null;
+    // Orzu kasb faqat 9-11-sinfda so'raladi (chegara bitta joyda)
+    const kasb = kasbSavoliKerakmi(grade) ? rand(KASBLAR) : null;
     // To'siq sababi faqat hech qanday to'garakka qatnamaydiganlarda
     const qatnaydi = Math.random() > 0.4;
     const createdAt = randomDate(60);

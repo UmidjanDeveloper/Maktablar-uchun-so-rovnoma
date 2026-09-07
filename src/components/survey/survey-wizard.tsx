@@ -153,8 +153,8 @@ export function SurveyWizard() {
   /**
    * Berilgan qadamdan keyingi ko'rinadigan qadam raqami.
    *
-   * Orzu kasb (3-qadam) faqat 10-11-sinf o'quvchilariga ko'rsatiladi:
-   * 5-9-sinf bolasi hali kasb tanlay olmaydi va tasodifiy javob butun
+   * Orzu kasb (3-qadam) faqat 9-11-sinf o'quvchilariga ko'rsatiladi:
+   * 5-8-sinf bolasi hali kasb tanlay olmaydi va tasodifiy javob butun
    * tahlilni buzadi. Shuning uchun u qadam butunlay o'tkazib
    * yuboriladi — orqaga qaytishda ham.
    */
@@ -303,7 +303,7 @@ export function SurveyWizard() {
   /**
    * Ko'rinadigan qadamlar ro'yxati.
    *
-   * 5-9-sinf o'quvchisiga orzu kasb qadami ko'rsatilmaydi, shuning
+   * 5-8-sinf o'quvchisiga orzu kasb qadami ko'rsatilmaydi, shuning
    * uchun ko'rsatkich ham 4 ta tugundan iborat bo'ladi. Aks holda
    * bola "3-qadam / 5" ni ko'rib, keyin darrov 4-qadamga o'tib
    * ketardi — bu chalkash va noto'g'ri.

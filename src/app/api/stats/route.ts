@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
     let boys = 0;
 
     for (const row of rows) {
-      // Orzu kasb faqat 10-11-sinfda so'raladi — kichik sinflarda
+      // Orzu kasb faqat 9-11-sinfda so'raladi — kichik sinflarda
       // bo'sh bo'ladi va kasb statistikasiga qo'shilmaydi
       const dreamJob = row.dreamJob;
       const jobCategory = row.jobCategory;
@@ -149,7 +149,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Har bir maktabdagi eng ommabop kasb
-    // Diqqat: maktabda faqat 5-9-sinf o'quvchisi bo'lsa, kasblar ro'yxati
+    // Diqqat: maktabda faqat 5-8-sinf o'quvchisi bo'lsa, kasblar ro'yxati
     // bo'sh bo'ladi (ularga orzu kasb savoli berilmaydi) — bunday maktab
     // jadvalga umuman qo'shilmaydi
     const bySchool: SchoolTopJob[] = Array.from(schoolJobs.entries())

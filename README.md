@@ -168,7 +168,7 @@ Bir necha marta ishga tushirish xavfsiz.
 
 ### 4.2. Orzu kasb maydonini bo'shatish (majburiy, bir marta)
 
-Orzu kasb savoli endi faqat 10-11-sinf o'quvchilariga beriladi —
+Orzu kasb savoli endi faqat 9-11-sinf o'quvchilariga beriladi —
 kichik sinf bolasi hali kasb tanlay olmaydi va tasodifiy javob
 tahlilni buzadi. Shu sababli bazadagi ustun bo'sh qiymatni ham
 qabul qilishi kerak.
@@ -176,7 +176,7 @@ qabul qilishi kerak.
 `prisma/orzu-kasb-ixtiyoriy.sql` faylini Supabase **SQL Editor** da
 ishga tushiring. Mavjud anketalarga tegmaydi.
 
-> Bu SQL ishga tushirilmasa, 5-9-sinf o'quvchisining anketasi
+> Bu SQL ishga tushirilmasa, 5-8-sinf o'quvchisining anketasi
 > yuborilmaydi.
 
 ### 4.3. Kasblar ro'yxati yangilanganda

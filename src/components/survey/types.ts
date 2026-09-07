@@ -16,7 +16,7 @@ export interface FormState {
   clubs: string[];
   /** «Hech qaysi» tanlanganda majburiy */
   barriers: string[];
-  // 3-qadam (faqat 10-11-sinf)
+  // 3-qadam (faqat 9-11-sinf)
   dreamJob: string;
   jobCategory: string;
   // 4-qadam — ta'lim markazi

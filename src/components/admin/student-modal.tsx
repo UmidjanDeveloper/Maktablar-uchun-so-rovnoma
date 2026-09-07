@@ -68,7 +68,7 @@ export function StudentModal({ student, onClose }: StudentModalProps) {
           </div>
         </DialogHeader>
 
-        {/* Orzu kasb — faqat 10-11-sinfda so'raladi */}
+        {/* Orzu kasb — faqat 9-11-sinfda so'raladi */}
         {student.dreamJob ? (
           <div className="flex items-center gap-4 rounded-md border border-accent/35 bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] p-4">
             <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-[color-mix(in_srgb,var(--accent)_16%,transparent)] text-accent">
@@ -86,7 +86,7 @@ export function StudentModal({ student, onClose }: StudentModalProps) {
           </div>
         ) : (
           <p className="rounded-md border border-dashed border-line px-4 py-3 text-sm text-ink-faint">
-            Orzu kasb savoli berilmagan — u faqat 10-11-sinf o&apos;quvchilariga
+            Orzu kasb savoli berilmagan — u faqat 9-11-sinf o&apos;quvchilariga
             ko&apos;rsatiladi.
           </p>
         )}

@@ -13,8 +13,14 @@ import {
   telefonTekshir,
 } from './inson-tekshiruvi';
 
-/** Orzu kasb savoli shu sinfdan boshlab beriladi */
-export const KASB_SAVOLI_SINFI = 10;
+/**
+ * Orzu kasb savoli shu sinfdan boshlab beriladi.
+ *
+ * 9-sinf — o'quvchi kollej yoki litseyni tanlash arafasida turadigan
+ * yil, ya'ni kasb haqida o'ylay boshlaydigan eng erta payt. Undan
+ * kichik sinflarda javob tasodifiy bo'ladi va tahlilni buzadi.
+ */
+export const KASB_SAVOLI_SINFI = 9;
 
 /** Berilgan sinfda orzu kasb savoli ko'rsatiladimi? */
 export function kasbSavoliKerakmi(grade: number | ''): boolean {
@@ -152,7 +158,7 @@ export const step2FormSchema = step2Schema.superRefine(tosiqQoidasi);
 /**
  * 3-qadam: orzu qilingan kasb.
  *
- * Bu qadam faqat 10-11-sinf o'quvchilariga ko'rsatiladi, shuning uchun
+ * Bu qadam faqat 9-11-sinf o'quvchilariga ko'rsatiladi, shuning uchun
  * maydonlar ixtiyoriy. Kichik sinf o'quvchisi hali kasb tanlay olmaydi
  * va tasodifiy javob butun tahlilni buzadi.
  */
@@ -220,7 +226,7 @@ export const studentSchema = step1Schema
   .superRefine((v, ctx) => {
     tosiqQoidasi(v, ctx);
 
-    // 10-11-sinf o'quvchisiga orzu kasb savoli berilgan — javob shart
+    // 9-11-sinf o'quvchisiga orzu kasb savoli berilgan — javob shart
     if (kasbSavoliKerakmi(v.grade) && !v.dreamJob) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

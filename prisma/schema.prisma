@@ -36,7 +36,7 @@ model Student {
 
   /// Orzudagi kasb va uning yo'nalishi.
   ///
-  /// Bo'sh bo'lishi mumkin: orzu kasb savoli faqat 10-11-sinf
+  /// Bo'sh bo'lishi mumkin: orzu kasb savoli faqat 9-11-sinf
   /// o'quvchilariga beriladi. Kichik sinflarda bola hali kasb tanlay
   /// olmaydi va tasodifiy javob tahlilni buzadi.
   dreamJob    String?
