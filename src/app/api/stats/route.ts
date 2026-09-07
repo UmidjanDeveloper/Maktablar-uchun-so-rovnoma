@@ -5,6 +5,7 @@ import { requireAdmin } from '@/lib/api-auth';
 import { percent } from '@/lib/utils';
 import { KASB_ICON_MAP } from '@/lib/constants';
 import { buildCenterPlan } from '@/lib/center-planning';
+import { YORDAM_TOSIQLARI } from '@/lib/constants';
 import type { DashboardStats, MahallaInsight, NameValue, SchoolTopJob } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -55,6 +56,7 @@ export async function GET(request: NextRequest) {
         barriers: true,
         availableTimes: true,
         homeTech: true,
+        helpResolved: true,
       },
     });
 
@@ -206,6 +208,36 @@ export async function GET(request: NextRequest) {
       (a, b) => parseInt(a.name, 10) - parseInt(b.name, 10)
     );
 
+    /*
+     * Yordam bo'yicha bajarilgan ish.
+     *
+     * Diagrammalar «hozir qanday» degan savolga javob beradi, bu blok
+     * esa «nima qilindi» degan savolga: hokim uchun hisobotdagi eng
+     * muhim qator — nechta muammo aniqlandi va nechtasi yopildi.
+     */
+    const yordamRows = rows.filter((r) => r.barriers.length > 0);
+    const aralashuvRows = yordamRows.filter((r) =>
+      r.barriers.some((b) => (YORDAM_TOSIQLARI as readonly string[]).includes(b))
+    );
+    const barrierStats = new Map<string, { count: number; resolved: number }>();
+    for (const r of yordamRows) {
+      for (const b of r.barriers) {
+        const cell = barrierStats.get(b) ?? { count: 0, resolved: 0 };
+        cell.count += 1;
+        if (r.helpResolved) cell.resolved += 1;
+        barrierStats.set(b, cell);
+      }
+    }
+    const helpStats = {
+      withBarriers: yordamRows.length,
+      needHelp: aralashuvRows.length,
+      resolved: aralashuvRows.filter((r) => r.helpResolved).length,
+      pending: aralashuvRows.filter((r) => !r.helpResolved).length,
+      byBarrier: Array.from(barrierStats.entries())
+        .map(([name, v]) => ({ name, count: v.count, resolved: v.resolved }))
+        .sort((a, b) => b.count - a.count),
+    };
+
     const stats: DashboardStats = {
       kpi: {
         totalStudents: total,
@@ -230,6 +262,7 @@ export async function GET(request: NextRequest) {
       mahallaInsights,
       categoryGender: categoryGenderStats,
       centerPlan: buildCenterPlan(rows),
+      help: helpStats,
     };
 
     return NextResponse.json(stats);

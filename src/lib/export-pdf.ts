@@ -10,7 +10,7 @@
  * ============================================================
  */
 import type { jsPDF } from 'jspdf';
-import { formatDate } from './utils';
+import { formatDate, formatPhone } from './utils';
 import { buildRecommendations, PRIORITY_LABELS } from './recommendations';
 import { MIN_GROUP } from './center-planning';
 import type { DashboardFilters, DashboardStats } from '@/types';
@@ -52,9 +52,24 @@ function ensureSpace(doc: jsPDF, y: number, needed: number): number {
   return y;
 }
 
-/** Bo'lim sarlavhasini chizadi */
-function sectionTitle(doc: jsPDF, title: string, y: number): number {
-  const top = ensureSpace(doc, y, 16);
+/**
+ * Bo'lim sarlavhasini chizadi.
+ *
+ * `needed` — sarlavhadan keyin keladigan kontentning taxminiy balandligi.
+ * Buni berish shart, aks holda sarlavha sahifa oxirida yolg'iz qolib,
+ * jadval yoki diagramma keyingi sahifadan boshlanadi — hisobotda
+ * bo'sh sahifa hosil bo'ladi.
+ */
+function sectionTitle(doc: jsPDF, title: string, y: number, needed = 30): number {
+  /*
+   * Butun diagrammaning balandligini talab qilib bo'lmaydi: uzun
+   * ro'yxat hech qachon bitta sahifaga sig'maydi va har safar yangi
+   * sahifadan boshlanib, oldingisining yarmini bo'sh qoldiradi.
+   * Shuning uchun "kamida shuncha joy bo'lsin" degan chegara qo'yamiz —
+   * sarlavha va bir necha qator sig'sa, qolgani keyingi sahifaga
+   * o'zi oqib o'tadi.
+   */
+  const top = ensureSpace(doc, y, 16 + Math.min(needed, 34));
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
   doc.setTextColor(...DARK);
@@ -73,9 +88,15 @@ function drawBarChart(
   doc: jsPDF,
   data: { name: string; value: number }[],
   y: number,
-  options: { color?: [number, number, number]; labelWidth?: number; max?: number } = {}
+  options: {
+    color?: [number, number, number];
+    labelWidth?: number;
+    max?: number;
+    /** Berilsa, qiymat yonida ulush foizi ham ko'rsatiladi */
+    total?: number;
+  } = {}
 ): number {
-  const { color = BRAND, labelWidth = 52 } = options;
+  const { color = BRAND, labelWidth = 52, total } = options;
   if (data.length === 0) {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
@@ -85,9 +106,16 @@ function drawBarChart(
   }
 
   const rowH = 6.4;
-  const barMaxW = PAGE_W - M * 2 - labelWidth - 16;
+  const barMaxW = PAGE_W - M * 2 - labelWidth - (total ? 24 : 16);
   const max = options.max ?? Math.max(...data.map((d) => d.value), 1);
-  let cursor = ensureSpace(doc, y, data.length * rowH + 6);
+  /*
+   * Butun diagramma uchun joy talab qilmaymiz — uzun ro'yxat hech
+   * qachon bitta sahifaga sig'maydi va har safar yangi sahifaga
+   * o'tib, oldingisini yarim bo'sh qoldirardi. Har bir qator o'zi
+   * uchun joy tekshiradi, shuning uchun diagramma sahifadan
+   * sahifaga tabiiy oqib o'tadi.
+   */
+  let cursor = ensureSpace(doc, y, rowH + 6);
 
   for (const item of data) {
     cursor = ensureSpace(doc, cursor, rowH + 2);
@@ -109,16 +137,177 @@ function drawBarChart(
     doc.setFillColor(...color);
     doc.roundedRect(M + labelWidth, cursor, width, 4.4, 1.2, 1.2, 'F');
 
-    // Qiymat
+    // Qiymat (kerak bo'lsa foizi bilan)
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8.5);
     doc.setTextColor(...SLATE);
-    doc.text(String(item.value), M + labelWidth + barMaxW + 3, cursor + 3.4);
+    const qiymat = total
+      ? `${item.value}  ${Math.round((item.value / total) * 100)}%`
+      : String(item.value);
+    doc.text(qiymat, M + labelWidth + barMaxW + 3, cursor + 3.4);
 
     cursor += rowH;
   }
 
   return cursor + 4;
+}
+
+/**
+ * Jins bo'yicha taqqoslash diagrammasi.
+ *
+ * Ilgari ikkita alohida diagramma chizilardi va ularni ko'z bilan
+ * solishtirib bo'lmasdi — bir xil kasb ikki joyda, ikki xil tartibda
+ * turardi. Endi har bir kasb bitta qatorda: ustidagi ustun o'g'il
+ * bolalar, ostidagisi qizlar.
+ */
+function drawGenderChart(
+  doc: jsPDF,
+  data: { name: string; ogil: number; qiz: number }[],
+  y: number
+): number {
+  if (data.length === 0) {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...SLATE);
+    doc.text("Ma'lumot yo'q", M, y);
+    return y + 8;
+  }
+
+  const labelWidth = 52;
+  const barMaxW = PAGE_W - M * 2 - labelWidth - 16;
+  const max = Math.max(...data.flatMap((d) => [d.ogil, d.qiz]), 1);
+  const barH = 3;
+  const rowH = barH * 2 + 3.6;
+
+  let cursor = y;
+
+  // Izoh — qaysi rang kim
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.setFillColor(...BRAND);
+  doc.roundedRect(M + labelWidth, cursor - 2.6, 6, 2.6, 0.6, 0.6, 'F');
+  doc.setTextColor(...SLATE);
+  doc.text(safe("O'g'il bolalar"), M + labelWidth + 8, cursor);
+  doc.setFillColor(...PINK);
+  doc.roundedRect(M + labelWidth + 38, cursor - 2.6, 6, 2.6, 0.6, 0.6, 'F');
+  doc.text(safe('Qizlar'), M + labelWidth + 46, cursor);
+  cursor += 5;
+
+  for (const item of data) {
+    cursor = ensureSpace(doc, cursor, rowH + 2);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(...DARK);
+    const label = safe(item.name);
+    doc.text(
+      label.length > 30 ? `${label.slice(0, 29)}...` : label,
+      M,
+      cursor + rowH / 2 - 0.4
+    );
+
+    ([
+      [item.ogil, BRAND, 0],
+      [item.qiz, PINK, barH + 0.8],
+    ] as [number, [number, number, number], number][]).forEach(([value, color, dy]) => {
+      const top = cursor + dy;
+      doc.setFillColor(241, 245, 249);
+      doc.roundedRect(M + labelWidth, top, barMaxW, barH, 0.8, 0.8, 'F');
+      if (value > 0) {
+        doc.setFillColor(...color);
+        doc.roundedRect(
+          M + labelWidth,
+          top,
+          Math.max(1.2, (value / max) * barMaxW),
+          barH,
+          0.8,
+          0.8,
+          'F'
+        );
+      }
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7.5);
+      doc.setTextColor(...SLATE);
+      doc.text(String(value), M + labelWidth + barMaxW + 3, top + barH - 0.3);
+    });
+
+    cursor += rowH;
+  }
+
+  return cursor + 4;
+}
+
+/**
+ * «Shuncha muammo aniqlandi — shunchasi hal qilindi» bandi.
+ *
+ * Hisobotning boshiga qo'yiladi, chunki hokim uchun eng muhim raqam
+ * shu: diagrammalar holatni tasvirlaydi, bu esa bajarilgan ishni.
+ */
+function drawHelpBand(
+  doc: jsPDF,
+  help: { needHelp: number; resolved: number; pending: number },
+  y: number
+): number {
+  if (help.needHelp === 0) return y;
+
+  const h = 22;
+  const top = ensureSpace(doc, y, h + 6);
+  const foiz = Math.round((help.resolved / help.needHelp) * 100);
+
+  doc.setFillColor(254, 249, 243);
+  doc.setDrawColor(251, 191, 36);
+  doc.setLineWidth(0.4);
+  doc.roundedRect(M, top, PAGE_W - M * 2, h, 2.5, 2.5, 'FD');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(180, 83, 9);
+  doc.text(safe("YORDAM KERAK BO'LGAN O'QUVCHILAR"), M + 5, top + 6.5);
+
+  // Uchta raqam yonma-yon
+  const cells: [string, string, [number, number, number]][] = [
+    [String(help.needHelp), 'muammo aniqlandi', DARK],
+    [String(help.resolved), 'hal qilindi', [21, 128, 61]],
+    [String(help.pending), 'kutmoqda', [180, 83, 9]],
+  ];
+  cells.forEach(([value, label, color], i) => {
+    const x = M + 5 + i * 42;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(13);
+    doc.setTextColor(...color);
+    doc.text(value, x, top + 15.5);
+    // Kenglikni raqam O'Z o'lchamida o'lchaymiz, aks holda yozuv
+    // raqamning ustiga chiqib ketadi
+    const raqamKengligi = doc.getTextWidth(value);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(...SLATE);
+    doc.text(safe(label), x + raqamKengligi + 2.5, top + 15.5);
+  });
+
+  // O'ng tomonda bajarilish darajasi
+  const barX = M + 138;
+  const barW = PAGE_W - M - 5 - barX;
+  doc.setFillColor(226, 232, 240);
+  doc.roundedRect(barX, top + 12.5, barW, 3, 1, 1, 'F');
+  if (foiz > 0) {
+    doc.setFillColor(34, 197, 94);
+    doc.roundedRect(barX, top + 12.5, (barW * foiz) / 100, 3, 1, 1, 'F');
+  }
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(21, 128, 61);
+  const foizMatn = `${foiz}%`;
+  const foizKengligi = doc.getTextWidth(foizMatn);
+  doc.text(foizMatn, PAGE_W - M - 5, top + 9.5, { align: 'right' });
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6.8);
+  doc.setTextColor(...SLATE);
+  doc.text(safe('bajarildi'), PAGE_W - M - 5 - foizKengligi - 2.5, top + 9.5, {
+    align: 'right',
+  });
+
+  return top + h + 8;
 }
 
 /** KPI kartochkalar qatorini chizadi */
@@ -185,14 +374,32 @@ function addFooters(doc: jsPDF): void {
   }
 }
 
+/** PDF ga qo'shiladigan «yordam kerak» yozuvi */
+export interface HelpRow {
+  firstName: string;
+  lastName: string;
+  grade: number;
+  school: string;
+  mahalla: string;
+  parentPhone: string | null;
+  barriers: string[];
+  helpResolved: boolean;
+  helpResolvedAt: string | null;
+}
+
 /**
  * Hokim uchun to'liq tahliliy PDF hisobotni yaratadi va yuklab beradi.
+ *
+ * `helpRows` berilsa, hisobotga yordam kerak bo'lgan o'quvchilarning
+ * ismli ro'yxati ham qo'shiladi — bu hujjat shu holda MAXFIY bo'ladi
+ * va sahifada shunday belgilanadi.
  */
 export async function exportDashboardToPdf(
   stats: DashboardStats,
   filters: DashboardFilters,
-  fileName?: string
+  options: { helpRows?: HelpRow[]; fileName?: string } = {}
 ): Promise<void> {
+  const { helpRows = [], fileName } = options;
   const [{ jsPDF: JsPdf }, { default: autoTable }] = await Promise.all([
     import('jspdf'),
     import('jspdf-autotable'),
@@ -238,46 +445,64 @@ export async function exportDashboardToPdf(
     y
   );
 
+  // ---------- Yordam holati ----------
+  // Hisobotning eng birinchi xulosasi: qancha muammo bor va nechtasi yopilgan
+  y = drawHelpBand(doc, stats.help, y);
+
   // ---------- Top 10 kasblar ----------
-  y = sectionTitle(doc, '1. Eng ommabop 10 ta kasb', y);
-  y = drawBarChart(doc, stats.topJobs, y);
+  y = sectionTitle(doc, '1. Eng ommabop 10 ta kasb', y, stats.topJobs.length * 6.4);
+  y = drawBarChart(doc, stats.topJobs, y, { total: stats.kpi.totalStudents });
 
   // ---------- Jins bo'yicha taqqoslash ----------
-  y = sectionTitle(doc, '2. Qizlar va o\'g\'il bolalar tanlovi', y);
-  const genderMax = Math.max(
-    ...stats.genderJobs.flatMap((g) => [g.ogil, g.qiz]),
-    1
-  );
-  y = drawBarChart(
+  y = sectionTitle(
     doc,
-    stats.genderJobs.map((g) => ({ name: `${g.name} (o'g'il)`, value: g.ogil })),
+    "2. Qizlar va o'g'il bolalar tanlovi",
     y,
-    { color: BRAND, max: genderMax }
+    stats.genderJobs.length * 9.6 + 5
   );
-  y = drawBarChart(
-    doc,
-    stats.genderJobs.map((g) => ({ name: `${g.name} (qiz)`, value: g.qiz })),
-    y,
-    { color: PINK, max: genderMax }
-  );
+  y = drawGenderChart(doc, stats.genderJobs, y);
 
   // ---------- Mahallalar ----------
-  y = sectionTitle(doc, '3. Mahallalar bo\'yicha faollik (TOP 15)', y);
-  y = drawBarChart(doc, stats.byMahalla.slice(0, 15), y, { color: [16, 185, 129] });
+  const mahallaRows = stats.byMahalla.slice(0, 15);
+  y = sectionTitle(doc, "3. Mahallalar bo'yicha faollik (TOP 15)", y, mahallaRows.length * 6.4);
+  y = drawBarChart(doc, mahallaRows, y, {
+    color: [16, 185, 129],
+    total: stats.kpi.totalStudents,
+  });
 
   // ---------- Sinflar va fanlar ----------
-  y = sectionTitle(doc, '4. Sinflar bo\'yicha taqsimot', y);
-  y = drawBarChart(doc, stats.byGrade, y, { color: [139, 92, 246], labelWidth: 24 });
+  y = sectionTitle(doc, "4. Sinflar bo'yicha taqsimot", y, stats.byGrade.length * 6.4);
+  y = drawBarChart(doc, stats.byGrade, y, {
+    color: [139, 92, 246],
+    labelWidth: 24,
+    total: stats.kpi.totalStudents,
+  });
 
-  y = sectionTitle(doc, '5. Fanlar bo\'yicha qiziqish', y);
-  y = drawBarChart(doc, stats.bySubject, y, { color: [249, 115, 22], labelWidth: 34 });
+  const subjectRows = stats.bySubject.slice(0, 20);
+  y = sectionTitle(doc, "5. Fanlar bo'yicha qiziqish", y, subjectRows.length * 6.4);
+  y = drawBarChart(doc, subjectRows, y, { color: [249, 115, 22], labelWidth: 34 });
 
   // ---------- Maktablar jadvali ----------
-  y = sectionTitle(doc, '6. Maktablar bo\'yicha eng ommabop kasb', y);
+  /*
+   * Barcha maktablarni chiqarish hisobotni ikki sahifa "1 ta anketa"
+   * qatoriga to'ldirib yuboradi va o'qilmaydigan qilib qo'yadi.
+   * Shuning uchun eng faol 20 tasi, qolgani bir qatorda umumlashtiriladi.
+   * To'liq ro'yxat Excel faylida qoladi.
+   */
+  const SCHOOL_LIMIT = 20;
+  const schoolRows = stats.bySchool.slice(0, SCHOOL_LIMIT);
+  const schoolRest = stats.bySchool.slice(SCHOOL_LIMIT);
+
+  y = sectionTitle(
+    doc,
+    `6. Maktablar bo'yicha eng ommabop kasb (eng faol ${schoolRows.length} ta)`,
+    y,
+    36
+  );
   autoTable(doc, {
     startY: y,
     head: [['Maktab', 'Anketalar', 'Eng ommabop kasb', 'Tanlagan']],
-    body: stats.bySchool.map((s) => [
+    body: schoolRows.map((s) => [
       safe(s.school),
       s.total,
       safe(s.topJob),
@@ -287,6 +512,7 @@ export async function exportDashboardToPdf(
     headStyles: { fillColor: BRAND, textColor: [255, 255, 255], fontStyle: 'bold' },
     alternateRowStyles: { fillColor: [248, 250, 252] },
     margin: { left: M, right: M, bottom: 20 },
+    rowPageBreak: 'avoid',
     theme: 'grid',
   });
 
@@ -295,7 +521,24 @@ export async function exportDashboardToPdf(
   // Diagrammalar holatni tasvirlaydi, bu bo'lim esa qarorni taklif qiladi.
   const plan = stats.centerPlan;
   const afterSchools = (doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable;
-  let cursor = (afterSchools?.finalY ?? y) + 10;
+  let cursor = (afterSchools?.finalY ?? y) + 5;
+
+  if (schoolRest.length > 0) {
+    const qolgan = schoolRest.reduce((sum, item) => sum + item.total, 0);
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(7.8);
+    doc.setTextColor(...SLATE);
+    doc.text(
+      safe(
+        `Yana ${schoolRest.length} ta maktabdan ${qolgan} ta anketa keldi. ` +
+          "To'liq ro'yxat Excel faylining «Hududlar» varag'ida."
+      ),
+      M,
+      cursor
+    );
+    cursor += 5;
+  }
+  cursor += 5;
 
   if (plan.answered > 0) {
     cursor = ensureSpace(doc, cursor, 60);
@@ -337,6 +580,7 @@ export async function exportDashboardToPdf(
         headStyles: { fillColor: BRAND, textColor: [255, 255, 255], fontStyle: 'bold' },
         alternateRowStyles: { fillColor: [248, 250, 252] },
         margin: { left: M, right: M, bottom: 20 },
+        rowPageBreak: 'avoid',
         theme: 'grid',
       });
       const afterPlan = (doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable;
@@ -362,9 +606,109 @@ export async function exportDashboardToPdf(
     }
   }
 
+  // ---------- Yordam kerak bo'lgan o'quvchilar ----------
+  /*
+   * Hisobotdagi yagona bo'lim: bu yerda umumlashtirish emas, aniq
+   * bolalar ro'yxati beriladi. Sababi oddiy — "27 ta o'quvchining
+   * sharoiti yo'q" degan raqam bilan hech kim yordam bera olmaydi,
+   * ism va telefon bilan esa beradi. Shu sababli sahifa MAXFIY
+   * belgisi bilan chiqadi.
+   */
+  if (stats.help.needHelp > 0) {
+    cursor = sectionTitle(doc, "8. Yordam kerak bo'lgan o'quvchilar", cursor, 50);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(...SLATE);
+    const helpIntro = doc.splitTextToSize(
+      safe(
+        `Jami ${stats.help.needHelp} ta o'quvchi hokimiyat aralashuvini talab qiladigan ` +
+          `sababni ko'rsatdi. Shulardan ${stats.help.resolved} tasi bo'yicha ish yakunlandi, ` +
+          `${stats.help.pending} tasi kutmoqda.`
+      ),
+      PAGE_W - M * 2
+    );
+    doc.text(helpIntro, M, cursor);
+    cursor += helpIntro.length * 4.2 + 4;
+
+    // Sabablar kesimi
+    if (stats.help.byBarrier.length > 0) {
+      autoTable(doc, {
+        startY: cursor,
+        head: [['Sabab', 'Aniqlandi', 'Hal qilindi', 'Kutmoqda']],
+        body: stats.help.byBarrier.map((b) => [
+          safe(b.name),
+          b.count,
+          b.resolved,
+          b.count - b.resolved,
+        ]),
+        styles: { font: 'helvetica', fontSize: 8, cellPadding: 2, textColor: DARK },
+        headStyles: { fillColor: [180, 83, 9], textColor: [255, 255, 255], fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [254, 249, 243] },
+        margin: { left: M, right: M, bottom: 20 },
+        rowPageBreak: 'avoid',
+        theme: 'grid',
+      });
+      const afterBarriers = (doc as unknown as { lastAutoTable?: { finalY: number } })
+        .lastAutoTable;
+      cursor = (afterBarriers?.finalY ?? cursor) + 8;
+    }
+
+    // Ismli ro'yxat — avval kutayotganlar
+    if (helpRows.length > 0) {
+      const kutmoqda = helpRows.filter((r) => !r.helpResolved);
+      const halQilingan = helpRows.filter((r) => r.helpResolved);
+      const tartib = [...kutmoqda, ...halQilingan];
+
+      cursor = ensureSpace(doc, cursor, 30);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.setTextColor(190, 24, 93);
+      doc.text(safe("MAXFIY - shaxsiy ma'lumot, faqat xizmat maqsadida"), M, cursor);
+      cursor += 5;
+
+      autoTable(doc, {
+        startY: cursor,
+        head: [["O'quvchi", 'Sinf', 'Maktab', 'Mahalla', 'Sabab', 'Ota-ona tel.', 'Holat']],
+        body: tartib.map((r) => [
+          safe(`${r.firstName} ${r.lastName}`),
+          r.grade,
+          safe(r.school),
+          safe(r.mahalla),
+          safe(r.barriers.join(', ')),
+          safe(r.parentPhone ? formatPhone(r.parentPhone) : '-'),
+          r.helpResolved ? 'Hal qilindi' : 'Kutmoqda',
+        ]),
+        styles: { font: 'helvetica', fontSize: 7.4, cellPadding: 1.8, textColor: DARK },
+        headStyles: { fillColor: BRAND, textColor: [255, 255, 255], fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [248, 250, 252] },
+        // Telefon ustuni raqam bir qatorga sig'adigan kenglikda —
+        // ikkiga bo'linib ketgan raqamni terib bo'lmaydi
+        columnStyles: {
+          0: { cellWidth: 28 },
+          1: { cellWidth: 9, halign: 'center' },
+          2: { cellWidth: 40 },
+          3: { cellWidth: 21 },
+          5: { cellWidth: 28 },
+          6: { cellWidth: 20 },
+        },
+        // Hal qilinganlar oqarib turadi — ko'z avval kutayotganlarga tushadi
+        didParseCell: (hook) => {
+          if (hook.section !== 'body') return;
+          const holat = tartib[hook.row.index];
+          if (holat?.helpResolved) hook.cell.styles.textColor = SLATE;
+        },
+        margin: { left: M, right: M, bottom: 20 },
+        rowPageBreak: 'avoid',
+        theme: 'grid',
+      });
+      const afterHelp = (doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable;
+      cursor = (afterHelp?.finalY ?? cursor) + 10;
+    }
+  }
+
   // ---------- Xulosa va tavsiyalar ----------
-  cursor = ensureSpace(doc, cursor, 40);
-  cursor = sectionTitle(doc, 'Xulosa va tavsiyalar', cursor);
+  cursor = sectionTitle(doc, 'Xulosa va tavsiyalar', cursor, 40);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8.5);

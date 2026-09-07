@@ -35,6 +35,9 @@ export interface StudentRecord {
   barriers: string[];
   availableTimes: string[];
   homeTech: string | null;
+  /** Hokimiyat aralashuvi bo'yicha ish bajarildimi */
+  helpResolved: boolean;
+  helpResolvedAt: string | null;
   createdAt: string;
 }
 
@@ -95,6 +98,25 @@ export interface MahallaInsight {
   boys: number;
 }
 
+/**
+ * Hokimiyat aralashuvi statistikasi.
+ *
+ * Diagrammalardan farqi: bu yerda «holat» emas, «bajarilgan ish»
+ * o'lchanadi — nechta muammo aniqlangan va nechtasi yopilgan.
+ */
+export interface HelpStats {
+  /** Umuman to'siq belgilagan o'quvchilar */
+  withBarriers: number;
+  /** Ulardan hokimiyat aralashuvi talab qiladiganlari */
+  needHelp: number;
+  /** Hal qilindi deb belgilanganlari */
+  resolved: number;
+  /** Hali kutayotganlari */
+  pending: number;
+  /** Sabab kesimida: nechta bola aytgan va nechtasi yopilgan */
+  byBarrier: { name: string; count: number; resolved: number }[];
+}
+
 /** Yo'nalish bo'yicha jins taqsimoti */
 export interface CategoryGenderStat {
   name: string;
@@ -128,6 +150,8 @@ export interface DashboardStats {
   /** Ta'lim markazi ochish tahlili (5-qadam javoblari asosida) */
   centerPlan: CenterPlan;
   categoryGender: CategoryGenderStat[];
+  /** Yordam kerak bo'lgan o'quvchilar bo'yicha bajarilgan ish */
+  help: HelpStats;
 }
 
 /** Ro'yxat (jadval) uchun sahifalangan javob */

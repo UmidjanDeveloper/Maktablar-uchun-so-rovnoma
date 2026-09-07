@@ -5,7 +5,8 @@
  *  bitta .xlsx fayl yaratadi.
  * ============================================================
  */
-import { formatDate } from './utils';
+import { formatDate, formatPhone } from './utils';
+import { YORDAM_TOSIQLARI } from './constants';
 import type { DashboardStats, StudentRecord } from '@/types';
 
 /** Ustunlar sarlavhalari (o'zbekcha) */
@@ -31,14 +32,30 @@ const HEADERS = [
   'Uydagi texnika',
   'Telefon',
   'Ota-ona telefoni',
+  'Yordam kerakmi',
+  'Yordam holati',
+  'Hal qilingan sana',
   "To'ldirilgan sana",
 ];
 
 /** Ustunlar kengligi (belgi hisobida) */
 const COL_WIDTHS = [
   5, 14, 16, 12, 6, 30, 16, 12, 12, 22, 20, 30, 22,
-  30, 22, 20, 34, 24, 26, 18, 18, 18,
+  30, 22, 20, 34, 24, 26, 18, 18, 14, 16, 18, 18,
 ];
+
+/** Hokimiyat aralashuvi talab qiladigan sabab bormi */
+function needsHelp(student: StudentRecord): boolean {
+  return student.barriers.some((b) =>
+    (YORDAM_TOSIQLARI as readonly string[]).includes(b)
+  );
+}
+
+/** Yordam holatini o'qiladigan matnga aylantiradi */
+function helpStatus(student: StudentRecord): string {
+  if (!needsHelp(student)) return '—';
+  return student.helpResolved ? 'Hal qilindi' : 'Kutmoqda';
+}
 
 /** Bitta anketani massiv qatoriga aylantiradi */
 function toRow(student: StudentRecord, index: number): (string | number)[] {
@@ -64,13 +81,20 @@ function toRow(student: StudentRecord, index: number): (string | number)[] {
     student.homeTech ?? '',
     student.phone ?? '',
     student.parentPhone ?? '',
+    needsHelp(student) ? 'Ha' : "Yo'q",
+    helpStatus(student),
+    student.helpResolvedAt ? formatDate(student.helpResolvedAt) : '',
     formatDate(student.createdAt),
   ];
 }
 
 /**
  * Filtrlangan anketalarni Excel faylga yuklaydi.
- * Fayl uchta varaqdan iborat: Anketalar, Umumiy statistika, Mahallalar kesimi.
+ *
+ * Varaqlar: Anketalar, Yordam, Umumiy statistika, Mahallalar kesimi.
+ * «Yordam» varag'i alohida turadi, chunki u bilan ishlash tartibi ham
+ * boshqacha: qolgan varaqlar tahlil uchun, bu esa qo'ng'iroq qilish
+ * va aniq bolaga yordam ko'rsatish uchun.
  */
 export async function exportStudentsToExcel(
   students: StudentRecord[],
@@ -88,7 +112,76 @@ export async function exportStudentsToExcel(
   sheet['!freeze'] = { xSplit: 0, ySplit: 1 };
   XLSX.utils.book_append_sheet(workbook, sheet, 'Anketalar');
 
-  // --- 2-varaq: umumiy statistika ---
+  // --- 2-varaq: yordam kerak bo'lganlar ---
+  const help = students.filter(needsHelp);
+  if (help.length > 0) {
+    const resolved = help.filter((s) => s.helpResolved);
+    const pending = help.filter((s) => !s.helpResolved);
+
+    const helpRows: (string | number)[][] = [
+      ['YORDAM KERAK BO\'LGAN O\'QUVCHILAR'],
+      ['MAXFIY — shaxsiy ma\'lumot. Faqat xizmat maqsadida foydalaning.'],
+      ['Hisobot sanasi', formatDate(new Date())],
+      [],
+      ['Muammo aniqlandi', help.length],
+      ['Hal qilindi', resolved.length],
+      ['Kutmoqda', pending.length],
+      [
+        'Bajarilish darajasi',
+        `${help.length > 0 ? Math.round((resolved.length / help.length) * 100) : 0}%`,
+      ],
+      [],
+    ];
+
+    if (stats?.help.byBarrier.length) {
+      helpRows.push(['SABABLAR BO\'YICHA', 'Jami', 'Hal qilindi', 'Kutmoqda']);
+      for (const b of stats.help.byBarrier) {
+        helpRows.push([b.name, b.count, b.resolved, b.count - b.resolved]);
+      }
+      helpRows.push([]);
+    }
+
+    helpRows.push([
+      '№',
+      'Ism',
+      'Familiya',
+      'Sinf',
+      'Maktab',
+      'Mahalla',
+      'Sabab',
+      'Ota-ona telefoni',
+      "O'quvchi telefoni",
+      'Holat',
+      'Hal qilingan sana',
+    ]);
+
+    // Avval kutayotganlar — ish shu ro'yxatdan boshlanadi
+    [...pending, ...resolved].forEach((s, i) => {
+      helpRows.push([
+        i + 1,
+        s.firstName,
+        s.lastName,
+        s.grade,
+        s.school,
+        s.mahalla,
+        s.barriers.join(', '),
+        // Bu varaq qo'ng'iroq qilish uchun — raqam o'qiladigan ko'rinishda
+        s.parentPhone ? formatPhone(s.parentPhone) : '',
+        s.phone ? formatPhone(s.phone) : '',
+        s.helpResolved ? 'Hal qilindi' : 'Kutmoqda',
+        s.helpResolvedAt ? formatDate(s.helpResolvedAt) : '',
+      ]);
+    });
+
+    const helpSheet = XLSX.utils.aoa_to_sheet(helpRows);
+    helpSheet['!cols'] = [
+      { wch: 5 }, { wch: 14 }, { wch: 16 }, { wch: 6 }, { wch: 32 },
+      { wch: 18 }, { wch: 36 }, { wch: 18 }, { wch: 18 }, { wch: 14 }, { wch: 18 },
+    ];
+    XLSX.utils.book_append_sheet(workbook, helpSheet, 'Yordam');
+  }
+
+  // --- 3-varaq: umumiy statistika ---
   if (stats) {
     const summary: (string | number)[][] = [
       ['KELAJAK EGASI — UMUMIY STATISTIKA'],
@@ -99,6 +192,12 @@ export async function exportStudentsToExcel(
       ['Jami mahallalar', stats.kpi.totalMahallas],
       ['Qizlar', `${stats.kpi.girlsCount} (${stats.kpi.girlsPercent}%)`],
       ["O'g'il bolalar", `${stats.kpi.boysCount} (${stats.kpi.boysPercent}%)`],
+      [],
+      ['YORDAM BO\'YICHA BAJARILGAN ISH'],
+      ["To'siq belgilagan o'quvchilar", stats.help.withBarriers],
+      ['Hokimiyat aralashuvi kerak', stats.help.needHelp],
+      ['Hal qilindi', stats.help.resolved],
+      ['Kutmoqda', stats.help.pending],
       [],
       ['TOP 10 KASBLAR', "O'quvchilar soni"],
       ...stats.topJobs.map((j) => [j.name, j.value]),
@@ -116,7 +215,7 @@ export async function exportStudentsToExcel(
     summarySheet['!cols'] = [{ wch: 34 }, { wch: 20 }];
     XLSX.utils.book_append_sheet(workbook, summarySheet, 'Statistika');
 
-    // --- 3-varaq: mahallalar va maktablar kesimi ---
+    // --- 4-varaq: mahallalar va maktablar kesimi ---
     const byArea: (string | number)[][] = [
       ["MAHALLALAR BO'YICHA"],
       ['Mahalla', "O'quvchilar soni"],

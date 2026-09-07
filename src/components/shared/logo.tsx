@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { cn } from '@/lib/utils';
 
 /**
@@ -7,13 +8,16 @@ import { cn } from '@/lib/utils';
  * yosh avlod ramzi. SVG sifatida chizilgani uchun 40 pikseldan
  * 400 pikselgacha bir xil aniqlikda ko'rinadi va oflayn ishlaydi.
  *
- * `id` bir xil sahifada bir necha logotip bo'lsa ham to'qnashmasligi
- * uchun har bir nusxada noyob bo'lishi kerak.
+ * `clipPath` identifikatori bir sahifada bir necha logotip bo'lsa ham
+ * to'qnashmasligi kerak. Buni oddiy hisoblagich bilan qilib bo'lmaydi:
+ * server va brauzer bir xil tartibda sanamaydi va React "id mos
+ * kelmadi" deb ogohlantiradi. `useId` ikkala tomonda bir xil qiymat
+ * beradi.
  */
-let uid = 0;
-
 export function Logo({ className }: { className?: string }) {
-  const clipId = `logo-disc-${++uid}`;
+  // `useId` qiymatida ikki nuqta bo'ladi (":r1:") — `url(#...)` da
+  // muammo tug'dirmasligi uchun olib tashlaymiz
+  const clipId = `logo-disc-${useId().replace(/:/g, '')}`;
 
   return (
     <svg

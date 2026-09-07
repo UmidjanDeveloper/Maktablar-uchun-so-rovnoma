@@ -23,7 +23,7 @@ import { SubmissionsTable } from './submissions-table';
 import { StudentModal } from './student-modal';
 import { activeFilterCount, filtersToQuery } from '@/lib/filters';
 import { exportStudentsToExcel } from '@/lib/export-excel';
-import { exportDashboardToPdf } from '@/lib/export-pdf';
+import { exportDashboardToPdf, type HelpRow } from '@/lib/export-pdf';
 import { MAHALLALAR, MAKTABLAR } from '@/lib/constants';
 import {
   EMPTY_FILTERS,
@@ -196,7 +196,23 @@ export function DashboardClient() {
 
     setExporting('pdf');
     try {
-      await exportDashboardToPdf(stats, filters);
+      /*
+       * Yordam ro'yxatini alohida olamiz: hisobotdagi ismli jadval
+       * uchun kerak. Yuklanmasa ham hisobot chiqaveradi — faqat
+       * ismli ro'yxatsiz, raqamlar joyida qoladi.
+       */
+      let helpRows: HelpRow[] = [];
+      try {
+        const res = await fetch('/api/admin/yordam');
+        if (res.ok) {
+          const data = (await res.json()) as { items: (HelpRow & { needsHelp: boolean })[] };
+          helpRows = data.items.filter((i) => i.needsHelp);
+        }
+      } catch {
+        // Ismli ro'yxatsiz davom etamiz
+      }
+
+      await exportDashboardToPdf(stats, filters, { helpRows });
       toast({
         title: 'PDF hisobot tayyor',
         description: 'Fayl yuklab olindi va chop etishga tayyor.',

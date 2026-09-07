@@ -69,6 +69,19 @@ model Student {
   /// Uyda kompyuter/internet bormi — onlayn format mumkinmi
   homeTech        String?
 
+  // ─── Hokimiyat aralashuvi ───
+
+  /// Bolaning to'sig'i hal qilindimi?
+  ///
+  /// `barriers` muammoni QAYD ETADI, bu ustun esa u bo'yicha ISH
+  /// QILINGANINI belgilaydi. Ikkalasi alohida turadi: bola "ota-onam
+  /// ruxsat bermaydi" deb javob berganini o'zgartirib bo'lmaydi —
+  /// o'zgaradigani hokimiyatning javobi.
+  helpResolved   Boolean   @default(false)
+  /// Qachon hal qilingani — hisobotda "shuncha edi, shunchasi hal
+  /// qilindi" degan qatorni chiqarish uchun
+  helpResolvedAt DateTime?
+
   createdAt DateTime @default(now())
 
   /// Takroriy anketani bazaning o'zida bloklaydigan kalit:
@@ -84,6 +97,8 @@ model Student {
   @@index([jobCategory])
   @@index([dreamJob])
   @@index([createdAt])
+  // Yordam panelida hal qilinmaganlarni ajratish uchun
+  @@index([helpResolved])
   // Takroriy anketani aniqlash uchun (24 soatlik tekshiruv)
   @@index([firstName, lastName, school, grade])
 }

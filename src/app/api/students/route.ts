@@ -186,7 +186,11 @@ export async function GET(request: NextRequest) {
     ]);
 
     const payload: PaginatedStudents = {
-      items: items.map((s) => ({ ...s, createdAt: s.createdAt.toISOString() })),
+      items: items.map((s) => ({
+        ...s,
+        createdAt: s.createdAt.toISOString(),
+        helpResolvedAt: s.helpResolvedAt?.toISOString() ?? null,
+      })),
       total,
       page: exportAll ? 1 : page,
       pageSize,

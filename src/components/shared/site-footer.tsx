@@ -89,7 +89,7 @@ export function SiteFooter() {
           />
           Made by{' '}
           <span className="font-display font-semibold text-ink-muted">
-            Umidjan Zaxiddinovich
+            Umidjon Zoxiddinovich
           </span>
           <span
             aria-hidden="true"
