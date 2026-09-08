@@ -1,10 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { ArrowRight, CheckCircle2, Loader2, PencilLine, Plus, RefreshCw } from 'lucide-react';
+import { Loader2, Plus, Wand2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { SearchableSelect } from '@/components/shared/searchable-select';
 import { useToast } from '@/components/ui/toast';
 
 interface UnlistedValue {
@@ -23,33 +23,49 @@ interface UnlistedPanelProps {
   onCatalogChange?: () => void;
 }
 
+type Kind = 'mahallalar' | 'maktablar';
+
 /**
- * "Ro'yxatdan tashqari kiritilgan nomlar" paneli.
+ * "Ro'yxatga tushmagan nomlar" paneli — VAQTINCHA.
  *
- * Anketada o'quvchi mahalla yoki maktabini ro'yxatdan topa olmasa,
- * nomini qo'lda yozishi mumkin. Bu foydali, lekin nazoratsiz qolsa
- * ma'lumot parchalanadi: "7-maktab", "7 maktab", "7-sonli maktab"
- * uchta alohida qiymat bo'lib qoladi va hokimning tahlili buziladi.
+ * Anketada mahalla va maktabni qo'lda yozish yopildi, ya'ni yangi
+ * bunday nom paydo bo'lmaydi. Lekin yopilgunga qadar bazada 41 ta
+ * to'plangan edi ("navruz", "Sangijumon", "mirzo ulug`bek") va
+ * ularning har biri hisobotda alohida mahalla bo'lib ko'rinardi.
  *
- * Shu sababli qo'lda kiritilgan har bir yangi nom shu yerda ko'rinadi
- * va admin uni katalogga qo'shishi (yoki e'tiborsiz qoldirishi) mumkin.
+ * Panel aynan shu qoldiqni tozalash uchun turibdi va tozalanib
+ * bo'lgach O'ZI YO'QOLADI (`null` qaytaradi). Ya'ni hokim boshqaruv
+ * panelida bu bo'limni umuman ko'rmaydi.
  */
 export function UnlistedPanel({ onCatalogChange }: UnlistedPanelProps) {
   const { toast } = useToast();
   const [data, setData] = useState<UnlistedResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [katalog, setKatalog] = useState<{ mahallalar: string[]; maktablar: string[] }>({
+    mahallalar: [],
+    maktablar: [],
+  });
+  const [tanlov, setTanlov] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
+  const [hammasi, setHammasi] = useState(false);
 
   const load = useCallback(async () => {
-    setLoading(true);
     try {
-      const res = await fetch('/api/admin/unlisted');
-      if (!res.ok) throw new Error('load');
-      setData(await res.json());
+      const [royxat, kat] = await Promise.all([
+        fetch('/api/admin/unlisted'),
+        fetch('/api/catalogs'),
+      ]);
+      if (!royxat.ok) throw new Error('load');
+      setData(await royxat.json());
+
+      if (kat.ok) {
+        const k = await kat.json();
+        setKatalog({
+          mahallalar: (k.mahallalar ?? []).map((m: { name: string }) => m.name),
+          maktablar: (k.maktablar ?? []).map((m: { name: string }) => m.name),
+        });
+      }
     } catch {
       toast({ title: "Ro'yxatni yuklab bo'lmadi", variant: 'error' });
-    } finally {
-      setLoading(false);
     }
   }, [toast]);
 
@@ -57,44 +73,43 @@ export function UnlistedPanel({ onCatalogChange }: UnlistedPanelProps) {
     void load();
   }, [load]);
 
-  /** Qo'lda kiritilgan nomni tegishli katalogga qo'shadi */
-  const addToCatalog = async (kind: 'mahallalar' | 'maktablar', name: string) => {
-    setBusy(`${kind}:${name}`);
+  /**
+   * Hammasini bir bosishda tuzatadi.
+   *
+   * Anketalar o'chirilmaydi — faqat nomi katalogdagi to'g'ri nomga
+   * ko'chiriladi. Ishonchli moslik topilmaganlari qoladi va pastda
+   * qo'lda tanlash uchun ko'rsatiladi.
+   */
+  const tuzat = async () => {
+    setHammasi(true);
     try {
-      const res = await fetch(`/api/admin/${kind}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name }),
-      });
+      const res = await fetch('/api/admin/unlisted', { method: 'POST' });
       const body = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        toast({ title: body?.message ?? "Qo'shib bo'lmadi", variant: 'error' });
+        toast({ title: body?.message ?? "Tuzatib bo'lmadi", variant: 'error' });
         return;
       }
 
-      toast({ title: `«${name}» katalogga qo'shildi`, variant: 'success' });
+      const qoldi = body?.qolgan?.length ?? 0;
+      toast({
+        title: `${body?.nomlar ?? 0} ta nom to'g'rilandi`,
+        description:
+          `${body?.anketalar ?? 0} ta anketa o'z joyiga ko'chirildi` +
+          (qoldi ? ` · ${qoldi} tasiga mos nom topilmadi` : ''),
+        variant: 'success',
+      });
       await load();
       onCatalogChange?.();
     } catch {
       toast({ title: "Serverga ulanib bo'lmadi", variant: 'error' });
     } finally {
-      setBusy(null);
+      setHammasi(false);
     }
   };
 
-  /**
-   * Qo'lda yozilgan nomni katalogdagi mavjud nomga birlashtiradi.
-   *
-   * "navruz" ni katalogga QO'SHISH xato bo'lardi: katalogda
-   * "Navro'z" allaqachon bor va ikkitasi bitta mahalla. To'g'ri
-   * amal — anketalarni mavjud nomga ko'chirish.
-   */
-  const merge = async (
-    kind: 'mahallalar' | 'maktablar',
-    from: string,
-    to: string
-  ) => {
+  /** Bitta nomni katalogdagi tanlangan nomga birlashtiradi */
+  const merge = async (kind: Kind, from: string, to: string) => {
     setBusy(`${kind}:${from}`);
     try {
       const res = await fetch('/api/admin/unlisted', {
@@ -127,119 +142,147 @@ export function UnlistedPanel({ onCatalogChange }: UnlistedPanelProps) {
     }
   };
 
+  /** Haqiqatan yangi mahalla/maktab bo'lsa — katalogga qo'shadi */
+  const addToCatalog = async (kind: Kind, name: string) => {
+    setBusy(`${kind}:${name}`);
+    try {
+      const res = await fetch(`/api/admin/${kind}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      });
+      const body = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        toast({ title: body?.message ?? "Qo'shib bo'lmadi", variant: 'error' });
+        return;
+      }
+
+      toast({ title: `«${name}» katalogga qo'shildi`, variant: 'success' });
+      await load();
+      onCatalogChange?.();
+    } catch {
+      toast({ title: "Serverga ulanib bo'lmadi", variant: 'error' });
+    } finally {
+      setBusy(null);
+    }
+  };
+
   const total = (data?.mahallalar.length ?? 0) + (data?.maktablar.length ?? 0);
 
-  if (loading) return <Skeleton className="h-40" />;
+  /*
+   * Tozalanib bo'lgach panel butunlay yo'qoladi. Hokim uchun bu
+   * bo'lim ma'nosiz: qo'lda yozish yopilgan, ya'ni yangi nom
+   * qo'shilmaydi va ro'yxat boshqa to'lmaydi.
+   */
+  if (!data || total === 0) return null;
 
   return (
-    <section className="glass rounded-lg">
+    <section className="glass rounded-lg border border-warn/40">
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line p-4 sm:p-5">
         <div className="flex items-center gap-2.5">
           <span className="flex h-9 w-9 items-center justify-center rounded-md border border-warn/40 bg-warn-bg text-warn">
-            <PencilLine className="h-[18px] w-[18px]" strokeWidth={1.9} />
+            <Wand2 className="h-[18px] w-[18px]" strokeWidth={1.9} />
           </span>
           <div>
             <h2 className="flex items-center gap-2 font-display text-base font-semibold tracking-tight text-ink">
-              Qo&apos;lda kiritilgan nomlar
-              {total > 0 && <Badge variant="warning">{total} ta</Badge>}
+              Ro&apos;yxatga tushmagan nomlar
+              <Badge variant="warning">{total} ta</Badge>
             </h2>
             <p className="text-xs text-ink-faint">
-              O&apos;quvchilar ro&apos;yxatdan topa olmay, o&apos;zi yozgan mahalla va
-              maktablar
+              Eski anketalarda qolgan nomlar. Tuzatilgach bu bo&apos;lim yo&apos;qoladi —
+              anketalar o&apos;chirilmaydi, faqat o&apos;z joyiga ko&apos;chiriladi.
             </p>
           </div>
         </div>
 
-        <Button variant="ghost" size="sm" onClick={() => void load()}>
-          <RefreshCw className="h-4 w-4" />
-          Yangilash
+        <Button onClick={() => void tuzat()} disabled={hammasi}>
+          {hammasi ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Wand2 className="h-4 w-4" />
+          )}
+          Hammasini tuzatish
         </Button>
       </header>
 
-      {total === 0 ? (
-        <div className="flex items-center justify-center gap-2 p-8 text-sm text-ink-muted">
-          <CheckCircle2 className="h-5 w-5 text-ok" />
-          Barcha anketalar katalogdagi nomlar bilan to&apos;ldirilgan
-        </div>
-      ) : (
-        <div className="divide-y divide-line">
-          {(['mahallalar', 'maktablar'] as const).map((kind) => {
-            const items = data?.[kind] ?? [];
-            if (items.length === 0) return null;
+      <div className="divide-y divide-line">
+        {(['mahallalar', 'maktablar'] as const).map((kind) => {
+          const items = data[kind];
+          if (items.length === 0) return null;
 
-            return (
-              <div key={kind} className="p-4">
-                <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
-                  {kind === 'mahallalar' ? 'Mahallalar' : 'Maktablar'}
-                </p>
-                <ul className="space-y-2">
-                  {items.map((item) => (
+          return (
+            <div key={kind} className="p-4">
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+                {kind === 'mahallalar' ? 'Mahallalar' : 'Maktablar'}
+              </p>
+              <ul className="space-y-2">
+                {items.map((item) => {
+                  const kalit = `${kind}:${item.name}`;
+                  const ishlayapti = busy === kalit;
+                  // Taklif bo'lmasa, qaysi nomga ko'chirishni odam tanlaydi
+                  const maqsad = tanlov[kalit] ?? item.suggestion ?? '';
+
+                  return (
                     <li
                       key={item.name}
                       className="flex flex-wrap items-center gap-2 rounded-md border border-line bg-surface p-3"
                     >
                       <div className="min-w-0 flex-1">
-                        <p className="break-words text-sm font-semibold text-ink">
-                          {item.name}
-                        </p>
+                        <p className="break-words text-sm font-semibold text-ink">{item.name}</p>
                         <p className="mt-0.5 text-xs text-ink-faint">
                           <span className="font-mono tabular-nums">{item.count}</span> ta anketada
                           ishlatilgan
-                          {item.suggestion && (
-                            <>
-                              {' · '}
-                              <span className="text-warn">
-                                katalogdagi o&apos;xshash nom: «{item.suggestion}»
-                              </span>
-                            </>
+                          {!item.suggestion && (
+                            <span className="text-warn">
+                              {' · '}mos nom topilmadi — qaysi nomga ko&apos;chirishni tanlang
+                            </span>
                           )}
                         </p>
                       </div>
 
-                      <div className="flex shrink-0 flex-wrap gap-2">
-                        {/*
-                          Taklif bor bo'lsa — birlashtirish ASOSIY amal.
-                          Bunday yozuvlarning aksariyati katalogdagi
-                          nomning boshqacha yozilishi, ya'ni ularni
-                          katalogga qo'shish nusxa yaratardi.
-                        */}
-                        {item.suggestion && (
-                          <Button
-                            size="sm"
-                            disabled={busy === `${kind}:${item.name}`}
-                            onClick={() => merge(kind, item.name, item.suggestion as string)}
-                          >
-                            {busy === `${kind}:${item.name}` ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <ArrowRight className="h-4 w-4" />
-                            )}
-                            «{item.suggestion}» ga birlashtirish
-                          </Button>
-                        )}
+                      <div className="flex w-full shrink-0 flex-wrap items-center gap-2 sm:w-auto">
+                        <SearchableSelect
+                          options={katalog[kind]}
+                          value={maqsad}
+                          onChange={(v) => setTanlov((p) => ({ ...p, [kalit]: v }))}
+                          placeholder="Qaysi nomga?"
+                          searchPlaceholder="Nomni yozing..."
+                          emptyText="Topilmadi"
+                          className="h-9 w-full text-sm sm:w-64"
+                        />
 
                         <Button
                           size="sm"
-                          variant="outline"
-                          disabled={busy === `${kind}:${item.name}`}
-                          onClick={() => addToCatalog(kind, item.name)}
+                          disabled={ishlayapti || !maqsad}
+                          onClick={() => void merge(kind, item.name, maqsad)}
                         >
-                          {busy === `${kind}:${item.name}` ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Plus className="h-4 w-4" />
-                          )}
-                          Yangi deb qo&apos;shish
+                          {ishlayapti && <Loader2 className="h-4 w-4 animate-spin" />}
+                          Ko&apos;chirish
+                        </Button>
+
+                        {/*
+                          Haqiqatan yangi mahalla/maktab bo'lsagina —
+                          "sdfsdfds" ni katalogga qo'shish xato bo'lardi
+                        */}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={ishlayapti}
+                          onClick={() => void addToCatalog(kind, item.name)}
+                        >
+                          <Plus className="h-4 w-4" />
+                          Yangi
                         </Button>
                       </div>
                     </li>
-                  ))}
-                </ul>
-              </div>
-            );
-          })}
-        </div>
-      )}
+                  );
+                })}
+              </ul>
+            </div>
+          );
+        })}
+      </div>
     </section>
   );
 }

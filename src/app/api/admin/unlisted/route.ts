@@ -95,6 +95,87 @@ export async function GET() {
   }
 }
 
+
+/**
+ * POST /api/admin/unlisted — hammasini bir bosishda tuzatadi.
+ *
+ * Anketada qo'lda yozish yopilgunga qadar bazada 41 ta ro'yxatdan
+ * tashqari nom to'plandi ("navruz", "Sangijumon", "mirzo ulug`bek").
+ * Ularni bittalab birlashtirish 41 marta bosish demakdir, shuning
+ * uchun bu amal hammasini o'zi bajaradi.
+ *
+ * Anketalar O'CHIRILMAYDI — faqat nomi katalogdagi to'g'ri nomga
+ * ko'chiriladi, ya'ni o'quvchining javoblari saqlanib qoladi va
+ * hisobotda o'z mahallasi/maktabi ostiga tushadi.
+ *
+ * Ishonchli moslik topilmagan nomlar tegilmaydi va javobda
+ * `qolgan` ro'yxatida qaytariladi — ularni odam hal qiladi.
+ */
+export async function POST() {
+  const unauthorized = await requireAdmin();
+  if (unauthorized) return unauthorized;
+
+  try {
+    const [mahallaGroups, schoolGroups, mahallaCatalog, schoolCatalog] = await Promise.all([
+      prisma.student.groupBy({ by: ['mahalla'], _count: { _all: true } }),
+      prisma.student.groupBy({ by: ['school'], _count: { _all: true } }),
+      prisma.mahalla.findMany({ select: { name: true } }),
+      prisma.school.findMany({ select: { name: true } }),
+    ]);
+
+    const mahallaNames = mahallaCatalog.map((m) => m.name);
+    const schoolNames = schoolCatalog.map((s) => s.name);
+    const mahallaKeys = new Set(mahallaNames.map(searchKey));
+    const schoolKeys = new Set(schoolNames.map(searchKey));
+
+    const tuzatildi: { type: 'mahalla' | 'school'; from: string; to: string; moved: number }[] = [];
+    const qolgan: { type: 'mahalla' | 'school'; name: string; count: number }[] = [];
+
+    /*
+     * Har bir nom uchun alohida `updateMany` — bittasi xato bersa
+     * qolganlari baribir tuzatilsin. Amal takrorlanaveradigan
+     * (idempotent) bo'lgani uchun tugmani qayta bosish zarar qilmaydi.
+     */
+    for (const g of mahallaGroups) {
+      if (mahallaKeys.has(searchKey(g.mahalla))) continue;
+      const to = findSuggestion(g.mahalla, mahallaNames);
+      if (!to) {
+        qolgan.push({ type: 'mahalla', name: g.mahalla, count: g._count._all });
+        continue;
+      }
+      const r = await prisma.student.updateMany({
+        where: { mahalla: g.mahalla },
+        data: { mahalla: to },
+      });
+      tuzatildi.push({ type: 'mahalla', from: g.mahalla, to, moved: r.count });
+    }
+
+    for (const g of schoolGroups) {
+      if (schoolKeys.has(searchKey(g.school))) continue;
+      const to = findSuggestion(g.school, schoolNames);
+      if (!to) {
+        qolgan.push({ type: 'school', name: g.school, count: g._count._all });
+        continue;
+      }
+      const r = await prisma.student.updateMany({
+        where: { school: g.school },
+        data: { school: to },
+      });
+      tuzatildi.push({ type: 'school', from: g.school, to, moved: r.count });
+    }
+
+    return NextResponse.json({
+      tuzatildi,
+      qolgan,
+      nomlar: tuzatildi.length,
+      anketalar: tuzatildi.reduce((sum, t) => sum + t.moved, 0),
+    });
+  } catch (error) {
+    console.error('[POST /api/admin/unlisted]', error);
+    return NextResponse.json({ message: "Tuzatib bo'lmadi" }, { status: 500 });
+  }
+}
+
 /**
  * PATCH /api/admin/unlisted — qo'lda yozilgan nomni katalogdagi
  * nomga birlashtiradi.

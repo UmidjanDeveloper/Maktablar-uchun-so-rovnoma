@@ -5,6 +5,7 @@ import { buildDedupeKey, normalizePhone } from '@/lib/dedupe';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 import { studentSchema, fieldErrors } from '@/lib/validation';
 import { buildWhere, parseFilters } from '@/lib/filters';
+import { searchKey } from '@/lib/utils';
 import { requireAdmin } from '@/lib/api-auth';
 import type { PaginatedStudents } from '@/types';
 
@@ -67,6 +68,44 @@ export async function POST(request: NextRequest) {
   const data = parsed.data;
 
   try {
+    /*
+     * 1a. Mahalla va maktab KATALOGDA borligini tekshiramiz.
+     *
+     * Anketada endi qo'lda yozish yo'q, lekin tekshiruv baribir shu
+     * yerda ham turishi kerak: so'rovni to'g'ridan-to'g'ri yuborish
+     * mumkin, oflayn navbatda esa eski, katalogdan chiqarilgan nom
+     * qolib ketishi mumkin.
+     *
+     * Topilgan nom katalogdagi YOZILISHIGA keltiriladi: apostrof
+     * turi yoki bosh harf farqi tufayli bitta mahalla ikki qatorga
+     * bo'linib ketmasin.
+     */
+    const [mahallaCatalog, schoolCatalog] = await Promise.all([
+      prisma.mahalla.findMany({ select: { name: true } }),
+      prisma.school.findMany({ select: { name: true } }),
+    ]);
+
+    const katalogdaTop = (nom: string, katalog: { name: string }[]) => {
+      const kalit = searchKey(nom);
+      return katalog.find((k) => searchKey(k.name) === kalit)?.name ?? null;
+    };
+
+    const mahalla = katalogdaTop(data.mahalla, mahallaCatalog);
+    const school = katalogdaTop(data.school, schoolCatalog);
+
+    if (!mahalla || !school) {
+      return NextResponse.json(
+        {
+          message: "Ma'lumotlarda xatolik bor",
+          errors: {
+            ...(mahalla ? {} : { mahalla: "Mahallani ro'yxatdan tanlang" }),
+            ...(school ? {} : { school: "Maktabni ro'yxatdan tanlang" }),
+          },
+        },
+        { status: 422 }
+      );
+    }
+
     // 2. Takroriy topshiruvni tekshirish (24 soatlik oyna).
     //    Bir xil ism + familiya + maktab + sinf topilsa ham, telefon
     //    raqamlari har xil bo'lsa — bu ikki xil o'quvchi deb qabul qilinadi.
@@ -74,7 +113,7 @@ export async function POST(request: NextRequest) {
       where: {
         firstName: { equals: data.firstName, mode: 'insensitive' },
         lastName: { equals: data.lastName, mode: 'insensitive' },
-        school: data.school,
+        school,
         grade: data.grade,
         createdAt: { gte: new Date(Date.now() - DUPLICATE_WINDOW_MS) },
       },
@@ -103,7 +142,7 @@ export async function POST(request: NextRequest) {
         dedupeKey: buildDedupeKey(
           data.firstName,
           data.lastName,
-          data.school,
+          school,
           data.grade,
           data.phone
         ),
@@ -114,8 +153,8 @@ export async function POST(request: NextRequest) {
         parentPhone: data.parentPhone ?? null,
         region: data.region,
         district: data.district,
-        mahalla: data.mahalla,
-        school: data.school,
+        mahalla,
+        school,
         grade: data.grade,
         favoriteSubjects: data.favoriteSubjects,
         clubs: data.clubs,

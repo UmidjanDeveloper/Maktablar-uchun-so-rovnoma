@@ -100,7 +100,7 @@ export function StepPersonal({ form, errors, update, mahallalar, maktablar }: St
           htmlFor="mahalla"
           required
           error={errors.mahalla}
-          hint="Ro'yxatda topilmasa, nomini o'zing yozishing mumkin"
+          hint="Nomini yozib qidir — apostrof va imlo muhim emas"
         >
           <SearchableSelect
             id="mahalla"
@@ -109,12 +109,8 @@ export function StepPersonal({ form, errors, update, mahallalar, maktablar }: St
             onChange={(v) => update({ mahalla: v })}
             placeholder="Mahallangizni tanlang"
             searchPlaceholder="Mahalla nomini yozing..."
-            emptyText="Bunday mahalla topilmadi"
+            emptyText="Topilmadi — boshqacha yozib ko'r yoki o'qituvchingdan so'ra"
             hasError={!!errors.mahalla}
-            allowCustom
-            fieldLabel="Mahalla"
-            maxCustomLength={120}
-            customLabel={(q) => `Ro'yxatda yo'q — «${q}» deb yozaman`}
           />
         </Field>
 
@@ -123,7 +119,7 @@ export function StepPersonal({ form, errors, update, mahallalar, maktablar }: St
           htmlFor="school"
           required
           error={errors.school}
-          hint="Maktab raqamini yozsang yetarli. Topilmasa — o'zing yoz"
+          hint="Maktab raqamini yozsang yetarli — masalan «71»"
         >
           <SearchableSelect
             id="school"
@@ -132,13 +128,8 @@ export function StepPersonal({ form, errors, update, mahallalar, maktablar }: St
             onChange={(v) => update({ school: v })}
             placeholder="Maktabingizni tanlang"
             searchPlaceholder="Maktab raqamini yozing..."
-            emptyText="Bunday maktab topilmadi"
+            emptyText="Topilmadi — raqamini yozib ko'r yoki o'qituvchingdan so'ra"
             hasError={!!errors.school}
-            allowCustom
-            fieldLabel="Maktab"
-            maxCustomLength={250}
-            nomTuri="maktab"
-            customLabel={(q) => `Ro'yxatda yo'q — «${q}» deb yozaman`}
           />
         </Field>
       </div>
