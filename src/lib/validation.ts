@@ -5,7 +5,7 @@
  * ============================================================
  */
 import { z } from 'zod';
-import { HECH_QAYSI, JINSLAR, SINFLAR } from './constants';
+import { CHET_TILI_KURSI, HECH_QAYSI, JINSLAR, SINFLAR } from './constants';
 import {
   ismniChiroyliQil,
   ismTekshir,
@@ -187,6 +187,29 @@ export const step3RequiredSchema = z.object({
  * degan qarorni hal qiladi; qolganlari qarorni aniqlashtiradi,
  * lekin ularsiz ham qaror chiqarish mumkin.
  */
+/**
+ * «Chet tili kursi» tanlansa, qaysi til ekani ham aytilishi shart.
+ *
+ * Aks holda ma'lumot yarim qoladi: «tumanda 40 ta bola til kursini
+ * so'radi» degan raqam bilan hech qanday kurs ochib bo'lmaydi —
+ * ingliz tilimi yoki koreys tilimi, bu ikki xil o'qituvchi degani.
+ *
+ * Kurs tanlanmagan bo'lsa savol umuman ko'rsatilmaydi, ya'ni bu
+ * qoida ham ishlamaydi.
+ */
+export function tilQoidasi(
+  v: { wantedCourses: string[]; wantedLanguages?: string[] },
+  ctx: z.RefinementCtx
+): void {
+  if (v.wantedCourses.includes(CHET_TILI_KURSI) && !v.wantedLanguages?.length) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['wantedLanguages'],
+      message: "Qaysi tilni o'rganmoqchisiz? Kamida bittasini tanlang",
+    });
+  }
+}
+
 export const step4Schema = z.object({
   wantedCourses: z
     .array(z.string())
@@ -201,6 +224,9 @@ export const step4Schema = z.object({
   availableTimes: z.array(z.string()).max(10).default([]),
   homeTech: optionalText(60, 'Javob'),
 });
+
+/** 4-qadamning o'zini tekshirish uchun */
+export const step4FormSchema = step4Schema.superRefine(tilQoidasi);
 
 /**
  * 5-qadam: rozilik.
@@ -225,6 +251,7 @@ export const studentSchema = step1Schema
   .merge(step5Schema)
   .superRefine((v, ctx) => {
     tosiqQoidasi(v, ctx);
+    tilQoidasi(v, ctx);
 
     // 9-11-sinf o'quvchisiga orzu kasb savoli berilgan — javob shart
     if (kasbSavoliKerakmi(v.grade) && !v.dreamJob) {

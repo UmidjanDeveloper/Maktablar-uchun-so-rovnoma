@@ -4,10 +4,10 @@ import { Lightbulb } from 'lucide-react';
 import { ChipGroup } from '@/components/shared/chip-group';
 import { Field } from './field';
 import {
+  CHET_TILI_KURSI,
   KERAKLI_KURSLAR,
   MASOFA_JAVOBLARI,
   TILLAR,
-  TIL_KERAK_EMAS,
   UY_TEXNIKASI,
   VAQT_JAVOBLARI,
 } from '@/lib/constants';
@@ -56,14 +56,29 @@ function GroupedChips({
  * mavjud imkoniyatni, ikkinchisi qondirilmagan talabni o'lchaydi.
  */
 export function StepCenter({ form, errors, update }: StepCenterProps) {
-  /** Til tanlash — «kerak emas» qolgan tillarni bekor qiladi */
-  const handleLanguages = (next: string[]) => {
-    const added = next.find((v) => !form.wantedLanguages.includes(v));
-    if (added === TIL_KERAK_EMAS) {
-      update({ wantedLanguages: [TIL_KERAK_EMAS] });
-      return;
-    }
-    update({ wantedLanguages: next.filter((v) => v !== TIL_KERAK_EMAS) });
+  /**
+   * Til savoli faqat chet tili kursini tanlagan bolaga chiqadi.
+   *
+   * Asalarichi yoki payvandchi bo'lishni orzu qilgan, kurslardan esa
+   * «Hunarmandchilik» ni tanlagan bolaga «qaysi tilni o'rganmoqchisan»
+   * deb savol berish mantiqsiz — u savolni tashlab ketadi yoki tavakkal
+   * bosadi, ikkalasi ham tahlilni buzadi.
+   */
+  const tilKursiTanlangan = form.wantedCourses.includes(CHET_TILI_KURSI);
+
+  /**
+   * Kurs ro'yxati o'zgarganda tillarni ham tekshiramiz.
+   *
+   * Bola avval chet tili kursini tanlab, til belgilab, keyin kursni
+   * bekor qilsa — tanlangan tillar ko'rinmaydigan joyda qolib ketardi
+   * va bazaga «til kursi kerak emas, lekin koreys tili kerak» degan
+   * qarama-qarshi javob tushardi.
+   */
+  const handleCourses = (next: string[]) => {
+    update({
+      wantedCourses: next,
+      ...(next.includes(CHET_TILI_KURSI) ? {} : { wantedLanguages: [] }),
+    });
   };
 
   return (
@@ -90,21 +105,24 @@ export function StepCenter({ form, errors, update }: StepCenterProps) {
         <GroupedChips
           groups={KERAKLI_KURSLAR}
           values={form.wantedCourses}
-          onChange={(v) => update({ wantedCourses: v })}
+          onChange={handleCourses}
         />
       </Field>
 
-      <Field
-        label="Qaysi tilni o'rganmoqchisan?"
-        error={errors.wantedLanguages}
-        hint="Bir nechtasini tanlashing mumkin"
-      >
-        <ChipGroup
-          options={TILLAR}
-          values={form.wantedLanguages}
-          onChange={handleLanguages}
-        />
-      </Field>
+      {tilKursiTanlangan && (
+        <Field
+          label="Qaysi tilni o'rganmoqchisan?"
+          required
+          error={errors.wantedLanguages}
+          hint="Chet tili kursini tanlading — qaysi til ekanini ayt"
+        >
+          <ChipGroup
+            options={TILLAR}
+            values={form.wantedLanguages}
+            onChange={(v) => update({ wantedLanguages: v })}
+          />
+        </Field>
+      )}
 
       <Field
         label="Kurs uchun qancha yo'l yurishga tayyorsan?"

@@ -553,10 +553,17 @@ export const TOGARAKLAR: { name: string; icon: string }[] = TOGARAK_GURUHLARI.fl
  */
 
 /** Ochilishi so'ralayotgan kurslar — guruhlangan ko'p tanlov */
+/**
+ * «Chet tili kursi» varianti alohida ahamiyatga ega: faqat shu tanlansa
+ * «qaysi tilni o'rganmoqchisan?» savoli chiqadi. Asalarichi bo'lmoqchi
+ * bo'lgan bolaga til haqida savol berish mantiqsiz.
+ */
+export const CHET_TILI_KURSI = 'Chet tili kursi';
+
 export const KERAKLI_KURSLAR: { title: string; items: { name: string; icon: string }[] }[] = [
   {
     title: 'Til',
-    items: [{ name: 'Chet tili kursi', icon: '🗣️' }],
+    items: [{ name: CHET_TILI_KURSI, icon: '🗣️' }],
   },
   {
     title: 'Fanga tayyorlov',
@@ -619,10 +626,17 @@ export const TILLAR: { name: string; icon: string }[] = [
   { name: 'Arab tili', icon: '🇸🇦' },
   { name: 'Xitoy tili', icon: '🇨🇳' },
   { name: 'Nemis tili', icon: '🇩🇪' },
-  { name: 'Til kursi kerak emas', icon: '🚫' },
 ];
 
-/** Til kerak emasligini bildiruvchi istisno variant */
+/**
+ * Eski anketalarda uchraydigan «kerak emas» javobi.
+ *
+ * Ilgari til savoli hammaga berilardi va uni o'tkazib yuborish uchun
+ * shunday variant kerak edi. Endi savol faqat «Chet tili kursi»ni
+ * tanlagan bolaga chiqadi, ya'ni bu variant mantiqan mumkin emas —
+ * ro'yxatdan olib tashlandi. Nom esa saqlanib qoldi: bazadagi eski
+ * javoblarni tahlildan chiqarib tashlash uchun kerak.
+ */
 export const TIL_KERAK_EMAS = 'Til kursi kerak emas';
 
 /**

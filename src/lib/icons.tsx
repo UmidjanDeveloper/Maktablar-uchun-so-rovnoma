@@ -22,17 +22,17 @@ import {
   Baby, BadgeCheck, Banknote, BarChart3, BatteryCharging, BedDouble,
   Bike, Bird, Blocks, BookMarked, BookOpen, Bot,
   Box, Boxes, Brain, BrainCircuit, Briefcase, Brush,
-  Bug, Building2, Bus, CakeSlice, Calculator, Camera,
+  Ban, Bug, Building2, Bus, CakeSlice, CalendarDays, Calculator, Camera,
   Car, CarTaxiFront, Carrot, ChefHat, Circle, Clapperboard,
   ClipboardCheck, ClipboardList, Code2, Coffee, Cog, Construction,
   Cpu, CreditCard, Croissant, Crown, Dna, Drama,
   Dribbble, Droplets, Dumbbell, Egg, Eye, Fan,
   FileCheck, FileSearch, FileText, Film, FireExtinguisher, Fish,
-  Flag, Flame, FlaskConical, Flower, Flower2, Footprints,
+  Clock, Flag, Flame, FlaskConical, Flower, Flower2, Footprints, Frown,
   Fuel, Gamepad2, Gavel, Gem, Globe, GraduationCap,
-  Hammer, HardHat, Headset, Heart, HeartHandshake, HeartPulse,
+  Hammer, HardHat, Headset, Heart, HeartHandshake, HeartPulse, HelpCircle, Home,
   Image, Landmark, Languages, LayoutTemplate, Leaf, Library,
-  ListChecks, Luggage, Mail, MapPinned, Medal, Megaphone,
+  Laptop, ListChecks, Luggage, Mail, MapPinned, Medal, Megaphone, Moon,
   MessagesSquare, Mic, Microscope, Milk, Monitor, Mountain,
   Music, Music2, Network, Newspaper, PackageCheck, PackageSearch,
   Palette, PawPrint, PenLine, PenTool, Pencil, PersonStanding,
@@ -40,11 +40,11 @@ import {
   Radar, Receipt, Ruler, Scale, ScanLine, School,
   Scissors, ScrollText, Search, Shield, ShieldAlert, ShieldCheck,
   ShieldPlus, Shirt, ShoppingCart, Shovel, ShowerHead, Sigma,
-  Smartphone, Sofa, Sparkles, SprayCan, Sprout, Stamp,
+  Smartphone, Sofa, Sparkles, SprayCan, Sprout, Stamp, Sun,
   Stethoscope, Store, Swords, Syringe, Target, Telescope,
   TestTube, Tractor, TrainFront, TreeDeciduous, TrendingUp, Trophy,
   Truck, Users, Utensils, Video, Volleyball, Volume2,
-  Wand2, Warehouse, Waves, Wheat, Worm, Wrench,
+  Wand2, Warehouse, Waves, Wheat, Wifi, WifiOff, Worm, Wrench,
   Zap,
   type LucideIcon,
 } from 'lucide-react';
@@ -300,11 +300,88 @@ export const ABROAD_ICONS: Record<string, LucideIcon> = {
  * Tartib muhim: bir xil nom (masalan «Musiqa») ham fanda, ham
  * to'garakda uchraydi; birinchi mos kelgani ishlatiladi.
  */
+/* ---------- KERAKLI KURSLAR ---------- */
+/*
+ * 4-qadamdagi «qanday kurs ochilsa borar eding?» variantlari.
+ * Ilgari bularning ko'pi reyestrda yo'q edi va ekranda bir xil
+ * zaxira belgisi (uchqun) chiqardi — bola variantlarni bir-biridan
+ * ajrata olmasdi.
+ */
+export const COURSE_ICONS: Record<string, LucideIcon> = {
+  'Chet tili kursi': Languages,
+  'Fizika va kimyo': FlaskConical,
+  'Ona tili va adabiyot': BookOpen,
+  'Grafik dizayn': Palette,
+  'SMM va marketing': Megaphone,
+  'Avtomobil ustaligi': Car,
+  'Elektrik va payvandchilik': Zap,
+  "Qishloq xo'jaligi": Sprout,
+  'Rassomlik': Brush,
+  'Notiqlik va liderlik': MessagesSquare,
+  'Moliyaviy savodxonlik': PiggyBank,
+};
+
+/* ---------- MARKAZ SAVOLLARI ---------- */
+/* Masofa, qulay vaqt va uydagi texnika javoblari */
+export const CENTER_ICONS: Record<string, LucideIcon> = {
+  'Faqat maktabimda': School,
+  'Mahallamda': Home,
+  "Qo'shni mahallaga ham": Footprints,
+  'Tuman markazigacha': Bus,
+
+  'Darsdan keyin (kunduzi)': Sun,
+  'Kechqurun': Moon,
+  'Dam olish kunlari': CalendarDays,
+  "Yozgi ta'tilda": Waves,
+
+  'Kompyuter ham, internet ham bor': Wifi,
+  'Faqat telefon va internet bor': Smartphone,
+  'Faqat kompyuter bor': Laptop,
+  "Ikkalasi ham yo'q": WifiOff,
+};
+
+/* ---------- TO'SIQLAR ---------- */
+/* «Nega to'garakka bormaysan?» javoblari — admin panelda ham chiqadi */
+export const BARRIER_ICONS: Record<string, LucideIcon> = {
+  "Yaqin atrofda bunday to'garak yo'q": Ban,
+  'Uzoq, qatnash qiyin': MapPinned,
+  "Oilaviy sharoitim yo'q": Home,
+  'Ota-onam ruxsat bermaydi': ShieldAlert,
+  "Uy ishlari ko'p, vaqtim yo'q": Clock,
+  "Sog'lig'im imkon bermaydi": HeartPulse,
+  'Nogironligim bor': Accessibility,
+  "Kerakli kiyim yoki jihoz yo'q": Shirt,
+  'Qiziqarli emas': Frown,
+  'Boshqa sabab': HelpCircle,
+  'Hech qaysi': Ban,
+};
+
+/* ---------- TILLAR ---------- */
+/*
+ * Chet tili kursini tanlagan bolaga chiqadigan variantlar.
+ * Hammasi bitta ikona bilan: bayroq qo'yish mumkin emas (lucide da
+ * bayroqlar yo'q), turli belgilar esa "koreys tili nega boshqacha
+ * ko'rinyapti?" degan keraksiz savol tug'diradi.
+ */
+export const LANGUAGE_ICONS: Record<string, LucideIcon> = {
+  'Ingliz tili': Languages,
+  'Rus tili': Languages,
+  'Koreys tili': Languages,
+  'Turk tili': Languages,
+  'Arab tili': Languages,
+  'Xitoy tili': Languages,
+  'Nemis tili': Languages,
+};
+
 const REGISTRIES = [
   JOB_ICONS,
   CATEGORY_ICONS,
   SUBJECT_ICONS,
   CLUB_ICONS,
+  COURSE_ICONS,
+  CENTER_ICONS,
+  BARRIER_ICONS,
+  LANGUAGE_ICONS,
   INSPIRATION_ICONS,
   ABROAD_ICONS,
 ];

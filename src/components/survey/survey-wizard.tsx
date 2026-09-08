@@ -18,7 +18,7 @@ import {
   step1Schema,
   step2FormSchema,
   step3RequiredSchema,
-  step4Schema,
+  step4FormSchema,
   step5Schema,
   studentSchema,
   fieldErrors,
@@ -126,7 +126,7 @@ export function SurveyWizard() {
         step1Schema,
         step2FormSchema,
         step3RequiredSchema,
-        step4Schema,
+        step4FormSchema,
         step5Schema,
       ];
       const schema = schemas[target - 1] ?? step5Schema;
