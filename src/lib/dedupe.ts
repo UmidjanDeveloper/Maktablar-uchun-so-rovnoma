@@ -16,7 +16,7 @@
  *  navbat sinxronlanayotganda bu real xavf).
  * ============================================================
  */
-import { normalize } from './utils';
+import { normalize, toshkentKuni } from './utils';
 
 /**
  * Telefon raqamini taqqoslash uchun normallashtiradi:
@@ -43,8 +43,10 @@ export function buildDedupeKey(
   phone?: string | null,
   date: Date = new Date()
 ): string {
-  // Sana faqat kun aniqligida — shu kun ichidagi takrorlar bloklanadi
-  const day = date.toISOString().slice(0, 10);
+  // Sana faqat kun aniqligida — shu kun ichidagi takrorlar bloklanadi.
+  // Kun Toshkent vaqti bo'yicha, ya'ni maktab kuni bilan bir xil
+  // chegarada tugaydi (UTC da bo'lsa kun soat 05:00 da almashardi).
+  const day = toshkentKuni(date);
   return [
     normalize(firstName),
     normalize(lastName),

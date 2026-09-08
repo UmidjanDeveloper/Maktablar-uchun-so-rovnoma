@@ -2,12 +2,14 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { buildWhere, parseFilters } from '@/lib/filters';
 import { requireAdmin } from '@/lib/api-auth';
-import { percent } from '@/lib/utils';
+import { percent, searchKey } from '@/lib/utils';
 import { KASB_ICON_MAP } from '@/lib/constants';
 import { buildCenterPlan } from '@/lib/center-planning';
 import { YORDAM_TOSIQLARI } from '@/lib/constants';
 import type {
   AreaDemand,
+  CoverageStats,
+  SchoolCoverage,
   DashboardStats,
   MahallaInsight,
   NameValue,
@@ -88,6 +90,92 @@ function toAreaDemand(map: Map<string, AreaBuckets>, limit: number): AreaDemand[
     })
     .sort((a, b) => b.total - a.total || a.name.localeCompare(b.name))
     .slice(0, limit);
+}
+
+/**
+ * So'rovnoma qamrovini hisoblaydi.
+ *
+ * DIQQAT: bu yerda filtrlar ATAYLAB ishlatilmaydi. "Qaysi maktab
+ * umuman to'ldirmadi" degan savolga javob butun tuman bo'yicha
+ * bo'lishi kerak — aks holda, masalan, 9-sinf filtri qo'yilganda
+ * faqat kichik sinflari bor maktab ham "to'ldirmagan" bo'lib
+ * ko'rinardi va maktabga noo'rin tanbeh berilardi.
+ */
+async function buildCoverage(): Promise<CoverageStats> {
+  const [schoolCatalog, mahallaCatalog, schoolGroups, mahallaGroups] = await Promise.all([
+    prisma.school.findMany({ select: { name: true } }),
+    prisma.mahalla.findMany({ select: { name: true } }),
+    prisma.student.groupBy({
+      by: ['school'],
+      _count: { _all: true },
+      _max: { createdAt: true },
+    }),
+    prisma.student.groupBy({ by: ['mahalla'], _count: { _all: true } }),
+  ]);
+
+  /*
+   * Anketadagi nom bilan katalogdagi nom apostrof yoki defis bilan
+   * farq qilishi mumkin ("Bog'ishamol" / "Bogʻishamol"). Solishtirish
+   * normallashtirilgan kalit bo'yicha ketadi, aks holda bir xil
+   * maktab ikki marta sanalardi.
+   */
+  const schoolByKey = new Map<string, string>();
+  for (const s of schoolCatalog) schoolByKey.set(searchKey(s.name), s.name);
+
+  const counts = new Map<string, { count: number; lastAt: Date | null }>();
+  const extra: SchoolCoverage[] = [];
+
+  for (const group of schoolGroups) {
+    const name = schoolByKey.get(searchKey(group.school));
+    const count = group._count._all;
+    const lastAt = group._max.createdAt;
+
+    if (name) {
+      const cell = counts.get(name) ?? { count: 0, lastAt: null };
+      cell.count += count;
+      if (lastAt && (!cell.lastAt || lastAt > cell.lastAt)) cell.lastAt = lastAt;
+      counts.set(name, cell);
+    } else {
+      extra.push({
+        name: group.school,
+        count,
+        lastAt: lastAt?.toISOString() ?? null,
+        inCatalog: false,
+      });
+    }
+  }
+
+  const schools: SchoolCoverage[] = schoolCatalog
+    .map((s) => {
+      const cell = counts.get(s.name);
+      return {
+        name: s.name,
+        count: cell?.count ?? 0,
+        lastAt: cell?.lastAt?.toISOString() ?? null,
+        inCatalog: true,
+      };
+    })
+    .concat(extra)
+    // Ko'pdan ozga; teng bo'lsa nom bo'yicha
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+
+  const mahallaKeys = new Set(mahallaGroups.map((g) => searchKey(g.mahalla)));
+  const silentMahallas = mahallaCatalog
+    .filter((m) => !mahallaKeys.has(searchKey(m.name)))
+    .map((m) => m.name)
+    .sort((a, b) => a.localeCompare(b));
+
+  const active = schools.filter((s) => s.inCatalog && s.count > 0).length;
+
+  return {
+    totalSchools: schoolCatalog.length,
+    activeSchools: active,
+    silentSchools: schoolCatalog.length - active,
+    totalStudents: schoolGroups.reduce((sum, g) => sum + g._count._all, 0),
+    schools,
+    totalMahallas: mahallaCatalog.length,
+    silentMahallas,
+  };
 }
 
 /**
@@ -223,6 +311,8 @@ export async function GET(request: NextRequest) {
     }
 
     const total = rows.length;
+    // Kasb savoliga javob berganlar — foizlar uchun to'g'ri maxraj
+    const withJob = rows.filter((r) => !!r.dreamJob).length;
     const topJobs = toSorted(jobs, 10);
 
     // Jins bo'yicha taqqoslash — eng ommabop 8 ta kasb kesimida
@@ -241,9 +331,12 @@ export async function GET(request: NextRequest) {
         const [topJob, topJobCount] = Array.from(jobMap.entries()).sort(
           (a, b) => b[1] - a[1] || a[0].localeCompare(b[0])
         )[0];
+        // Shu maktabda kasb savoliga javob berganlar soni
+        const withJobHere = Array.from(jobMap.values()).reduce((sum, n) => sum + n, 0);
         return {
           school,
           total: schools.get(school) ?? 0,
+          withJob: withJobHere,
           topJob,
           topJobCount,
           topJobIcon: KASB_ICON_MAP[topJob] ?? '⭐',
@@ -319,6 +412,8 @@ export async function GET(request: NextRequest) {
         .sort((a, b) => b.count - a.count),
     };
 
+    const coverage = await buildCoverage();
+
     const stats: DashboardStats = {
       kpi: {
         totalStudents: total,
@@ -327,8 +422,10 @@ export async function GET(request: NextRequest) {
         girlsCount: girls,
         boysCount: boys,
         girlsPercent: percent(girls, total),
-        boysPercent: percent(boys, total),
-        totalAll: total,
+        // Ikki foiz yig'indisi doim 100 bo'lishi kerak: alohida
+        // yaxlitlansa 51% + 50% = 101% chiqib qolardi
+        boysPercent: total ? 100 - percent(girls, total) : 0,
+        withJob,
       },
       topJobs,
       genderJobs: genderJobStats,
@@ -352,6 +449,7 @@ export async function GET(request: NextRequest) {
        */
       demandByMahalla: toAreaDemand(mahallaDemand, 200),
       demandBySchool: toAreaDemand(schoolDemand, 200),
+      coverage,
     };
 
     return NextResponse.json(stats);

@@ -233,6 +233,15 @@ export async function exportStudentsToExcel(
     [],
   ];
 
+  if (stats) {
+    const c = stats.coverage;
+    dash[2] = [
+      `Hisobot sanasi: ${formatDate(new Date())}  ·  ` +
+        `${c.totalSchools} ta maktabdan ${c.activeSchools} tasi qatnashdi, ` +
+        `${c.silentSchools} tasi to'ldirmadi`,
+    ];
+  }
+
   const looks: Record<string, CellLook> = {
     A1: 'title',
     A2: 'subtitle',
@@ -423,7 +432,54 @@ export async function exportStudentsToExcel(
   dataSheet['!cols'] = Array.from({ length: Math.max(1, data.width) }, () => ({ wch: 22 }));
   XLSX.utils.book_append_sheet(workbook, dataSheet, DATA_SHEET);
 
-  /* ---------- 3-varaq: anketalar ---------- */
+  /* ---------- 3-varaq: maktablar qamrovi ---------- */
+  if (stats) {
+    const c = stats.coverage;
+    const silent = c.schools.filter((x) => x.inCatalog && x.count === 0);
+
+    const qamrov: (string | number)[][] = [
+      ['MAKTABLAR QAMROVI'],
+      ['Hisobot sanasi', formatDate(new Date())],
+      [],
+      ['Katalogdagi maktablar', c.totalSchools],
+      ['Qatnashgan', c.activeSchools],
+      ["To'ldirmagan", c.silentSchools],
+      ['Jami anketalar', c.totalStudents],
+      [
+        'Qamrov',
+        `${c.totalSchools > 0 ? Math.round((c.activeSchools / c.totalSchools) * 100) : 0}%`,
+      ],
+      [],
+    ];
+
+    if (silent.length > 0) {
+      qamrov.push([`SO'ROVNOMANI UMUMAN O'TKAZMAGAN MAKTABLAR (${silent.length} ta)`]);
+      for (const school of silent) qamrov.push([school.name]);
+      qamrov.push([]);
+    }
+
+    if (c.silentMahallas.length > 0) {
+      qamrov.push([`ANKETA KELMAGAN MAHALLALAR (${c.silentMahallas.length} ta)`]);
+      for (const name of c.silentMahallas) qamrov.push([name]);
+      qamrov.push([]);
+    }
+
+    qamrov.push(['BARCHA MAKTABLAR', 'Anketalar', 'Holat', 'Oxirgi anketa']);
+    for (const school of c.schools) {
+      qamrov.push([
+        school.inCatalog ? school.name : `${school.name} (ro'yxatda yo'q)`,
+        school.count,
+        school.count === 0 ? "To'ldirmagan" : 'Qatnashgan',
+        school.lastAt ? formatDate(school.lastAt) : '',
+      ]);
+    }
+
+    const qamrovSheet = XLSX.utils.aoa_to_sheet(qamrov);
+    qamrovSheet['!cols'] = [{ wch: 46 }, { wch: 12 }, { wch: 16 }, { wch: 20 }];
+    XLSX.utils.book_append_sheet(workbook, qamrovSheet, 'Qamrov');
+  }
+
+  /* ---------- 4-varaq: anketalar ---------- */
   const rows = [HEADERS, ...students.map(toRow)];
   const sheet = XLSX.utils.aoa_to_sheet(rows);
   sheet['!cols'] = COL_WIDTHS.map((wch) => ({ wch }));
@@ -510,6 +566,12 @@ export async function exportStudentsToExcel(
       ['Jami mahallalar', stats.kpi.totalMahallas],
       ['Qizlar', `${stats.kpi.girlsCount} (${stats.kpi.girlsPercent}%)`],
       ["O'g'il bolalar", `${stats.kpi.boysCount} (${stats.kpi.boysPercent}%)`],
+      [],
+      ['MAKTABLAR QAMROVI'],
+      ['Katalogdagi maktablar', stats.coverage.totalSchools],
+      ['Qatnashgan maktablar', stats.coverage.activeSchools],
+      ["So'rovnomani o'tkazmagan", stats.coverage.silentSchools],
+      ['Anketa kelmagan mahallalar', stats.coverage.silentMahallas.length],
       [],
       ["YORDAM BO'YICHA BAJARILGAN ISH"],
       ["To'siq belgilagan o'quvchilar", stats.help.withBarriers],

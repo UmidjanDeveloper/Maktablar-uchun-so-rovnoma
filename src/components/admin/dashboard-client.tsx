@@ -17,6 +17,7 @@ import {
 } from './charts';
 import { DashboardEmpty } from './dashboard-empty';
 import { CenterPanel } from './center-panel';
+import { CoveragePanel } from './coverage-panel';
 import { HelpPanel } from './help-panel';
 import { RecommendationsPanel } from './recommendations-panel';
 import { SubmissionsTable } from './submissions-table';
@@ -287,9 +288,14 @@ export function DashboardClient() {
         />
       ) : (
         <>
-      {/* Yordam kerak bo'lgan bolalar eng yuqorida: bu yagona panel
-          bo'lib, undagi har bir qator aniq bitta bolaga tegishli va
-          ertaga qo'ng'iroq qilishni talab qiladi */}
+      {/* Maktablar qamrovi: "kim to'ldirmadi" degan savol "kim nima
+          tanladi" dan oldin turadi — javob bermagan maktab tahlilni
+          ham, qarorni ham egri qiladi */}
+      <CoveragePanel stats={stats} loading={statsLoading} />
+
+      {/* Yordam kerak bo'lgan bolalar: undagi har bir qator aniq
+          bitta bolaga tegishli va ertaga qo'ng'iroq qilishni
+          talab qiladi */}
       <HelpPanel />
 
       {/* Markaz ochish tahlili: "qayerga pul qo'yamiz" degan savolga
@@ -316,7 +322,6 @@ export function DashboardClient() {
           <GradesChart data={stats.byGrade} />
           <SubjectsChart data={stats.bySubject} />
           <CategoryOverview data={stats.byCategory} />
-          <ExtraInsights stats={stats} />
         </div>
       ) : null}
         </>
@@ -336,57 +341,5 @@ export function DashboardClient() {
 
       <StudentModal student={selected} onClose={() => setSelected(null)} />
     </div>
-  );
-}
-
-/** Qo'shimcha tahlil: ilhom manbalari va chet elda o'qish istagi */
-function ExtraInsights({ stats }: { stats: DashboardStats }) {
-  const blocks = [
-    { title: 'Kim ilhom berdi?', data: stats.byInspiration },
-    { title: "Chet elda o'qish istagi", data: stats.studyAbroad },
-  ];
-
-  return (
-    <section className="glass rounded-lg p-4 sm:p-5">
-      <h3 className="font-display text-[15px] font-semibold tracking-tight text-ink sm:text-base">
-        Qo&apos;shimcha ko&apos;rsatkichlar
-      </h3>
-      <p className="mt-0.5 text-xs text-ink-faint">
-        O&apos;quvchilarning kelajak haqidagi javoblari
-      </p>
-
-      <div className="mt-4 space-y-5">
-        {blocks.map((block) => {
-          const total = block.data.reduce((sum, item) => sum + item.value, 0);
-          return (
-            <div key={block.title}>
-              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
-                {block.title}
-              </p>
-              {block.data.length === 0 ? (
-                <p className="text-sm text-ink-faint">Ma&apos;lumot yo&apos;q</p>
-              ) : (
-                <ul className="space-y-2">
-                  {block.data.map((item) => (
-                    <li key={item.name} className="flex items-center gap-2 text-sm">
-                      <span className="min-w-0 flex-1 truncate text-ink-muted">{item.name}</span>
-                      <span className="h-1.5 w-20 shrink-0 overflow-hidden rounded-full bg-surface-strong">
-                        <span
-                          className="block h-full rounded-full bg-[linear-gradient(90deg,var(--accent-solid),var(--accent-3))]"
-                          style={{ width: `${total ? (item.value / total) * 100 : 0}%` }}
-                        />
-                      </span>
-                      <span className="w-9 shrink-0 text-right font-mono font-semibold tabular-nums text-ink">
-                        {item.value}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </section>
   );
 }

@@ -6,7 +6,7 @@
  */
 import type { Prisma } from '@prisma/client';
 import { KASBLAR, MAHALLALAR, MAKTABLAR } from '@/lib/constants';
-import { searchKey } from '@/lib/utils';
+import { kunBoshi, kunOxiri, searchKey } from '@/lib/utils';
 import type { DashboardFilters } from '@/types';
 
 /** URL query parametrlaridan filtrlarni o'qiydi */
@@ -45,8 +45,10 @@ export function buildWhere(
 
   if (filters.dateFrom || filters.dateTo) {
     const createdAt: Prisma.DateTimeFilter = {};
-    if (filters.dateFrom) createdAt.gte = new Date(`${filters.dateFrom}T00:00:00.000Z`);
-    if (filters.dateTo) createdAt.lte = new Date(`${filters.dateTo}T23:59:59.999Z`);
+    // Sana Toshkent vaqtida hisoblanadi: server UTC da ishlagani uchun
+    // "bugun" degan filtr aks holda kechagi kunning yarmini qamrab olardi
+    if (filters.dateFrom) createdAt.gte = kunBoshi(filters.dateFrom);
+    if (filters.dateTo) createdAt.lte = kunOxiri(filters.dateTo);
     where.createdAt = createdAt;
   }
 

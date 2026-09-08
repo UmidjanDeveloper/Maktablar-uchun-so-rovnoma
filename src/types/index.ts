@@ -79,7 +79,16 @@ export interface GenderJobStat {
 /** Maktab bo'yicha eng ommabop kasb (jadval uchun) */
 export interface SchoolTopJob {
   school: string;
+  /** Maktabdan kelgan barcha anketalar */
   total: number;
+  /**
+   * Ulardan nechtasi orzu kasbni ko'rsatgan.
+   *
+   * Ulushni hisoblashda maxraj shu bo'lishi kerak: kasb savoli
+   * faqat 9-11-sinfga beriladi, shuning uchun `total` ga bo'lish
+   * ulushni sun'iy pasaytiradi.
+   */
+  withJob: number;
   topJob: string;
   topJobCount: number;
   topJobIcon: string;
@@ -122,6 +131,48 @@ export interface AreaDemand {
   topCourseCount: number;
 }
 
+/** Bitta maktabning so'rovnomadagi ishtiroki */
+export interface SchoolCoverage {
+  name: string;
+  /** Shu maktabdan kelgan anketalar soni (filtrlarga bog'liq emas) */
+  count: number;
+  /** Oxirgi anketa qachon kelgan */
+  lastAt: string | null;
+  /**
+   * Nom rasmiy katalogda bormi.
+   *
+   * `false` bo'lsa — o'quvchi maktab nomini qo'lda yozgan. Bunday
+   * yozuvlar alohida ko'rsatiladi, chunki ular imlo xatosi bo'lishi
+   * ham, katalogga qo'shilmagan yangi maktab bo'lishi ham mumkin.
+   */
+  inCatalog: boolean;
+}
+
+/**
+ * So'rovnoma qamrovi — qaysi maktab qatnashdi, qaysi biri yo'q.
+ *
+ * ATAYLAB filtrlarga bog'liq emas: "qaysi maktab umuman to'ldirmadi"
+ * degan savolga javob butun tuman bo'yicha bo'lishi kerak, aks holda
+ * filtr qo'yilganda ishlagan maktab ham "to'ldirmagan" bo'lib
+ * ko'rinardi.
+ */
+export interface CoverageStats {
+  /** Katalogdagi maktablar soni */
+  totalSchools: number;
+  /** Kamida bitta anketa yuborgan maktablar */
+  activeSchools: number;
+  /** Umuman anketa yubormagan maktablar */
+  silentSchools: number;
+  /** Barcha anketalar soni (filtrsiz) */
+  totalStudents: number;
+  /** Har bir maktab: ko'pdan ozga, oxirida umuman yubormaganlar */
+  schools: SchoolCoverage[];
+  /** Katalogdagi mahallalar soni */
+  totalMahallas: number;
+  /** Umuman anketa kelmagan mahallalar nomi */
+  silentMahallas: string[];
+}
+
 /**
  * Hokimiyat aralashuvi statistikasi.
  *
@@ -158,7 +209,14 @@ export interface DashboardStats {
     boysCount: number;
     girlsPercent: number;
     boysPercent: number;
-    totalAll: number;
+    /**
+     * Orzu kasb savoliga javob berganlar soni.
+     *
+     * Kasb va yo'nalish foizlarini hisoblashda MAXRAJ shu bo'lishi
+     * kerak: savol faqat 9-11-sinfga beriladi, shuning uchun barcha
+     * o'quvchilarga bo'lish ulushni sun'iy ravishda pasaytiradi.
+     */
+    withJob: number;
   };
   topJobs: NameValue[];
   genderJobs: GenderJobStat[];
@@ -180,6 +238,8 @@ export interface DashboardStats {
   demandByMahalla: AreaDemand[];
   /** Maktablar kesimida talab */
   demandBySchool: AreaDemand[];
+  /** So'rovnoma qamrovi — filtrlarga bog'liq emas */
+  coverage: CoverageStats;
 }
 
 /** Ro'yxat (jadval) uchun sahifalangan javob */

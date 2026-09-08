@@ -180,7 +180,7 @@ export function SchoolTopJobsTable({ data }: { data: DashboardStats['bySchool'] 
   return (
     <ChartShell
       title="Maktab bo'yicha top kasb"
-      description="Har bir maktabdagi eng ommabop tanlov"
+      description="9-11-sinf javoblari asosida · «Ulush» kasb tanlaganlarga nisbatan"
       empty={data.length === 0}
       className="lg:col-span-2"
     >
@@ -190,6 +190,7 @@ export function SchoolTopJobsTable({ data }: { data: DashboardStats['bySchool'] 
             <TableRow>
               <TableHead>Maktab</TableHead>
               <TableHead className="w-24 text-right">Anketa</TableHead>
+              <TableHead className="w-24 text-right">Kasb tanlagan</TableHead>
               <TableHead>Eng ommabop kasb</TableHead>
               <TableHead className="w-24 text-right">Ulush</TableHead>
             </TableRow>
@@ -201,6 +202,11 @@ export function SchoolTopJobsTable({ data }: { data: DashboardStats['bySchool'] 
                 <TableCell className="text-right font-mono tabular-nums text-ink-muted">
                   {row.total}
                 </TableCell>
+                {/* Kasb savoli faqat 9-11-sinfga beriladi — ulush shu
+                    songa nisbatan hisoblanadi, jami anketaga emas */}
+                <TableCell className="text-right font-mono tabular-nums text-ink-muted">
+                  {row.withJob}
+                </TableCell>
                 <TableCell>
                   <span className="flex items-center gap-2">
                     <EntityIcon name={row.topJob} className="h-4 w-4 shrink-0 text-accent" />
@@ -208,7 +214,7 @@ export function SchoolTopJobsTable({ data }: { data: DashboardStats['bySchool'] 
                   </span>
                 </TableCell>
                 <TableCell className="text-right">
-                  <Badge variant="secondary">{percent(row.topJobCount, row.total)}%</Badge>
+                  <Badge variant="secondary">{percent(row.topJobCount, row.withJob)}%</Badge>
                 </TableCell>
               </TableRow>
             ))}

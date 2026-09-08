@@ -5,6 +5,15 @@ import { YORDAM_TOSIQLARI } from '@/lib/constants';
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * Jadvalda ko'rsatiladigan yozuvlar chegarasi.
+ *
+ * Hisoblagichlar bunga bog'liq emas — ular butun baza bo'yicha
+ * hisoblanadi. Chegara faqat brauzerga yuboriladigan ro'yxatni
+ * cheklaydi, aks holda sahifa sekinlashadi.
+ */
+const LIST_LIMIT = 2000;
+
 /** Hokimiyat aralashuvi talab qiladigan sabab bormi */
 function needsHelp(barriers: string[]): boolean {
   return barriers.some((b) => (YORDAM_TOSIQLARI as readonly string[]).includes(b));
@@ -30,6 +39,20 @@ export async function GET() {
   if (unauthorized) return unauthorized;
 
   try {
+    /*
+     * MUHIM: hisoblash BARCHA yozuvlar bo'yicha, ro'yxat esa
+     * cheklangan holda qaytariladi.
+     *
+     * Ilgari ikkalasi ham bitta `take: 1000` so'roviga tayanardi.
+     * Anketalar soni oshgach, hisoblagichlar jimgina noto'g'ri
+     * bo'lib qolardi: "42 ta muammo" degan raqam aslida faqat
+     * birinchi 1000 ta yozuv bo'yicha hisoblangan bo'lardi.
+     */
+    const all = await prisma.student.findMany({
+      where: { NOT: { barriers: { isEmpty: true } } },
+      select: { barriers: true, helpResolved: true },
+    });
+
     const rows = await prisma.student.findMany({
       where: { NOT: { barriers: { isEmpty: true } } },
       select: {
@@ -47,8 +70,10 @@ export async function GET() {
         helpResolved: true,
         helpResolvedAt: true,
       },
-      orderBy: { createdAt: 'desc' },
-      take: 1000,
+      // Kutayotganlar birinchi: ro'yxat cheklansa ham ish
+      // talab qiladigan yozuvlar chetda qolmaydi
+      orderBy: [{ helpResolved: 'asc' }, { createdAt: 'desc' }],
+      take: LIST_LIMIT,
     });
 
     const items = rows.map((r) => ({
@@ -65,7 +90,7 @@ export async function GET() {
      * qatori aynan shu yerdan chiqadi.
      */
     const byBarrier = new Map<string, { count: number; resolved: number }>();
-    for (const r of rows) {
+    for (const r of all) {
       for (const b of r.barriers) {
         const cell = byBarrier.get(b) ?? { count: 0, resolved: 0 };
         cell.count += 1;
@@ -74,14 +99,16 @@ export async function GET() {
       }
     }
 
-    const aralashuv = items.filter((i) => i.needsHelp);
+    const aralashuv = all.filter((r) => needsHelp(r.barriers));
 
     return NextResponse.json({
       items,
-      total: items.length,
+      total: all.length,
       needHelp: aralashuv.length,
-      resolved: aralashuv.filter((i) => i.helpResolved).length,
-      pending: aralashuv.filter((i) => !i.helpResolved).length,
+      resolved: aralashuv.filter((r) => r.helpResolved).length,
+      pending: aralashuv.filter((r) => !r.helpResolved).length,
+      /** Ro'yxatga hammasi sig'dimi — sig'masa panel ogohlantiradi */
+      truncated: all.length > rows.length,
       byBarrier: Array.from(byBarrier.entries())
         .map(([name, v]) => ({ name, count: v.count, resolved: v.resolved }))
         .sort((a, b) => b.count - a.count),

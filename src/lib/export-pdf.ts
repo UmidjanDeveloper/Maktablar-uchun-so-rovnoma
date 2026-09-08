@@ -238,6 +238,76 @@ function drawGenderChart(
 }
 
 /**
+ * Maktablar qamrovi bandi.
+ *
+ * Hisobotning boshida turadi: 92 ta maktabdan nechtasi so'rovnomani
+ * o'tkazdi degan savol qolgan barcha raqamning ishonchliligini
+ * belgilaydi.
+ */
+function drawCoverageBand(
+  doc: jsPDF,
+  cov: DashboardStats['coverage'],
+  y: number
+): number {
+  if (cov.totalSchools === 0) return y;
+
+  const h = 22;
+  const top = ensureSpace(doc, y, h + 6);
+  const foiz = Math.round((cov.activeSchools / cov.totalSchools) * 100);
+
+  doc.setFillColor(240, 247, 255);
+  doc.setDrawColor(147, 197, 253);
+  doc.setLineWidth(0.4);
+  doc.roundedRect(M, top, PAGE_W - M * 2, h, 2.5, 2.5, 'FD');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(29, 78, 216);
+  doc.text(safe("MAKTABLAR QAMROVI"), M + 5, top + 6.5);
+
+  const cells: [string, string, [number, number, number]][] = [
+    [String(cov.totalSchools), 'ta maktab', DARK],
+    [String(cov.activeSchools), 'tasi qatnashdi', [21, 128, 61]],
+    [String(cov.silentSchools), "tasi to'ldirmadi", [190, 24, 93]],
+  ];
+  cells.forEach(([value, label, color], i) => {
+    const x = M + 5 + i * 42;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(13);
+    doc.setTextColor(...color);
+    doc.text(value, x, top + 15.5);
+    const raqamKengligi = doc.getTextWidth(value);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(...SLATE);
+    doc.text(safe(label), x + raqamKengligi + 2.5, top + 15.5);
+  });
+
+  const barX = M + 138;
+  const barW = PAGE_W - M - 5 - barX;
+  doc.setFillColor(226, 232, 240);
+  doc.roundedRect(barX, top + 12.5, barW, 3, 1, 1, 'F');
+  if (foiz > 0) {
+    doc.setFillColor(37, 99, 235);
+    doc.roundedRect(barX, top + 12.5, (barW * foiz) / 100, 3, 1, 1, 'F');
+  }
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(29, 78, 216);
+  const foizMatn = `${foiz}%`;
+  const foizKengligi = doc.getTextWidth(foizMatn);
+  doc.text(foizMatn, PAGE_W - M - 5, top + 9.5, { align: 'right' });
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6.8);
+  doc.setTextColor(...SLATE);
+  doc.text(safe('qamrov'), PAGE_W - M - 5 - foizKengligi - 2.5, top + 9.5, {
+    align: 'right',
+  });
+
+  return top + h + 8;
+}
+
+/**
  * «Shuncha muammo aniqlandi — shunchasi hal qilindi» bandi.
  *
  * Hisobotning boshiga qo'yiladi, chunki hokim uchun eng muhim raqam
@@ -487,13 +557,19 @@ export async function exportDashboardToPdf(
     y
   );
 
+  // ---------- Maktablar qamrovi ----------
+  // Hisobotdagi birinchi savol: kim javob bermadi. Javob bermagan
+  // maktab qolgan barcha raqamni egri qiladi.
+  y = drawCoverageBand(doc, stats.coverage, y);
+
   // ---------- Yordam holati ----------
   // Hisobotning eng birinchi xulosasi: qancha muammo bor va nechtasi yopilgan
   y = drawHelpBand(doc, stats.help, y);
 
   // ---------- Top 10 kasblar ----------
   y = sectionTitle(doc, '1. Eng ommabop 10 ta kasb', y, stats.topJobs.length * 6.4);
-  y = drawBarChart(doc, stats.topJobs, y, { total: stats.kpi.totalStudents });
+  // Maxraj — kasb savoliga javob berganlar (9-11-sinf), hammasi emas
+  y = drawBarChart(doc, stats.topJobs, y, { total: stats.kpi.withJob });
 
   // ---------- Jins bo'yicha taqqoslash ----------
   y = sectionTitle(
@@ -589,6 +665,69 @@ export async function exportDashboardToPdf(
     }
   }
 
+  // ---------- To'ldirmagan maktablar ----------
+  /*
+   * Hisobotdagi eng "noqulay", lekin eng kerakli jadval: hokim aynan
+   * shu ro'yxat bilan maktab direktorlaridan hisobot so'raydi.
+   */
+  const silentSchools = stats.coverage.schools.filter((s) => s.inCatalog && s.count === 0);
+  if (silentSchools.length > 0) {
+    y = sectionTitle(
+      doc,
+      `8. So'rovnomani o'tkazmagan maktablar (${silentSchools.length} ta)`,
+      y,
+      40
+    );
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(...SLATE);
+    const intro = doc.splitTextToSize(
+      safe(
+        `Tumandagi ${stats.coverage.totalSchools} ta maktabdan ` +
+          `${stats.coverage.activeSchools} tasi so'rovnomada qatnashdi. ` +
+          `Quyidagi maktablardan bitta ham anketa kelmagan - ` +
+          `ular qatnashmaguncha tuman bo'yicha xulosa to'liq bo'lmaydi.`
+      ),
+      PAGE_W - M * 2
+    );
+    doc.text(intro, M, y);
+    y += intro.length * 4.2 + 4;
+
+    /*
+     * Ro'yxat uzun bo'lishi mumkin, shuning uchun uch ustunga
+     * bo'linadi — aks holda bitta jadval ikki sahifani egallaydi.
+     */
+    const perColumn = Math.ceil(silentSchools.length / 3);
+    const body: string[][] = [];
+    for (let i = 0; i < perColumn; i++) {
+      body.push([
+        safe(silentSchools[i]?.name ?? ''),
+        safe(silentSchools[i + perColumn]?.name ?? ''),
+        safe(silentSchools[i + perColumn * 2]?.name ?? ''),
+      ]);
+    }
+
+    autoTable(doc, {
+      startY: y,
+      body,
+      styles: { font: 'helvetica', fontSize: 7.6, cellPadding: 1.8, textColor: DARK },
+      // Uch ustun teng kenglikda — aks holda uzun nom bitta ustunni
+      // kengaytirib, qolgan ikkitasini siqib qo'yadi
+      columnStyles: {
+        0: { cellWidth: (PAGE_W - M * 2) / 3 },
+        1: { cellWidth: (PAGE_W - M * 2) / 3 },
+        2: { cellWidth: (PAGE_W - M * 2) / 3 },
+      },
+      alternateRowStyles: { fillColor: [254, 242, 242] },
+      margin: { left: M, right: M, bottom: 20 },
+      rowPageBreak: 'avoid',
+      theme: 'grid',
+    });
+    const afterSilent = (doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable;
+    y = (afterSilent?.finalY ?? y) + 8;
+  }
+
   // ---------- Ta'lim markazi ochish tahlili ----------
   // Hisobotning eng amaliy qismi: qayerda, qanday markaz ochish mumkin.
   // Diagrammalar holatni tasvirlaydi, bu bo'lim esa qarorni taklif qiladi.
@@ -597,7 +736,7 @@ export async function exportDashboardToPdf(
 
   if (plan.answered > 0) {
     cursor = ensureSpace(doc, cursor, 60);
-    cursor = sectionTitle(doc, "8. Ta'lim markazi ochish tahlili", cursor, 50);
+    cursor = sectionTitle(doc, "9. Ta'lim markazi ochish tahlili", cursor, 50);
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8.5);
@@ -671,7 +810,7 @@ export async function exportDashboardToPdf(
    * boshqaruv panelida va Excel faylining «Yordam» varag'ida.
    */
   if (stats.help.needHelp > 0) {
-    cursor = sectionTitle(doc, "9. Yordam kerak bo'lgan o'quvchilar", cursor, 50);
+    cursor = sectionTitle(doc, "10. Yordam kerak bo'lgan o'quvchilar", cursor, 50);
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8.5);

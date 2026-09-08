@@ -13,6 +13,38 @@ export function formatDate(date: Date | string): string {
   return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}, ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+/**
+ * ============================================================
+ *  VAQT MINTAQASI
+ *
+ *  O'zbekiston UTC+5 da, yozgi vaqtga o'tmaydi. Server esa UTC da
+ *  ishlaydi. Agar sanani UTC deb hisoblasak, "bugun" degan filtr
+ *  aslida kechagi soat 19:00 dan bugungi 19:00 gacha bo'lgan
+ *  oraliqni oladi — hisobotdagi raqam noto'g'ri chiqadi.
+ * ============================================================
+ */
+const TOSHKENT = 5 * 60 * 60 * 1000;
+
+/** `YYYY-MM-DD` sanasining Toshkent vaqti bo'yicha boshlanishi */
+export function kunBoshi(day: string): Date {
+  return new Date(`${day}T00:00:00.000+05:00`);
+}
+
+/** `YYYY-MM-DD` sanasining Toshkent vaqti bo'yicha oxiri */
+export function kunOxiri(day: string): Date {
+  return new Date(`${day}T23:59:59.999+05:00`);
+}
+
+/**
+ * Sanani Toshkent vaqti bo'yicha `YYYY-MM-DD` ko'rinishida beradi.
+ *
+ * Serverda ham, brauzerda ham bir xil natija chiqishi kerak,
+ * shuning uchun mahalliy vaqtga emas, aniq siljishga tayanamiz.
+ */
+export function toshkentKuni(date: Date = new Date()): string {
+  return new Date(date.getTime() + TOSHKENT).toISOString().slice(0, 10);
+}
+
 /** Foizni butun songa yaxlitlaydi (0 ga bo'linishdan himoyalangan) */
 export function percent(part: number, total: number): number {
   if (!total) return 0;

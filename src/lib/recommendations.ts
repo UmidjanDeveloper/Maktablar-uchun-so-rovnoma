@@ -81,6 +81,8 @@ function centerName(category: string): string {
 export function buildRecommendations(stats: DashboardStats): Recommendation[] {
   const out: Recommendation[] = [];
   const total = stats.kpi.totalStudents;
+  // Kasb bilan bog'liq foizlar uchun maxraj (9-11-sinf javoblari)
+  const withJob = stats.kpi.withJob;
 
   // Ma'lumot juda kam bo'lsa tahlil qilishning ma'nosi yo'q
   if (total < 10) {
@@ -94,6 +96,45 @@ export function buildRecommendations(stats: DashboardStats): Recommendation[] {
         evidence: `Hozircha ${total} ta anketa mavjud`,
       },
     ];
+  }
+
+  // ---------- 0-a. Umuman to'ldirmagan maktablar ----------
+  /*
+   * Bu tavsiya birinchi turadi, chunki u tahlilning O'ZIGA tegishli:
+   * javob bermagan maktab qolgan barcha xulosani egri qiladi.
+   */
+  const cov = stats.coverage;
+  if (cov.silentSchools > 0) {
+    const silent = cov.schools.filter((s) => s.inCatalog && s.count === 0).map((s) => s.name);
+    out.push({
+      id: 'schools-silent',
+      priority: 'high',
+      title: `${cov.silentSchools} ta maktab so'rovnomani umuman o'tkazmagan`,
+      action:
+        `Quyidagi maktablardan bitta ham anketa kelmagan: ` +
+        `${silent.slice(0, 8).join(', ')}${silent.length > 8 ? ` va yana ${silent.length - 8} ta` : ''}. ` +
+        `Ushbu maktablar direktorlaridan hisobot so'rash kerak — ` +
+        `ular qatnashmasa, tuman bo'yicha xulosa to'liq bo'lmaydi.`,
+      evidence: `${cov.totalSchools} ta maktabdan ${cov.activeSchools} tasi qatnashdi`,
+    });
+  }
+
+  // ---------- 0-b. Qatnashgan, lekin juda kam anketa bergan maktablar ----------
+  const weakSchools = cov.schools.filter((s) => s.inCatalog && s.count > 0 && s.count < 5);
+  if (weakSchools.length >= 3) {
+    out.push({
+      id: 'schools-weak',
+      priority: 'medium',
+      title: `${weakSchools.length} ta maktabda qamrov juda past`,
+      action:
+        `Bu maktablarda so'rovnoma boshlangan, lekin deyarli to'xtab qolgan: ` +
+        `${weakSchools
+          .slice(0, 8)
+          .map((s) => `${s.name} (${s.count})`)
+          .join(', ')}${weakSchools.length > 8 ? ' va boshqalar' : ''}. ` +
+        `Sabab texnik bo'lishi mumkin — kompyuter sinfi yoki internet.`,
+      evidence: `Har birida 5 tadan kam anketa`,
+    });
   }
 
   // ---------- 0. MARKAZ OCHISH — eng amaliy tavsiya ----------
@@ -221,9 +262,18 @@ export function buildRecommendations(stats: DashboardStats): Recommendation[] {
   }
 
   // ---------- 3. Qamrovi past mahallalar ----------
-  const lowCoverage = stats.mahallaInsights
-    .filter((m) => m.total < RULES.MAHALLA_LOW_COVERAGE)
-    .map((m) => m.mahalla);
+  /*
+   * Ilgari bu ro'yxat faqat ANKETA KELGAN mahallalardan tuzilardi,
+   * ya'ni bitta ham javob kelmagan mahalla "qamrovi past" ro'yxatiga
+   * umuman tushmasdi — eng yomon holat ko'rinmay qolardi.
+   * Endi katalogdagi barcha mahallalar hisobga olinadi.
+   */
+  const lowCoverage = [
+    ...cov.silentMahallas,
+    ...stats.mahallaInsights
+      .filter((m) => m.total < RULES.MAHALLA_LOW_COVERAGE)
+      .map((m) => m.mahalla),
+  ];
 
   if (lowCoverage.length > 0) {
     out.push({
@@ -231,7 +281,9 @@ export function buildRecommendations(stats: DashboardStats): Recommendation[] {
       priority: 'high',
       title: `${lowCoverage.length} ta mahallada qamrov juda past`,
       action: `Quyidagi mahallalarda so'rovnoma deyarli o'tkazilmagan: ${lowCoverage.slice(0, 8).join(', ')}${lowCoverage.length > 8 ? ' va boshqalar' : ''}. Ushbu mahallalardagi maktablarga takroran murojaat qilish kerak — aks holda tahlil natijasi to'liq bo'lmaydi.`,
-      evidence: `Har birida ${RULES.MAHALLA_LOW_COVERAGE} tadan kam anketa`,
+      evidence:
+        `${cov.silentMahallas.length} tasidan umuman anketa kelmagan, ` +
+        `qolganlarida ${RULES.MAHALLA_LOW_COVERAGE} tadan kam`,
     });
   }
 
@@ -250,28 +302,18 @@ export function buildRecommendations(stats: DashboardStats): Recommendation[] {
     }
   }
 
-  // ---------- 5. Chet elda o'qish istagi ----------
-  const abroadYes = stats.studyAbroad.find((s) => s.name === 'Ha');
-  if (abroadYes) {
-    const share = percent(abroadYes.value, total);
-    if (share >= RULES.STUDY_ABROAD_SHARE) {
-      out.push({
-        id: 'study-abroad',
-        priority: 'medium',
-        title: "Chet elda o'qish istagi yuqori",
-        action: `Ingliz tili va xalqaro imtihonlarga (IELTS, SAT) tayyorlov kurslarini kengaytirish, shuningdek davlat stipendiya dasturlari haqida tanishtiruv tadbirlarini o'tkazish tavsiya etiladi.`,
-        evidence: `${abroadYes.value} ta o'quvchi (${share}%) chet elda o'qishni xohlaydi`,
-      });
-    }
-  }
-
   // ---------- 6. Kasb tanlovi va fanga qiziqish o'rtasidagi tafovut ----------
   for (const [category, subject] of Object.entries(CATEGORY_SUBJECT)) {
     const catStat = stats.byCategory.find((c) => c.name === category);
     const subjStat = stats.bySubject.find((s) => s.name === subject);
     if (!catStat || catStat.value < RULES.GENDER_MIN_STUDENTS) continue;
 
-    const catShare = percent(catStat.value, total);
+    /*
+     * Ikkala ulush ham O'Z maxrajiga bo'linadi: kasb yo'nalishi
+     * savoli faqat 9-11-sinfga beriladi, fan savoli esa hammaga.
+     * Bir xil maxraj ishlatilsa, tafovut sun'iy chiqadi.
+     */
+    const catShare = percent(catStat.value, withJob);
     const subjShare = percent(subjStat?.value ?? 0, total);
 
     if (catShare - subjShare >= RULES.SUBJECT_GAP) {
@@ -287,13 +329,15 @@ export function buildRecommendations(stats: DashboardStats): Recommendation[] {
 
   // ---------- 7. Tumandagi eng ommabop kasb ----------
   const topJob = stats.topJobs[0];
-  if (topJob) {
+  if (topJob && withJob > 0) {
     out.push({
       id: 'top-job',
       priority: 'info',
       title: `Tumandagi eng ommabop kasb — ${topJob.name}`,
       action: `Ushbu kasb egalari bilan maktablarda uchrashuvlar tashkil etish va tegishli oliy o'quv yurtlari bilan hamkorlik o'rnatish tavsiya etiladi.`,
-      evidence: `${topJob.value} ta o'quvchi (${percent(topJob.value, total)}%) shu kasbni tanlagan`,
+      evidence:
+        `Kasb tanlagan ${withJob} ta o'quvchidan ${topJob.value} tasi ` +
+        `(${percent(topJob.value, withJob)}%) shu kasbni ko'rsatgan`,
     });
   }
 
