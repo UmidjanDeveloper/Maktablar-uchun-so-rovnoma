@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn, searchKey } from '@/lib/utils';
+import { hududBahosi } from '@/lib/hudud-qidiruv';
+import { joyNomiTekshir } from '@/lib/inson-tekshiruvi';
 
 /** Qo'lda kiritish uchun eng kam belgilar soni */
 const MIN_CUSTOM_LENGTH = 2;
@@ -29,6 +31,10 @@ interface SearchableSelectProps {
   allowCustom?: boolean;
   /** Qo'lda kiritish taklifining matni */
   customLabel?: (query: string) => string;
+  /** Tekshiruv xabarlarida ishlatiladigan maydon nomi */
+  fieldLabel?: string;
+  /** Qo'lda kiritilgan nom uchun uzunlik chegarasi */
+  maxCustomLength?: number;
 }
 
 /**
@@ -53,9 +59,12 @@ export function SearchableSelect({
   className,
   allowCustom = false,
   customLabel = (q) => `«${q}» ni qo'lda kiritish`,
+  fieldLabel = 'Nom',
+  maxCustomLength = 120,
 }: SearchableSelectProps) {
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState('');
+  const [customError, setCustomError] = React.useState<string | null>(null);
 
   const trimmed = query.trim();
 
@@ -65,12 +74,44 @@ export function SearchableSelect({
     [options, trimmed]
   );
 
+  /**
+   * So'rovga mos keladigan variantlar (eng mosi birinchi).
+   *
+   * Oddiy "ichida bormi?" tekshiruvi yetarli emasligi amalda
+   * ko'rindi: "navruz" deb yozgan bola "Navro'z" ni topa olmasdi
+   * va yangi mahalla yozib yuborardi.
+   */
+  const matches = React.useMemo(() => {
+    const scored = options
+      .map((o) => ({ o, score: hududBahosi(o, trimmed) }))
+      .filter((x) => x.score > 0);
+    scored.sort((a, b) => b.score - a.score || a.o.localeCompare(b.o));
+    return scored.map((x) => x.o);
+  }, [options, trimmed]);
+
   const showCustom = allowCustom && trimmed.length >= MIN_CUSTOM_LENGTH && !hasExactMatch;
 
   const select = (next: string) => {
     onChange(next);
     setQuery('');
+    setCustomError(null);
     setOpen(false);
+  };
+
+  /**
+   * Qo'lda yozilgan nomni qabul qilishdan oldin tekshiramiz.
+   *
+   * Bazada "sdfsdfds" kabi mahallalar paydo bo'lgani shundan edi:
+   * ro'yxatdan topa olmagan bola qo'liga kelgan harflarni terib,
+   * "qo'lda kiritish" tugmasini bosardi.
+   */
+  const selectCustom = () => {
+    const natija = joyNomiTekshir(trimmed, fieldLabel, maxCustomLength);
+    if (!natija.ok) {
+      setCustomError(natija.xabar ?? `${fieldLabel} noto'g'ri`);
+      return;
+    }
+    select(trimmed);
   };
 
   return (
@@ -101,23 +142,33 @@ export function SearchableSelect({
       </PopoverTrigger>
 
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-        <Command
-          filter={(itemValue, search) =>
-            searchKey(itemValue).includes(searchKey(search)) ? 1 : 0
-          }
-        >
+        {/*
+          Filtrlashni Command emas, o'zimiz bajaramiz: moslashtirish
+          fonetik va so'z bo'yicha ishlaydi, tayyor filtr esa faqat
+          "ichida bormi?" ni biladi.
+        */}
+        <Command shouldFilter={false}>
           <CommandInput
             placeholder={searchPlaceholder}
             value={query}
-            onValueChange={setQuery}
+            onValueChange={(v) => {
+              setQuery(v);
+              setCustomError(null);
+            }}
           />
           <CommandList>
             {/* Qo'lda kiritish mumkin bo'lsa, "topilmadi" o'rniga
                 taklif ko'rsatiladi — pastdagi guruhga qarang */}
-            {!showCustom && <CommandEmpty>{emptyText}</CommandEmpty>}
+            {!showCustom && matches.length === 0 && <CommandEmpty>{emptyText}</CommandEmpty>}
 
-            <CommandGroup>
-              {options.map((option) => (
+            <CommandGroup
+              heading={
+                trimmed && matches.length > 0 ? (
+                  <span className="px-2 text-xs text-ink-faint">Shu emasmi?</span>
+                ) : undefined
+              }
+            >
+              {matches.map((option) => (
                 <CommandItem
                   key={option}
                   value={option}
@@ -139,20 +190,24 @@ export function SearchableSelect({
               <CommandGroup
                 heading={
                   <span className="px-2 text-xs text-ink-faint">
-                    Ro&apos;yxatda topilmadimi?
+                    {matches.length > 0
+                      ? "Yuqoridagilardan biri emasmi?"
+                      : "Ro'yxatda topilmadimi?"}
                   </span>
                 }
               >
                 <CommandItem
                   value={`qolda-kiritish ${trimmed}`}
-                  onSelect={() => select(trimmed)}
-                  className="items-start whitespace-normal text-accent"
+                  onSelect={selectCustom}
+                  className="items-start whitespace-normal text-ink-muted"
                 >
                   <PencilLine className="mr-2 mt-0.5 h-4 w-4 shrink-0" />
-                  <span className="font-semibold leading-snug">
-                    {customLabel(trimmed)}
-                  </span>
+                  <span className="leading-snug">{customLabel(trimmed)}</span>
                 </CommandItem>
+
+                {customError && (
+                  <p className="px-3 pb-2 text-xs leading-snug text-danger">{customError}</p>
+                )}
               </CommandGroup>
             )}
           </CommandList>

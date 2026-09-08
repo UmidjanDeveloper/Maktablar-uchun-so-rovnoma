@@ -111,6 +111,108 @@ export function ismTekshir(qiymat: string, maydon = 'Ism'): TekshiruvNatijasi {
   return { ok: true };
 }
 
+/**
+ * Bir tovushni bildiruvchi ikki harfli birikmalar.
+ *
+ * "Tinchlik" so'zida n-c-h-l ketma-ket to'rtta undosh kabi
+ * ko'rinadi, lekin "ch" bitta tovush — aslida uchta. Shuni
+ * hisobga olmasak, haqiqiy nomlar rad etilib ketadi.
+ */
+function tovushlarGaKeltir(harflar: string): string {
+  return harflar.replace(/sh/g, 'S').replace(/ch/g, 'C').replace(/ng/g, 'N');
+}
+
+/**
+ * Matn bitta qisqa bo'lakning takrori emasmi?
+ * "asdasd" = "asd" + "asd" — bunday nom bo'lmaydi.
+ */
+function takroriyBolak(matn: string): boolean {
+  for (let n = 2; n <= 4; n++) {
+    if (matn.length < n * 2 || matn.length % n !== 0) continue;
+    const bolak = matn.slice(0, n);
+    if (bolak.repeat(matn.length / n) === matn) return true;
+  }
+  return false;
+}
+
+/**
+ * Joy nomini (mahalla yoki maktab) tekshiradi.
+ *
+ * Ro'yxatdan tanlanmagan nom bazaga to'g'ridan-to'g'ri tushadi,
+ * ya'ni "sdfsdfds" deb yozilgan mahalla hisobotda haqiqiy mahalla
+ * bilan bir qatorda turadi. Shuning uchun qo'lda yozilgan nom ham
+ * ism kabi tekshiriladi.
+ *
+ * Ismdan ikkita farqi bor:
+ *   - RAQAM va nuqta ruxsat etiladi ("71-sonli...", "88-IDUM");
+ *   - qisqartmalar uchun undosh ketma-ketligi biroz erkinroq
+ *     ("Yangi MFY", "IDUM" kabi nomlar haqiqiy).
+ */
+export function joyNomiTekshir(
+  qiymat: string,
+  maydon = 'Nom',
+  maksimal = 120
+): TekshiruvNatijasi {
+  const nom = qiymat.trim();
+
+  if (nom.length < 2) {
+    return { ok: false, xabar: `${maydon}ni to'liq yozing` };
+  }
+  if (nom.length > maksimal) {
+    return { ok: false, xabar: `${maydon} juda uzun` };
+  }
+
+  // Faqat harflar qismini tekshiramiz — raqam va belgilar tegilmaydi
+  const xom = nom.toLowerCase().replace(/[^a-zà-ÿа-яё]/g, '');
+
+  if (xom.length < 3) {
+    return {
+      ok: false,
+      xabar: `${maydon}ni to'liq yozing — faqat raqam yetarli emas`,
+    };
+  }
+
+  if (takroriyBolak(xom)) {
+    return { ok: false, xabar: `${maydon} noto'g'ri — ro'yxatdan tanlang` };
+  }
+
+  const harflar = tovushlarGaKeltir(xom);
+
+  let undoshKetma = 0;
+  let unliSoni = 0;
+  let takror = 1;
+
+  for (let i = 0; i < harflar.length; i++) {
+    const harf = harflar[i];
+
+    if (UNLILAR.has(harf)) {
+      unliSoni += 1;
+      undoshKetma = 0;
+    } else {
+      undoshKetma += 1;
+      // Qisqartmalar uchun beshtagacha yo'l qo'yamiz ("MFY", "IDUM")
+      if (undoshKetma >= 5) {
+        return { ok: false, xabar: `${maydon} noto'g'ri — ro'yxatdan tanlang` };
+      }
+    }
+
+    if (i > 0 && harf === harflar[i - 1]) {
+      takror += 1;
+      if (takror >= 3) {
+        return { ok: false, xabar: `${maydon} noto'g'ri — ro'yxatdan tanlang` };
+      }
+    } else {
+      takror = 1;
+    }
+  }
+
+  if (unliSoni / harflar.length < 0.2) {
+    return { ok: false, xabar: `${maydon} noto'g'ri — ro'yxatdan tanlang` };
+  }
+
+  return { ok: true };
+}
+
 /** Ismning birinchi harfini katta qiladi: "aziza" -> "Aziza" */
 export function ismniChiroyliQil(qiymat: string): string {
   return qiymat

@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { CheckCircle2, Loader2, PencilLine, Plus, RefreshCw } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Loader2, PencilLine, Plus, RefreshCw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -83,6 +83,50 @@ export function UnlistedPanel({ onCatalogChange }: UnlistedPanelProps) {
     }
   };
 
+  /**
+   * Qo'lda yozilgan nomni katalogdagi mavjud nomga birlashtiradi.
+   *
+   * "navruz" ni katalogga QO'SHISH xato bo'lardi: katalogda
+   * "Navro'z" allaqachon bor va ikkitasi bitta mahalla. To'g'ri
+   * amal — anketalarni mavjud nomga ko'chirish.
+   */
+  const merge = async (
+    kind: 'mahallalar' | 'maktablar',
+    from: string,
+    to: string
+  ) => {
+    setBusy(`${kind}:${from}`);
+    try {
+      const res = await fetch('/api/admin/unlisted', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: kind === 'mahallalar' ? 'mahalla' : 'school',
+          from,
+          to,
+        }),
+      });
+      const body = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        toast({ title: body?.message ?? "Birlashtirib bo'lmadi", variant: 'error' });
+        return;
+      }
+
+      toast({
+        title: `«${from}» -> «${to}»`,
+        description: `${body?.moved ?? 0} ta anketa ko'chirildi`,
+        variant: 'success',
+      });
+      await load();
+      onCatalogChange?.();
+    } catch {
+      toast({ title: "Serverga ulanib bo'lmadi", variant: 'error' });
+    } finally {
+      setBusy(null);
+    }
+  };
+
   const total = (data?.mahallalar.length ?? 0) + (data?.maktablar.length ?? 0);
 
   if (loading) return <Skeleton className="h-40" />;
@@ -152,20 +196,42 @@ export function UnlistedPanel({ onCatalogChange }: UnlistedPanelProps) {
                         </p>
                       </div>
 
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="shrink-0"
-                        disabled={busy === `${kind}:${item.name}`}
-                        onClick={() => addToCatalog(kind, item.name)}
-                      >
-                        {busy === `${kind}:${item.name}` ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Plus className="h-4 w-4" />
+                      <div className="flex shrink-0 flex-wrap gap-2">
+                        {/*
+                          Taklif bor bo'lsa — birlashtirish ASOSIY amal.
+                          Bunday yozuvlarning aksariyati katalogdagi
+                          nomning boshqacha yozilishi, ya'ni ularni
+                          katalogga qo'shish nusxa yaratardi.
+                        */}
+                        {item.suggestion && (
+                          <Button
+                            size="sm"
+                            disabled={busy === `${kind}:${item.name}`}
+                            onClick={() => merge(kind, item.name, item.suggestion as string)}
+                          >
+                            {busy === `${kind}:${item.name}` ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <ArrowRight className="h-4 w-4" />
+                            )}
+                            «{item.suggestion}» ga birlashtirish
+                          </Button>
                         )}
-                        Katalogga qo&apos;shish
-                      </Button>
+
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={busy === `${kind}:${item.name}`}
+                          onClick={() => addToCatalog(kind, item.name)}
+                        >
+                          {busy === `${kind}:${item.name}` ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Plus className="h-4 w-4" />
+                          )}
+                          Yangi deb qo&apos;shish
+                        </Button>
+                      </div>
                     </li>
                   ))}
                 </ul>

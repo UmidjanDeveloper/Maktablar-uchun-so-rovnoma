@@ -112,7 +112,9 @@ export function StepPersonal({ form, errors, update, mahallalar, maktablar }: St
             emptyText="Bunday mahalla topilmadi"
             hasError={!!errors.mahalla}
             allowCustom
-            customLabel={(q) => `«${q}» mahallasini qo'shish`}
+            fieldLabel="Mahalla"
+            maxCustomLength={120}
+            customLabel={(q) => `Ro'yxatda yo'q — «${q}» deb yozaman`}
           />
         </Field>
 
@@ -133,7 +135,9 @@ export function StepPersonal({ form, errors, update, mahallalar, maktablar }: St
             emptyText="Bunday maktab topilmadi"
             hasError={!!errors.school}
             allowCustom
-            customLabel={(q) => `«${q}» maktabini qo'shish`}
+            fieldLabel="Maktab"
+            maxCustomLength={250}
+            customLabel={(q) => `Ro'yxatda yo'q — «${q}» deb yozaman`}
           />
         </Field>
       </div>

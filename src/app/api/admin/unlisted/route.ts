@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/api-auth';
 import { searchKey } from '@/lib/utils';
+import { hududBahosi } from '@/lib/hudud-qidiruv';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,18 +16,25 @@ interface UnlistedValue {
 
 /**
  * Katalogdagi eng o'xshash nomni topadi.
- * Oddiy usul: normallashtirilgan matnlardan biri ikkinchisining
- * ichida bo'lsa yoki boshlanishi mos kelsa — taklif sifatida beramiz.
+ *
+ * Anketadagi qidiruv bilan BIR XIL moslashtirgich ishlatiladi:
+ * "navruz" -> "Navro'z", "Mirzo Ulug'bek" -> "M.Ulug'bek".
+ * Ilgari bu yerda oddiy "ichida bormi?" tekshiruvi turardi va
+ * aynan shu nomlar uchun hech qanday taklif bermasdi.
  */
 function findSuggestion(value: string, catalog: string[]): string | null {
-  const key = searchKey(value);
-  if (key.length < 2) return null;
+  let eng: { nom: string; baho: number } | null = null;
 
   for (const item of catalog) {
-    const itemKey = searchKey(item);
-    if (itemKey.includes(key) || key.includes(itemKey)) return item;
+    const baho = hududBahosi(item, value);
+    // Faqat ishonchli mosliklarni taklif qilamiz — tasodifiy
+    // o'xshashlik noto'g'ri birlashtirishga olib keladi
+    if (baho >= 50 && (!eng || baho > eng.baho)) {
+      eng = { nom: item, baho };
+    }
   }
-  return null;
+
+  return eng?.nom ?? null;
 }
 
 /**
@@ -84,5 +92,66 @@ export async function GET() {
       { message: "Ro'yxatdan tashqari nomlarni yuklab bo'lmadi" },
       { status: 500 }
     );
+  }
+}
+
+/**
+ * PATCH /api/admin/unlisted — qo'lda yozilgan nomni katalogdagi
+ * nomga birlashtiradi.
+ *
+ * Body: `{ type: 'mahalla' | 'school', from: string, to: string }`
+ *
+ * Nega kerak: bola "navruz" deb yozgan bo'lsa, uni katalogga
+ * QO'SHISH xato bo'ladi — katalogda "Navro'z" allaqachon bor va
+ * ikkitasi bitta mahalla. To'g'ri amal — anketalarni mavjud nomga
+ * ko'chirish, shunda hisobot ham, qamrov ham to'g'ri bo'ladi.
+ */
+export async function PATCH(request: NextRequest) {
+  const unauthorized = await requireAdmin();
+  if (unauthorized) return unauthorized;
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ message: "So'rov formati noto'g'ri" }, { status: 400 });
+  }
+
+  const { type, from, to } = (body ?? {}) as {
+    type?: unknown;
+    from?: unknown;
+    to?: unknown;
+  };
+
+  if ((type !== 'mahalla' && type !== 'school') || typeof from !== 'string' || typeof to !== 'string') {
+    return NextResponse.json({ message: "So'rov ma'lumotlari noto'g'ri" }, { status: 400 });
+  }
+  if (!from.trim() || !to.trim() || from === to) {
+    return NextResponse.json({ message: 'Nomlar bir xil yoki bo\'sh' }, { status: 400 });
+  }
+
+  try {
+    // Maqsad nom katalogda borligiga ishonch hosil qilamiz
+    const mavjud =
+      type === 'school'
+        ? await prisma.school.findFirst({ where: { name: to } })
+        : await prisma.mahalla.findFirst({ where: { name: to } });
+
+    if (!mavjud) {
+      return NextResponse.json(
+        { message: 'Katalogda bunday nom topilmadi' },
+        { status: 404 }
+      );
+    }
+
+    const result =
+      type === 'school'
+        ? await prisma.student.updateMany({ where: { school: from }, data: { school: to } })
+        : await prisma.student.updateMany({ where: { mahalla: from }, data: { mahalla: to } });
+
+    return NextResponse.json({ moved: result.count });
+  } catch (error) {
+    console.error('[PATCH /api/admin/unlisted]', error);
+    return NextResponse.json({ message: "Birlashtirib bo'lmadi" }, { status: 500 });
   }
 }

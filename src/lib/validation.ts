@@ -11,6 +11,7 @@ import {
   ismTekshir,
   telefonSaqlashUchun,
   telefonTekshir,
+  joyNomiTekshir,
 } from './inson-tekshiruvi';
 
 /**
@@ -75,6 +76,23 @@ const ixtiyoriyTelefon = (label: string) =>
     })
     .transform((v) => (v ? (telefonSaqlashUchun(v) ?? undefined) : undefined));
 
+/**
+ * Mahalla yoki maktab maydoni.
+ *
+ * Ro'yxatdan tanlangan nom har doim to'g'ri bo'ladi, lekin o'quvchi
+ * o'zi yozishi ham mumkin — o'sha holat uchun tekshiruv kerak.
+ */
+const joyMaydoni = (label: string, maksimal: number, bosh: string) =>
+  z
+    .string({ required_error: bosh })
+    .trim()
+    .min(2, { message: bosh })
+    .max(maksimal, { message: `${label} nomi juda uzun` })
+    .superRefine((v, ctx) => {
+      const r = joyNomiTekshir(v, label, maksimal);
+      if (!r.ok) ctx.addIssue({ code: z.ZodIssueCode.custom, message: r.xabar });
+    });
+
 /** Ixtiyoriy uzun matn maydoni */
 const optionalText = (max: number, label: string) =>
   z
@@ -94,16 +112,13 @@ export const step1Schema = z.object({
   // Mahalla va maktab ro'yxatdan tanlanadi, lekin ro'yxatda bo'lmasa
   // o'quvchi nomini qo'lda yozishi mumkin — shuning uchun uzunlik
   // chegarasi bor (bo'sh yoki bir harfli qiymat o'tmaydi).
-  mahalla: z
-    .string({ required_error: 'Mahallangizni tanlang' })
-    .trim()
-    .min(2, { message: "Mahallangizni tanlang yoki nomini yozing" })
-    .max(120, { message: 'Mahalla nomi 120 ta belgidan oshmasligi kerak' }),
-  school: z
-    .string({ required_error: 'Maktabingizni tanlang' })
-    .trim()
-    .min(2, { message: "Maktabingizni tanlang yoki nomini yozing" })
-    .max(250, { message: 'Maktab nomi 250 ta belgidan oshmasligi kerak' }),
+  /*
+   * Qo'lda yozilgan nom ham tekshiriladi. Sinovda ma'lum bo'ldi:
+   * ro'yxatdan topa olmagan bola "sdfsdfds" deb yozib yuboradi va
+   * u bazaga haqiqiy mahalla bilan bir qatorda tushadi.
+   */
+  mahalla: joyMaydoni('Mahalla', 120, 'Mahallangizni tanlang'),
+  school: joyMaydoni('Maktab', 250, 'Maktabingizni tanlang'),
   grade: z.coerce
     .number({ required_error: 'Sinfingizni tanlang', invalid_type_error: 'Sinfingizni tanlang' })
     .refine((v) => SINFLAR.includes(v), { message: 'Sinf 5 dan 11 gacha bo\'lishi kerak' }),
