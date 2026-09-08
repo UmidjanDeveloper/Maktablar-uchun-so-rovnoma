@@ -136,6 +136,68 @@ function takroriyBolak(matn: string): boolean {
 }
 
 /**
+ * Matn ichida qisqa bo'lak takrorlanib ketganmi?
+ *
+ * `takroriyBolak` faqat matn BUTUNLAY bo'lak takroridan iborat
+ * bo'lsa ishlaydi. Amalda esa "sadasdasdasd" kabi yozuvlar keladi:
+ * u "sa" + "das" x 3 + "d" — boshi va oxiri mos kelmagani uchun
+ * eski tekshiruvdan o'tib ketardi. Unlilar ulushi ham normal (33%),
+ * undoshlar ham ketma-ket emas — ya'ni harflar tartibiga qaraydigan
+ * boshqa hech bir qoida uni ushlay olmaydi.
+ *
+ * Uni fosh qiladigan yagona belgi — DAVRIYLIK. Matnning istalgan
+ * joyidan boshlab davri 2..4 bo'lgan eng uzun bo'lakni o'lchaymiz;
+ * u matnning ko'p qismini egallasa, bu barmoq bilan bir xil
+ * harakatni takrorlab yozilgan matn, nom emas.
+ */
+function davriyMatn(matn: string): boolean {
+  const n = matn.length;
+  if (n < 8) return false;
+
+  for (let davr = 2; davr <= 4; davr++) {
+    let joriy = davr;
+    let engUzun = 0;
+
+    for (let i = davr; i < n; i++) {
+      if (matn[i] === matn[i - davr]) {
+        joriy += 1;
+        if (joriy > engUzun) engUzun = joriy;
+      } else {
+        joriy = davr;
+      }
+    }
+
+    if (engUzun >= 8 && engUzun / n >= 0.6) return true;
+  }
+
+  return false;
+}
+
+/**
+ * Ta'lim muassasasini bildiruvchi so'zlar.
+ *
+ * Katalogdagi 94 ta maktabning 93 tasida raqam bor, bittasida
+ * ("...Xatirchi tuman ixtisoslashtirilgan maktabi") raqam yo'q,
+ * lekin "maktab" so'zi bor. Ya'ni haqiqiy maktab nomi doim yo
+ * raqam, yo shu so'zlardan birini o'z ichiga oladi.
+ */
+const MAKTAB_SOZLARI = [
+  'maktab',
+  'litsey',
+  'lisey',
+  'kollej',
+  'texnikum',
+  'internat',
+  'gimnaziya',
+  'idum',
+  'muassasa',
+  'talim',
+  'universitet',
+  'akademiya',
+  'shkola',
+];
+
+/**
  * Joy nomini (mahalla yoki maktab) tekshiradi.
  *
  * Ro'yxatdan tanlanmagan nom bazaga to'g'ridan-to'g'ri tushadi,
@@ -172,7 +234,17 @@ export function joyNomiTekshir(
     };
   }
 
-  if (takroriyBolak(xom)) {
+  if (takroriyBolak(xom) || davriyMatn(xom)) {
+    return { ok: false, xabar: `${maydon} noto'g'ri — ro'yxatdan tanlang` };
+  }
+
+  /*
+   * Bir necha harfni aylantirib yozish: "sadasdasdasd" da bor-yo'g'i
+   * uchta harf ("s", "a", "d") ishlatilgan. Haqiqiy nomda oltita
+   * harfdan uzun so'z shuncha kam harfdan tuzilmaydi — katalogdagi
+   * 164 ta nomning eng "kambag'ali" ham beshta turli harfdan iborat.
+   */
+  if (xom.length >= 6 && new Set(xom).size <= 3) {
     return { ok: false, xabar: `${maydon} noto'g'ri — ro'yxatdan tanlang` };
   }
 
@@ -211,6 +283,39 @@ export function joyNomiTekshir(
   }
 
   return { ok: true };
+}
+
+/**
+ * Maktab nomini tekshiradi.
+ *
+ * Maktab uchun mahalladan qat'iyroq qoida qo'llasa bo'ladi: tumandagi
+ * barcha 94 ta maktab katalogda turibdi va ularning har birida yo
+ * raqam ("71-sonli..."), yo "maktab" so'zi bor. Demak qo'lda yozilgan
+ * nomda ikkalasidan biri ham bo'lmasa, bu maktab nomi emas.
+ *
+ * Aynan shu qoida "sadasdasdasd" kabi yozuvlarni to'xtatadi: harflar
+ * tartibi haqiqiy so'zga o'xshab tursa ham, unda na raqam, na
+ * muassasa nomi bor.
+ */
+export function maktabNomiTekshir(
+  qiymat: string,
+  maydon = 'Maktab',
+  maksimal = 250
+): TekshiruvNatijasi {
+  const asosiy = joyNomiTekshir(qiymat, maydon, maksimal);
+  if (!asosiy.ok) return asosiy;
+
+  const nom = qiymat.toLowerCase();
+  if (/[0-9]/.test(nom)) return { ok: true };
+
+  // Apostrof va belgilarni olib tashlaymiz: "ta'lim" -> "talim"
+  const sozlar = nom.replace(/[^a-zà-ÿа-яё]/g, '');
+  if (MAKTAB_SOZLARI.some((so) => sozlar.includes(so))) return { ok: true };
+
+  return {
+    ok: false,
+    xabar: `${maydon} nomida raqam bo'lishi kerak — masalan «71-maktab»`,
+  };
 }
 
 /** Ismning birinchi harfini katta qiladi: "aziza" -> "Aziza" */

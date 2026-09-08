@@ -7,7 +7,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn, searchKey } from '@/lib/utils';
 import { hududBahosi } from '@/lib/hudud-qidiruv';
-import { joyNomiTekshir } from '@/lib/inson-tekshiruvi';
+import { joyNomiTekshir, maktabNomiTekshir } from '@/lib/inson-tekshiruvi';
 
 /** Qo'lda kiritish uchun eng kam belgilar soni */
 const MIN_CUSTOM_LENGTH = 2;
@@ -35,6 +35,11 @@ interface SearchableSelectProps {
   fieldLabel?: string;
   /** Qo'lda kiritilgan nom uchun uzunlik chegarasi */
   maxCustomLength?: number;
+  /**
+   * Qo'lda kiritilgan nom qaysi qoida bo'yicha tekshiriladi.
+   * Maktab uchun qat'iyroq: nomda raqam yoki "maktab" so'zi shart.
+   */
+  nomTuri?: 'joy' | 'maktab';
 }
 
 /**
@@ -61,6 +66,7 @@ export function SearchableSelect({
   customLabel = (q) => `«${q}» ni qo'lda kiritish`,
   fieldLabel = 'Nom',
   maxCustomLength = 120,
+  nomTuri = 'joy',
 }: SearchableSelectProps) {
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState('');
@@ -106,7 +112,8 @@ export function SearchableSelect({
    * "qo'lda kiritish" tugmasini bosardi.
    */
   const selectCustom = () => {
-    const natija = joyNomiTekshir(trimmed, fieldLabel, maxCustomLength);
+    const tekshir = nomTuri === 'maktab' ? maktabNomiTekshir : joyNomiTekshir;
+    const natija = tekshir(trimmed, fieldLabel, maxCustomLength);
     if (!natija.ok) {
       setCustomError(natija.xabar ?? `${fieldLabel} noto'g'ri`);
       return;

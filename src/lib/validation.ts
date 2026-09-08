@@ -12,6 +12,7 @@ import {
   telefonSaqlashUchun,
   telefonTekshir,
   joyNomiTekshir,
+  maktabNomiTekshir,
 } from './inson-tekshiruvi';
 
 /**
@@ -82,14 +83,19 @@ const ixtiyoriyTelefon = (label: string) =>
  * Ro'yxatdan tanlangan nom har doim to'g'ri bo'ladi, lekin o'quvchi
  * o'zi yozishi ham mumkin — o'sha holat uchun tekshiruv kerak.
  */
-const joyMaydoni = (label: string, maksimal: number, bosh: string) =>
+const joyMaydoni = (
+  label: string,
+  maksimal: number,
+  bosh: string,
+  tekshir: (v: string, label: string, maksimal: number) => { ok: boolean; xabar?: string } = joyNomiTekshir
+) =>
   z
     .string({ required_error: bosh })
     .trim()
     .min(2, { message: bosh })
     .max(maksimal, { message: `${label} nomi juda uzun` })
     .superRefine((v, ctx) => {
-      const r = joyNomiTekshir(v, label, maksimal);
+      const r = tekshir(v, label, maksimal);
       if (!r.ok) ctx.addIssue({ code: z.ZodIssueCode.custom, message: r.xabar });
     });
 
@@ -118,7 +124,7 @@ export const step1Schema = z.object({
    * u bazaga haqiqiy mahalla bilan bir qatorda tushadi.
    */
   mahalla: joyMaydoni('Mahalla', 120, 'Mahallangizni tanlang'),
-  school: joyMaydoni('Maktab', 250, 'Maktabingizni tanlang'),
+  school: joyMaydoni('Maktab', 250, 'Maktabingizni tanlang', maktabNomiTekshir),
   grade: z.coerce
     .number({ required_error: 'Sinfingizni tanlang', invalid_type_error: 'Sinfingizni tanlang' })
     .refine((v) => SINFLAR.includes(v), { message: 'Sinf 5 dan 11 gacha bo\'lishi kerak' }),

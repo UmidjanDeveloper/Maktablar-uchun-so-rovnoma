@@ -137,6 +137,7 @@ export function StepPersonal({ form, errors, update, mahallalar, maktablar }: St
             allowCustom
             fieldLabel="Maktab"
             maxCustomLength={250}
+            nomTuri="maktab"
             customLabel={(q) => `Ro'yxatda yo'q — «${q}» deb yozaman`}
           />
         </Field>
