@@ -1,5 +1,17 @@
-import { useId } from 'react';
+'use client';
+
+import { useEffect, useId, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
+
+/**
+ * Tuman gerbining rasm fayli.
+ *
+ * Fayl qo'yilsa — o'sha ishlatiladi, qo'yilmasa quyidagi chizilgan
+ * SVG qoladi. Shu sababli gerbni almashtirish uchun kodga tegish
+ * shart emas: GitHub'da `public/` papkasiga shu nom bilan rasm
+ * yuklash kifoya.
+ */
+const GERB_FAYLI = '/hokimiyat-logo.png';
 
 /**
  * Xatirchi tumani gerbi.
@@ -14,7 +26,7 @@ import { cn } from '@/lib/utils';
  * kelmadi" deb ogohlantiradi. `useId` ikkala tomonda bir xil qiymat
  * beradi.
  */
-export function Logo({ className }: { className?: string }) {
+function ChizilganGerb({ className }: { className?: string }) {
   // `useId` qiymatida ikki nuqta bo'ladi (":r1:") — `url(#...)` da
   // muammo tug'dirmasligi uchun olib tashlaymiz
   const clipId = `logo-disc-${useId().replace(/:/g, '')}`;
@@ -23,8 +35,7 @@ export function Logo({ className }: { className?: string }) {
     <svg
       viewBox="0 0 200 200"
       className={cn('shrink-0', className)}
-      role="img"
-      aria-label="Xatirchi tumani gerbi"
+      aria-hidden="true"
     >
       <defs>
         <clipPath id={clipId}>
@@ -80,6 +91,58 @@ export function Logo({ className }: { className?: string }) {
       {/* Doira chegarasi */}
       <circle cx="100" cy="100" r="88" fill="none" stroke="#0F3E75" strokeWidth="5" />
     </svg>
+  );
+}
+
+/**
+ * Tuman gerbi.
+ *
+ * Ikki manba: `public/hokimiyat-logo.png` fayli va yuqoridagi
+ * chizilgan SVG.
+ *
+ * Tartib ataylab shunday: AVVAL chizilgan gerb ko'rsatiladi, rasm
+ * yuklangandan keyingina u almashtiriladi. Aksincha qilinsa, fayl
+ * yo'q bo'lgan holatda har safar sahifa ochilganda bir zumga
+ * "buzilgan rasm" belgisi ko'rinib ketardi.
+ */
+export function Logo({ className }: { className?: string }) {
+  const [rasmTayyor, setRasmTayyor] = useState(false);
+  const rasm = useRef<HTMLImageElement>(null);
+
+  /*
+   * `onLoad` rasm React hidratsiyasidan OLDIN yuklansa ishlamaydi —
+   * hodisa allaqachon o'tib ketgan bo'ladi. Shuning uchun ulangandan
+   * keyin holatni bir marta o'zimiz tekshiramiz.
+   */
+  useEffect(() => {
+    const el = rasm.current;
+    if (el && el.complete && el.naturalWidth > 0) setRasmTayyor(true);
+  }, []);
+
+  return (
+    <span
+      className={cn('relative inline-block shrink-0', className)}
+      role="img"
+      aria-label="Xatirchi tumani gerbi"
+    >
+      {!rasmTayyor && <ChizilganGerb className="absolute inset-0 h-full w-full" />}
+
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        ref={rasm}
+        src={GERB_FAYLI}
+        alt=""
+        aria-hidden="true"
+        className={cn(
+          'h-full w-full object-contain transition-opacity',
+          rasmTayyor ? 'opacity-100' : 'opacity-0'
+        )}
+        onLoad={(e) => {
+          if (e.currentTarget.naturalWidth > 0) setRasmTayyor(true);
+        }}
+        onError={() => setRasmTayyor(false)}
+      />
+    </span>
   );
 }
 
