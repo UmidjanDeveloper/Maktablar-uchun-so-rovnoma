@@ -629,6 +629,20 @@ export const TILLAR: { name: string; icon: string }[] = [
 ];
 
 /**
+ * «Boshqa til» — ro'yxatda yo'q tilni yozish uchun.
+ *
+ * Dunyoda til ko'p, ro'yxatga hammasini sig'dirib bo'lmaydi: fransuz,
+ * yapon, fors, ispan... Ro'yxat bilan cheklansak, bola yo tashlab
+ * ketadi, yo tavakkal «Ingliz tili» ni bosadi — ikkalasi ham hokimiyat
+ * uchun noto'g'ri raqam beradi.
+ *
+ * Shuning uchun bu variant tanlanganda qaysi til ekani YOZILISHI shart
+ * (validation.ts -> tilQoidasi). Bo'sh «Boshqa til» javobi bilan kurs
+ * ochib bo'lmaydi.
+ */
+export const BOSHQA_TIL = 'Boshqa til';
+
+/**
  * Eski anketalarda uchraydigan «kerak emas» javobi.
  *
  * Ilgari til savoli hammaga berilardi va uni o'tkazib yuborish uchun

@@ -5,7 +5,7 @@
  * ============================================================
  */
 import { z } from 'zod';
-import { CHET_TILI_KURSI, HECH_QAYSI, JINSLAR, SINFLAR } from './constants';
+import { BOSHQA_TIL, CHET_TILI_KURSI, HECH_QAYSI, JINSLAR, SINFLAR, TILLAR } from './constants';
 import {
   ismniChiroyliQil,
   ismTekshir,
@@ -222,12 +222,36 @@ export function tilQoidasi(
   v: { wantedCourses: string[]; wantedLanguages?: string[] },
   ctx: z.RefinementCtx
 ): void {
-  if (v.wantedCourses.includes(CHET_TILI_KURSI) && !v.wantedLanguages?.length) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ['wantedLanguages'],
-      message: "Qaysi tilni o'rganmoqchisiz? Kamida bittasini tanlang",
-    });
+  if (!v.wantedCourses.includes(CHET_TILI_KURSI)) return;
+
+  const tillar = v.wantedLanguages ?? [];
+  const xato = (message: string) =>
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['wantedLanguages'], message });
+
+  if (!tillar.length) {
+    xato("Qaysi tilni o'rganmoqchisiz? Kamida bittasini tanlang");
+    return;
+  }
+
+  /*
+   * «Boshqa til» belgisi bazaga tushmasligi kerak: «12 ta bola boshqa
+   * til so'radi» degan raqam bilan hech qanday kurs ochib bo'lmaydi.
+   * Bola belgini bosgan, lekin tilni yozmagan bo'lsa — savol yechilmagan.
+   */
+  if (tillar.includes(BOSHQA_TIL)) {
+    xato("«Boshqa til» ni tanladingiz — qaysi til ekanini yozing");
+    return;
+  }
+
+  // Qo'lda yozilgan til nomi ham tekshiriladi — "asdasd tili" o'tmasin
+  const royxat = new Set(TILLAR.map((t) => t.name));
+  for (const til of tillar) {
+    if (royxat.has(til)) continue;
+    const r = joyNomiTekshir(til, 'Til', 40);
+    if (!r.ok) {
+      xato(r.xabar ?? "Til nomi noto'g'ri");
+      return;
+    }
   }
 }
 
@@ -236,7 +260,10 @@ export const step4Schema = z.object({
     .array(z.string())
     .min(1, { message: 'Kamida bitta kursni tanlang' })
     .max(10, { message: "Ko'pi bilan 10 ta kurs tanlash mumkin" }),
-  wantedLanguages: z.array(z.string()).max(10).default([]),
+  wantedLanguages: z
+    .array(z.string().trim().min(1).max(40))
+    .max(10)
+    .default([]),
   travelWillingness: z
     .string({ required_error: 'Qancha yo\'l yurishga tayyorligingizni tanlang' })
     .trim()

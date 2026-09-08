@@ -34,7 +34,7 @@ export function Field({
       {children}
       {hint && !error && <p className="text-xs text-ink-faint">{hint}</p>}
       {error && (
-        <p className="flex items-center gap-1.5 text-sm font-medium text-danger">
+        <p data-xato className="flex items-center gap-1.5 text-sm font-medium text-danger">
           <AlertCircle className="h-4 w-4 shrink-0" />
           {error}
         </p>

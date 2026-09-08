@@ -371,6 +371,7 @@ export const LANGUAGE_ICONS: Record<string, LucideIcon> = {
   'Arab tili': Languages,
   'Xitoy tili': Languages,
   'Nemis tili': Languages,
+  'Boshqa til': Languages,
 };
 
 const REGISTRIES = [

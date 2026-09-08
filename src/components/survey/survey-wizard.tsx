@@ -119,6 +119,25 @@ export function SurveyWizard() {
     });
   }, []);
 
+/**
+ * Birinchi xato maydonni ekranga olib keladi.
+ *
+ * Faqat pastdagi xabar (toast) yetarli emasligi ma'lum bo'ldi:
+ * savollar ro'yxati uzun, xato esa sahifaning o'rtasida qolib
+ * ketadi va bola «nega o'tmayapti?» deb turaveradi.
+ *
+ * `setErrors` dan keyin DOM hali yangilanmagani uchun keyingi
+ * kadrni kutamiz.
+ */
+function xatogaOlibBor(): void {
+  if (typeof window === 'undefined') return;
+  requestAnimationFrame(() => {
+    document
+      .querySelector('[data-xato]')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+}
+
   /** Joriy qadamni tekshiradi */
   const validateStep = useCallback(
     (target: number): boolean => {
@@ -133,6 +152,7 @@ export function SurveyWizard() {
       const result = schema.safeParse(form);
       if (!result.success) {
         setErrors(fieldErrors(result.error));
+        xatogaOlibBor();
         return false;
       }
       setErrors({});
@@ -202,6 +222,7 @@ export function SurveyWizard() {
     const validated = studentSchema.safeParse({ ...form, grade: Number(form.grade) });
     if (!validated.success) {
       setErrors(fieldErrors(validated.error));
+      xatogaOlibBor();
       toast({
         title: "Anketada to'ldirilmagan joylar bor",
         description: 'Iltimos, qadamlarni qayta tekshirib chiqing.',
