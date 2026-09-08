@@ -86,6 +86,17 @@ export function checkRateLimit(
 }
 
 /**
+ * Kalitning hisobini tozalaydi.
+ *
+ * Muvaffaqiyatli amaldan keyin chaqiriladi: masalan xodim parolni
+ * bir-ikki marta xato yozib, keyin to'g'ri kirsa, oldingi xato
+ * urinishlar uni bloklab qo'ymasligi kerak.
+ */
+export function resetRateLimit(key: string): void {
+  buckets.delete(key);
+}
+
+/**
  * So'rov yuborgan mijozning IP manzilini aniqlaydi.
  * Vercel `x-forwarded-for` sarlavhasini to'ldiradi.
  */

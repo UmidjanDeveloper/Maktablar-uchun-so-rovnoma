@@ -98,6 +98,38 @@ export async function createCatalogItem(model: CatalogModel, request: NextReques
   }
 }
 
+/**
+ * Katalogdagi nom o'zgarganda anketalarni ham ko'chiradi.
+ *
+ * `Student.school` va `Student.mahalla` — nomning NUSXASI, chet el
+ * kaliti emas (anketa ro'yxatdan tashqari nom yozishga ham ruxsat
+ * beradi). Shu sababli katalogda nom o'zgartirilsa, eski anketalar
+ * eski nom bilan qolib ketardi va ular:
+ *   - «Maktablar qamrovi» panelida "to'ldirmagan" bo'lib ko'rinardi,
+ *   - eski nom esa "ro'yxatda yo'q" qatorida chiqardi.
+ * Ya'ni hokim aslida ishlagan maktabdan hisobot so'rab qolardi.
+ */
+async function renameStudents(
+  tx: Prisma.TransactionClient,
+  model: CatalogModel,
+  from: string,
+  to: string
+): Promise<number> {
+  if (from === to) return 0;
+  const result =
+    model === 'school'
+      ? await tx.student.updateMany({ where: { school: from }, data: { school: to } })
+      : await tx.student.updateMany({ where: { mahalla: from }, data: { mahalla: to } });
+  return result.count;
+}
+
+/** Katalog yozuvi ishlatilgan anketalar soni */
+async function countStudents(model: CatalogModel, name: string): Promise<number> {
+  return model === 'school'
+    ? prisma.student.count({ where: { school: name } })
+    : prisma.student.count({ where: { mahalla: name } });
+}
+
 /** PATCH — nomni o'zgartiradi */
 export async function updateCatalogItem(model: CatalogModel, id: string, request: NextRequest) {
   const unauthorized = await requireAdmin();
@@ -119,11 +151,32 @@ export async function updateCatalogItem(model: CatalogModel, id: string, request
   }
 
   try {
-    const item = await delegate(model).update({
-      where: { id },
-      data: { name: parsed.data.name },
+    /*
+     * Katalog yozuvi va anketalar BIR TRANZAKSIYADA yangilanadi:
+     * biri o'tib, ikkinchisi o'tmay qolsa, ma'lumot ikkiga bo'linib
+     * ketardi va uni qo'lda tuzatish kerak bo'lardi.
+     */
+    const { item, moved } = await prisma.$transaction(async (tx) => {
+      const current =
+        model === 'school'
+          ? await tx.school.findUnique({ where: { id } })
+          : await tx.mahalla.findUnique({ where: { id } });
+
+      if (!current) throw new Prisma.PrismaClientKnownRequestError('not found', {
+        code: 'P2025',
+        clientVersion: Prisma.prismaVersion.client,
+      });
+
+      const updated =
+        model === 'school'
+          ? await tx.school.update({ where: { id }, data: { name: parsed.data.name } })
+          : await tx.mahalla.update({ where: { id }, data: { name: parsed.data.name } });
+
+      const count = await renameStudents(tx, model, current.name, parsed.data.name);
+      return { item: updated, moved: count };
     });
-    return NextResponse.json({ item });
+
+    return NextResponse.json({ item, moved });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2002') {
@@ -147,6 +200,34 @@ export async function deleteCatalogItem(model: CatalogModel, id: string) {
   if (unauthorized) return unauthorized;
 
   try {
+    /*
+     * Anketasi bor yozuvni o'chirishga yo'l qo'ymaymiz. O'chirilsa,
+     * anketalar "ro'yxatda yo'q" holatiga tushib qolardi va qamrov
+     * hisoboti noto'g'ri bo'lardi. Bunday holatda admin avval
+     * nomni to'g'rilashi kerak.
+     */
+    const current =
+      model === 'school'
+        ? await prisma.school.findUnique({ where: { id } })
+        : await prisma.mahalla.findUnique({ where: { id } });
+
+    if (!current) {
+      return NextResponse.json({ message: 'Yozuv topilmadi' }, { status: 404 });
+    }
+
+    const used = await countStudents(model, current.name);
+    if (used > 0) {
+      return NextResponse.json(
+        {
+          message:
+            `Bu ${LABELS[model].toLowerCase()} bo'yicha ${used} ta anketa bor — o'chirib bo'lmaydi. ` +
+            `Nomi noto'g'ri bo'lsa, o'chirmasdan tahrirlang: anketalar ham avtomatik ko'chadi.`,
+          used,
+        },
+        { status: 409 }
+      );
+    }
+
     await delegate(model).delete({ where: { id } });
     return NextResponse.json({ message: "O'chirildi" });
   } catch (error) {

@@ -124,7 +124,18 @@ export function CatalogManager({
 
       setEditingId(null);
       await load();
-      toast({ title: "O'zgartirildi", variant: 'success' });
+      /*
+       * Nom o'zgartirilganda eski anketalar ham yangi nomga ko'chadi.
+       * Nechtasi ko'chganini aytamiz — admin o'zgarish qayerga
+       * ta'sir qilganini ko'rib tursin.
+       */
+      const moved = typeof data?.moved === 'number' ? data.moved : 0;
+      toast({
+        title: "O'zgartirildi",
+        description:
+          moved > 0 ? `${moved} ta anketa ham yangi nomga ko'chirildi` : undefined,
+        variant: 'success',
+      });
     } catch {
       toast({ title: "Serverga ulanib bo'lmadi", variant: 'error' });
     } finally {
