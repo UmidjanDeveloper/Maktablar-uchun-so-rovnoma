@@ -11,7 +11,7 @@
  * ============================================================
  */
 
-const CACHE_VERSION = 'kelajak-egasi-v2';
+const CACHE_VERSION = 'kelajak-egasi-v3';
 const OFFLINE_URL = '/offline.html';
 
 /** Oldindan keshlanadigan fayllar */
@@ -19,9 +19,7 @@ const PRECACHE_URLS = [
   '/',
   OFFLINE_URL,
   '/manifest.json',
-  '/icons/icon.svg',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
+  '/hokimiyat-logo.png',
   // Ixtiyoriy tabrik musiqasi. Fayl qo'yilmagan bo'lsa bu manzil
   // xato beradi — `allSettled` tufayli o'rnatish baribir tugaydi.
   '/tabrik.mp3',

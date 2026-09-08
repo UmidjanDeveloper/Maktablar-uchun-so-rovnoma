@@ -36,15 +36,23 @@ export const metadata: Metadata = {
   applicationName: 'Kelajak Egasi',
   authors: [{ name: 'Xatirchi tumani hokimligi' }],
   keywords: ['Kelajak Egasi', 'Xatirchi', 'Navoiy', 'kasb tanlash', 'maktab', 'anketa'],
+  /*
+   * Barcha ikonalar BITTA fayldan olinadi: `public/hokimiyat-logo.png`.
+   * Shunda gerbni almashtirish uchun bitta rasmni yuklash kifoya —
+   * brauzer varag'idagi belgi ham, telefondagi ilova belgisi ham
+   * birga o'zgaradi.
+   */
   icons: {
-    icon: '/logo.svg',
-    apple: '/icons/icon-192.png',
+    icon: '/hokimiyat-logo.png',
+    shortcut: '/hokimiyat-logo.png',
+    apple: '/hokimiyat-logo.png',
   },
   openGraph: {
     title: 'Kelajak Egasi — Xatirchi Tuman Kasb Platformasi',
     description: "O'quvchilarning orzu qilgan kasblarini o'rganamiz va kelajagini birga quramiz.",
     locale: 'uz_UZ',
     type: 'website',
+    images: ['/hokimiyat-logo.png'],
   },
 };
 
