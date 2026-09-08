@@ -6,7 +6,13 @@ import { percent } from '@/lib/utils';
 import { KASB_ICON_MAP } from '@/lib/constants';
 import { buildCenterPlan } from '@/lib/center-planning';
 import { YORDAM_TOSIQLARI } from '@/lib/constants';
-import type { DashboardStats, MahallaInsight, NameValue, SchoolTopJob } from '@/types';
+import type {
+  AreaDemand,
+  DashboardStats,
+  MahallaInsight,
+  NameValue,
+  SchoolTopJob,
+} from '@/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,6 +28,66 @@ function toSorted(map: Map<string, number>, limit?: number): NameValue[] {
 function inc(map: Map<string, number>, key: string, by = 1): void {
   if (!key) return;
   map.set(key, (map.get(key) ?? 0) + by);
+}
+
+/**
+ * Bitta hudud ichidagi sanoqlar.
+ * Mahalla va maktab uchun bir xil tuzilma ishlatiladi.
+ */
+interface AreaBuckets {
+  total: number;
+  jobs: Map<string, number>;
+  categories: Map<string, number>;
+  subjects: Map<string, number>;
+  courses: Map<string, number>;
+}
+
+function areaBuckets(map: Map<string, AreaBuckets>, key: string): AreaBuckets {
+  let cell = map.get(key);
+  if (!cell) {
+    cell = {
+      total: 0,
+      jobs: new Map(),
+      categories: new Map(),
+      subjects: new Map(),
+      courses: new Map(),
+    };
+    map.set(key, cell);
+  }
+  return cell;
+}
+
+/** Xaritadagi eng katta yozuv (teng bo'lsa alifbo bo'yicha) */
+function topEntry(map: Map<string, number>): [string, number] | null {
+  if (map.size === 0) return null;
+  return Array.from(map.entries()).sort(
+    (a, b) => b[1] - a[1] || a[0].localeCompare(b[0])
+  )[0];
+}
+
+/** Hudud sanoqlarini hisobot qatoriga aylantiradi */
+function toAreaDemand(map: Map<string, AreaBuckets>, limit: number): AreaDemand[] {
+  return Array.from(map.entries())
+    .map(([name, b]) => {
+      const job = topEntry(b.jobs);
+      const category = topEntry(b.categories);
+      const subject = topEntry(b.subjects);
+      const course = topEntry(b.courses);
+      return {
+        name,
+        total: b.total,
+        topJob: job?.[0] ?? null,
+        topJobCount: job?.[1] ?? 0,
+        topCategory: category?.[0] ?? null,
+        topCategoryCount: category?.[1] ?? 0,
+        topSubject: subject?.[0] ?? null,
+        topSubjectCount: subject?.[1] ?? 0,
+        topCourse: course?.[0] ?? null,
+        topCourseCount: course?.[1] ?? 0,
+      };
+    })
+    .sort((a, b) => b.total - a.total || a.name.localeCompare(b.name))
+    .slice(0, limit);
 }
 
 /**
@@ -79,6 +145,9 @@ export async function GET(request: NextRequest) {
 
     /** Maktab -> (kasb -> son) */
     const schoolJobs = new Map<string, Map<string, number>>();
+    /** Mahalla va maktab kesimidagi to'liq talab (kasb + fan + kurs) */
+    const mahallaDemand = new Map<string, AreaBuckets>();
+    const schoolDemand = new Map<string, AreaBuckets>();
     /** Kasb -> {o'g'il, qiz} */
     const genderJobs = new Map<string, { ogil: number; qiz: number }>();
 
@@ -131,6 +200,18 @@ export async function GET(request: NextRequest) {
         schoolJobs.set(row.school, jobMap);
       }
       if (dreamJob) inc(jobMap, dreamJob);
+
+      // Mahalla va maktab kesimidagi talab
+      for (const cell of [
+        areaBuckets(mahallaDemand, row.mahalla),
+        areaBuckets(schoolDemand, row.school),
+      ]) {
+        cell.total += 1;
+        if (dreamJob) inc(cell.jobs, dreamJob);
+        if (jobCategory) inc(cell.categories, jobCategory);
+        for (const subject of row.favoriteSubjects) inc(cell.subjects, subject);
+        for (const course of row.wantedCourses) inc(cell.courses, course);
+      }
 
       // Jins bo'yicha kasblar
       if (dreamJob) {
@@ -263,6 +344,14 @@ export async function GET(request: NextRequest) {
       categoryGender: categoryGenderStats,
       centerPlan: buildCenterPlan(rows),
       help: helpStats,
+      /*
+       * Chegara ataylab keng: hisobotda faqat eng faol 15-20 tasi
+       * chiqadi, lekin "yana nechta hudud bor" degan qatorni to'g'ri
+       * yozish uchun to'liq son kerak. Tumanda ~70 mahalla va ~94
+       * maktab bor, ya'ni javob hajmi baribir kichik qoladi.
+       */
+      demandByMahalla: toAreaDemand(mahallaDemand, 200),
+      demandBySchool: toAreaDemand(schoolDemand, 200),
     };
 
     return NextResponse.json(stats);

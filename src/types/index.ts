@@ -99,6 +99,30 @@ export interface MahallaInsight {
 }
 
 /**
+ * Bitta hudud (mahalla yoki maktab) kesimidagi talab.
+ *
+ * Hisobotning amaliy qismi shu: hokim uchun "tumanda Arxeolog
+ * ommabop" degan raqamdan ko'ra "Oqtepada 6 ta bola dasturlashni
+ * so'rayapti" degan qator qimmatroq — qaror shunga ko'ra chiqadi.
+ */
+export interface AreaDemand {
+  name: string;
+  total: number;
+  /** Eng ko'p tanlangan orzu kasb (9-11-sinf javoblari) */
+  topJob: string | null;
+  topJobCount: number;
+  /** Eng ko'p tanlangan kasb yo'nalishi */
+  topCategory: string | null;
+  topCategoryCount: number;
+  /** Eng qiziqarli fan */
+  topSubject: string | null;
+  topSubjectCount: number;
+  /** Eng ko'p so'ralgan kurs — ochilishi kerak bo'lgan to'garak */
+  topCourse: string | null;
+  topCourseCount: number;
+}
+
+/**
  * Hokimiyat aralashuvi statistikasi.
  *
  * Diagrammalardan farqi: bu yerda «holat» emas, «bajarilgan ish»
@@ -152,6 +176,10 @@ export interface DashboardStats {
   categoryGender: CategoryGenderStat[];
   /** Yordam kerak bo'lgan o'quvchilar bo'yicha bajarilgan ish */
   help: HelpStats;
+  /** Mahallalar kesimida talab: qaysi kasb, fan va kursga */
+  demandByMahalla: AreaDemand[];
+  /** Maktablar kesimida talab */
+  demandBySchool: AreaDemand[];
 }
 
 /** Ro'yxat (jadval) uchun sahifalangan javob */

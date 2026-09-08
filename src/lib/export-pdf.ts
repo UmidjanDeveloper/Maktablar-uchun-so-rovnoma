@@ -10,10 +10,10 @@
  * ============================================================
  */
 import type { jsPDF } from 'jspdf';
-import { formatDate, formatPhone } from './utils';
+import { formatDate } from './utils';
 import { buildRecommendations, PRIORITY_LABELS } from './recommendations';
 import { MIN_GROUP } from './center-planning';
-import type { DashboardFilters, DashboardStats } from '@/types';
+import type { AreaDemand, DashboardFilters, DashboardStats } from '@/types';
 
 /** A4 o'lchamlari (mm) va chekka bo'shliqlar */
 const PAGE_W = 210;
@@ -341,6 +341,61 @@ function drawKpiCards(
   return y + cardH + 8;
 }
 
+/**
+ * Hudud kesimidagi talab jadvali.
+ *
+ * Hisobotning eng amaliy jadvali: hokim "tumanda nima ommabop"
+ * emas, "SHU mahallada nima ochish kerak" degan savolga javob
+ * izlaydi. Har bir katakda nom va uni tanlagan o'quvchilar soni
+ * turadi — sonsiz nom qaror qabul qilishga yaramaydi.
+ */
+function drawDemandTable(
+  doc: jsPDF,
+  autoTable: typeof import('jspdf-autotable').default,
+  rows: AreaDemand[],
+  y: number,
+  options: { areaLabel: string; areaWidth: number }
+): number {
+  /** "Dasturchi (4)" ko'rinishi; javob bo'lmasa chiziqcha */
+  const cell = (name: string | null, count: number): string =>
+    name ? safe(`${name} (${count})`) : '-';
+
+  autoTable(doc, {
+    startY: y,
+    head: [
+      [
+        options.areaLabel,
+        'Anketa',
+        'Yo\'nalish',
+        'Eng ko\'p kasb',
+        'Kuchli fan',
+        'So\'ralgan kurs',
+      ],
+    ],
+    body: rows.map((r) => [
+      safe(r.name),
+      r.total,
+      cell(r.topCategory, r.topCategoryCount),
+      cell(r.topJob, r.topJobCount),
+      cell(r.topSubject, r.topSubjectCount),
+      cell(r.topCourse, r.topCourseCount),
+    ]),
+    styles: { font: 'helvetica', fontSize: 7.4, cellPadding: 1.8, textColor: DARK },
+    headStyles: { fillColor: BRAND, textColor: [255, 255, 255], fontStyle: 'bold' },
+    alternateRowStyles: { fillColor: [248, 250, 252] },
+    columnStyles: {
+      0: { cellWidth: options.areaWidth, fontStyle: 'bold' },
+      1: { cellWidth: 12, halign: 'center' },
+    },
+    margin: { left: M, right: M, bottom: 20 },
+    rowPageBreak: 'avoid',
+    theme: 'grid',
+  });
+
+  const after = (doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable;
+  return (after?.finalY ?? y) + 8;
+}
+
 /** Faol filtrlarni o'qiladigan matnga aylantiradi */
 function describeFilters(filters: DashboardFilters): string {
   const parts: string[] = [];
@@ -374,32 +429,19 @@ function addFooters(doc: jsPDF): void {
   }
 }
 
-/** PDF ga qo'shiladigan «yordam kerak» yozuvi */
-export interface HelpRow {
-  firstName: string;
-  lastName: string;
-  grade: number;
-  school: string;
-  mahalla: string;
-  parentPhone: string | null;
-  barriers: string[];
-  helpResolved: boolean;
-  helpResolvedAt: string | null;
-}
-
 /**
  * Hokim uchun to'liq tahliliy PDF hisobotni yaratadi va yuklab beradi.
  *
- * `helpRows` berilsa, hisobotga yordam kerak bo'lgan o'quvchilarning
- * ismli ro'yxati ham qo'shiladi — bu hujjat shu holda MAXFIY bo'ladi
- * va sahifada shunday belgilanadi.
+ * Hisobotda SHAXSIY MA'LUMOT bo'lmaydi — faqat umumlashtirilgan
+ * raqamlar. Aniq o'quvchining ismi, telefoni va sabablari boshqaruv
+ * panelida va Excel faylida qoladi.
  */
 export async function exportDashboardToPdf(
   stats: DashboardStats,
   filters: DashboardFilters,
-  options: { helpRows?: HelpRow[]; fileName?: string } = {}
+  options: { fileName?: string } = {}
 ): Promise<void> {
-  const { helpRows = [], fileName } = options;
+  const { fileName } = options;
   const [{ jsPDF: JsPdf }, { default: autoTable }] = await Promise.all([
     import('jspdf'),
     import('jspdf-autotable'),
@@ -482,67 +524,80 @@ export async function exportDashboardToPdf(
   y = sectionTitle(doc, "5. Fanlar bo'yicha qiziqish", y, subjectRows.length * 6.4);
   y = drawBarChart(doc, subjectRows, y, { color: [249, 115, 22], labelWidth: 34 });
 
-  // ---------- Maktablar jadvali ----------
+  // ---------- Mahallalar kesimidagi talab ----------
   /*
-   * Barcha maktablarni chiqarish hisobotni ikki sahifa "1 ta anketa"
-   * qatoriga to'ldirib yuboradi va o'qilmaydigan qilib qo'yadi.
-   * Shuning uchun eng faol 20 tasi, qolgani bir qatorda umumlashtiriladi.
-   * To'liq ro'yxat Excel faylida qoladi.
+   * Hisobotning markaziy jadvallari. Yuqoridagi diagrammalar butun
+   * tuman bo'yicha o'rtachani ko'rsatadi, qaror esa hudud bo'yicha
+   * qabul qilinadi: markaz bitta mahallada ochiladi, to'garak bitta
+   * maktabda tashkil qilinadi.
    */
-  const SCHOOL_LIMIT = 20;
-  const schoolRows = stats.bySchool.slice(0, SCHOOL_LIMIT);
-  const schoolRest = stats.bySchool.slice(SCHOOL_LIMIT);
+  const mahallaDemandRows = stats.demandByMahalla.slice(0, 15);
+  if (mahallaDemandRows.length > 0) {
+    y = sectionTitle(doc, '6. Mahallalar kesimida talab (eng faol 15 ta)', y, 48);
 
-  y = sectionTitle(
-    doc,
-    `6. Maktablar bo'yicha eng ommabop kasb (eng faol ${schoolRows.length} ta)`,
-    y,
-    36
-  );
-  autoTable(doc, {
-    startY: y,
-    head: [['Maktab', 'Anketalar', 'Eng ommabop kasb', 'Tanlagan']],
-    body: schoolRows.map((s) => [
-      safe(s.school),
-      s.total,
-      safe(s.topJob),
-      s.topJobCount,
-    ]),
-    styles: { font: 'helvetica', fontSize: 8, cellPadding: 2, textColor: DARK },
-    headStyles: { fillColor: BRAND, textColor: [255, 255, 255], fontStyle: 'bold' },
-    alternateRowStyles: { fillColor: [248, 250, 252] },
-    margin: { left: M, right: M, bottom: 20 },
-    rowPageBreak: 'avoid',
-    theme: 'grid',
-  });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(...SLATE);
+    const demandIntro = doc.splitTextToSize(
+      safe(
+        'Qavs ichidagi raqam - shu javobni bergan o\'quvchilar soni. ' +
+          '"So\'ralgan kurs" ustuni eng muhimi: bu mavjud emas, aynan KERAK ' +
+          'bo\'lgan to\'garak, ya\'ni shu hududda nima ochish kerakligini ko\'rsatadi. ' +
+          '"Eng ko\'p kasb" faqat 9-11-sinf javoblaridan hisoblanadi.'
+      ),
+      PAGE_W - M * 2
+    );
+    doc.text(demandIntro, M, y);
+    y += demandIntro.length * 4.2 + 4;
+
+    y = drawDemandTable(doc, autoTable, mahallaDemandRows, y, {
+      areaLabel: 'Mahalla',
+      areaWidth: 27,
+    });
+  }
+
+  // ---------- Maktablar kesimidagi talab ----------
+  const SCHOOL_LIMIT = 20;
+  const schoolDemandRows = stats.demandBySchool.slice(0, SCHOOL_LIMIT);
+  const schoolRest = stats.demandBySchool.length - schoolDemandRows.length;
+
+  if (schoolDemandRows.length > 0) {
+    y = sectionTitle(
+      doc,
+      `7. Maktablar kesimida talab (eng faol ${schoolDemandRows.length} ta)`,
+      y,
+      40
+    );
+    y = drawDemandTable(doc, autoTable, schoolDemandRows, y, {
+      areaLabel: 'Maktab',
+      areaWidth: 42,
+    });
+
+    if (schoolRest > 0) {
+      doc.setFont('helvetica', 'italic');
+      doc.setFontSize(7.8);
+      doc.setTextColor(...SLATE);
+      doc.text(
+        safe(
+          `Ro'yxatda yana ${schoolRest} ta maktab bor. ` +
+            "To'liq ro'yxat Excel faylining «Hududlar» varag'ida."
+        ),
+        M,
+        y - 3
+      );
+      y += 3;
+    }
+  }
 
   // ---------- Ta'lim markazi ochish tahlili ----------
   // Hisobotning eng amaliy qismi: qayerda, qanday markaz ochish mumkin.
   // Diagrammalar holatni tasvirlaydi, bu bo'lim esa qarorni taklif qiladi.
   const plan = stats.centerPlan;
-  const afterSchools = (doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable;
-  let cursor = (afterSchools?.finalY ?? y) + 5;
-
-  if (schoolRest.length > 0) {
-    const qolgan = schoolRest.reduce((sum, item) => sum + item.total, 0);
-    doc.setFont('helvetica', 'italic');
-    doc.setFontSize(7.8);
-    doc.setTextColor(...SLATE);
-    doc.text(
-      safe(
-        `Yana ${schoolRest.length} ta maktabdan ${qolgan} ta anketa keldi. ` +
-          "To'liq ro'yxat Excel faylining «Hududlar» varag'ida."
-      ),
-      M,
-      cursor
-    );
-    cursor += 5;
-  }
-  cursor += 5;
+  let cursor = y + 2;
 
   if (plan.answered > 0) {
     cursor = ensureSpace(doc, cursor, 60);
-    cursor = sectionTitle(doc, "7. Ta'lim markazi ochish tahlili", cursor);
+    cursor = sectionTitle(doc, "8. Ta'lim markazi ochish tahlili", cursor, 50);
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8.5);
@@ -608,14 +663,15 @@ export async function exportDashboardToPdf(
 
   // ---------- Yordam kerak bo'lgan o'quvchilar ----------
   /*
-   * Hisobotdagi yagona bo'lim: bu yerda umumlashtirish emas, aniq
-   * bolalar ro'yxati beriladi. Sababi oddiy — "27 ta o'quvchining
-   * sharoiti yo'q" degan raqam bilan hech kim yordam bera olmaydi,
-   * ism va telefon bilan esa beradi. Shu sababli sahifa MAXFIY
-   * belgisi bilan chiqadi.
+   * Bu yerda ATAYLAB faqat raqamlar bor: nechta muammo aniqlandi,
+   * nechtasi yopildi va qaysi sabab bo'yicha. Bolalarning ismi,
+   * maktabi va telefoni bu hujjatga kiritilmaydi — PDF qo'ldan
+   * qo'lga o'tadi, chop etiladi, pochta orqali yuboriladi, ya'ni
+   * uni maxfiy saqlab bo'lmaydi. Ismli ro'yxat faqat parol ostidagi
+   * boshqaruv panelida va Excel faylining «Yordam» varag'ida.
    */
   if (stats.help.needHelp > 0) {
-    cursor = sectionTitle(doc, "8. Yordam kerak bo'lgan o'quvchilar", cursor, 50);
+    cursor = sectionTitle(doc, "9. Yordam kerak bo'lgan o'quvchilar", cursor, 50);
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8.5);
@@ -654,57 +710,6 @@ export async function exportDashboardToPdf(
       cursor = (afterBarriers?.finalY ?? cursor) + 8;
     }
 
-    // Ismli ro'yxat — avval kutayotganlar
-    if (helpRows.length > 0) {
-      const kutmoqda = helpRows.filter((r) => !r.helpResolved);
-      const halQilingan = helpRows.filter((r) => r.helpResolved);
-      const tartib = [...kutmoqda, ...halQilingan];
-
-      cursor = ensureSpace(doc, cursor, 30);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(8);
-      doc.setTextColor(190, 24, 93);
-      doc.text(safe("MAXFIY - shaxsiy ma'lumot, faqat xizmat maqsadida"), M, cursor);
-      cursor += 5;
-
-      autoTable(doc, {
-        startY: cursor,
-        head: [["O'quvchi", 'Sinf', 'Maktab', 'Mahalla', 'Sabab', 'Ota-ona tel.', 'Holat']],
-        body: tartib.map((r) => [
-          safe(`${r.firstName} ${r.lastName}`),
-          r.grade,
-          safe(r.school),
-          safe(r.mahalla),
-          safe(r.barriers.join(', ')),
-          safe(r.parentPhone ? formatPhone(r.parentPhone) : '-'),
-          r.helpResolved ? 'Hal qilindi' : 'Kutmoqda',
-        ]),
-        styles: { font: 'helvetica', fontSize: 7.4, cellPadding: 1.8, textColor: DARK },
-        headStyles: { fillColor: BRAND, textColor: [255, 255, 255], fontStyle: 'bold' },
-        alternateRowStyles: { fillColor: [248, 250, 252] },
-        // Telefon ustuni raqam bir qatorga sig'adigan kenglikda —
-        // ikkiga bo'linib ketgan raqamni terib bo'lmaydi
-        columnStyles: {
-          0: { cellWidth: 28 },
-          1: { cellWidth: 9, halign: 'center' },
-          2: { cellWidth: 40 },
-          3: { cellWidth: 21 },
-          5: { cellWidth: 28 },
-          6: { cellWidth: 20 },
-        },
-        // Hal qilinganlar oqarib turadi — ko'z avval kutayotganlarga tushadi
-        didParseCell: (hook) => {
-          if (hook.section !== 'body') return;
-          const holat = tartib[hook.row.index];
-          if (holat?.helpResolved) hook.cell.styles.textColor = SLATE;
-        },
-        margin: { left: M, right: M, bottom: 20 },
-        rowPageBreak: 'avoid',
-        theme: 'grid',
-      });
-      const afterHelp = (doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable;
-      cursor = (afterHelp?.finalY ?? cursor) + 10;
-    }
   }
 
   // ---------- Xulosa va tavsiyalar ----------
