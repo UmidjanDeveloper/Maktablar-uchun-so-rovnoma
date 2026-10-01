@@ -14,12 +14,28 @@
  *  FAQAT O'QISH: bazaga hech narsa yozilmaydi.
  *  SHAXSIY MA'LUMOT YO'Q: ism, familiya va telefonlar `select` ga
  *  umuman kiritilmagan — javobda faqat yig'indilar bor.
+ *
+ *  ERKIN MATN YO'Q: anketa ochiq (login yo'q), ya'ni so'rovni qo'lda
+ *  yasab, fan, kasb, kurs yoki to'siq o'rniga istalgan matn — ism,
+ *  telefon, IDROK uchun "buyruq" — yuborish mumkin. Shuning uchun
+ *  jadvallarga faqat ro'yxatdagi (katalog yoki constants.ts dagi)
+ *  nomlar chiqadi, qolgani bitta "Boshqa" qatoriga yig'iladi.
  * ============================================================
  */
 import { prisma } from '@/lib/prisma';
 import { buildCenterPlan, unservedPercent, type Viability } from '@/lib/center-planning';
-import { YORDAM_TOSIQLARI } from '@/lib/constants';
-import { kunBoshi, percent, searchKey, toshkentKuni } from '@/lib/utils';
+import {
+  BOSHQA_TIL,
+  FANLAR,
+  KASBLAR,
+  KASB_KATEGORIYALARI,
+  KERAKLI_KURSLAR_TEKIS,
+  TILLAR,
+  TIL_KERAK_EMAS,
+  TOSIQLAR,
+  YORDAM_TOSIQLARI,
+} from '@/lib/constants';
+import { kunBoshi, percent, searchKey, toshkentKuni, truncate } from '@/lib/utils';
 
 /** Bitta ko'rsatkich: `qiymat` doim son (formatlangan satr emas) */
 export interface IdrokKorsatkich {
@@ -55,6 +71,41 @@ const JADVAL_CHEGARASI = 30;
 const DINAMIKA_KUNLARI = 14;
 
 const BIR_KUN = 24 * 60 * 60 * 1000;
+
+/** Ro'yxatda yo'q javoblar shu nom ostida yig'iladi */
+const BOSHQA = "Boshqa (ro'yxatda yo'q)";
+
+/** Katalogda yo'q mahalla yoki maktab nomi (eski, qo'lda yozilganlar) */
+const ROYXATDAN_TASHQARI = "Ro'yxatdan tashqari";
+
+/** Jadval katagidagi matnning eng ko'p uzunligi — oxirgi himoya */
+const MATN_CHEGARASI = 80;
+
+/**
+ * Ro'yxatdan olib tashlangan, lekin eski anketalarda qolgan to'siq
+ * nomlari. Bular ham repodagi tayyor variant, foydalanuvchi matni emas.
+ */
+const ESKI_TOSIQLAR = ["Vaqtim yo'q", 'Hozir ham qatnayapman'];
+
+/** Ruxsat etilgan nomlar: kalit — `searchKey`, qiymat — rasmiy yozilishi */
+function royxat(nomlar: Iterable<string>): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const nom of Array.from(nomlar)) {
+    const kalit = searchKey(nom);
+    if (kalit && !map.has(kalit)) map.set(kalit, nom);
+  }
+  return map;
+}
+
+/** Nomni ro'yxatdagi yozilishiga keltiradi; ro'yxatda yo'q bo'lsa — `zaxira` */
+function tanla(map: Map<string, string>, nom: string, zaxira: string): string {
+  return map.get(searchKey(nom)) ?? zaxira;
+}
+
+/** Ko'p tanlovli javobni ro'yxatga keltiradi (bir xil nom bir marta sanaladi) */
+function tanlaHammasi(map: Map<string, string>, nomlar: string[], zaxira: string): string[] {
+  return Array.from(new Set(nomlar.map((n) => tanla(map, n, zaxira))));
+}
 
 /** Markaz tahlilidagi holat nomlari — admin paneldagi bilan bir xil */
 const HOLAT: Record<Viability, string> = {
@@ -124,7 +175,7 @@ function jinsInc(map: Map<string, [number, number]>, key: string, isGirl: boolea
  * Faqat `findMany`/`count` ishlatiladi — hech qanday yozish yo'q.
  */
 export async function buildIdrokStats(now: Date = new Date()): Promise<IdrokStats> {
-  const [rows, schoolCatalog, mahallaCatalog, kasblarSoni] = await Promise.all([
+  const [rows, schoolCatalog, mahallaCatalog, kasbCatalog] = await Promise.all([
     // /api/stats dagi kabi faqat hisob uchun kerakli ustunlar
     prisma.student.findMany({
       select: {
@@ -149,8 +200,43 @@ export async function buildIdrokStats(now: Date = new Date()): Promise<IdrokStat
     }),
     prisma.school.findMany({ select: { name: true } }),
     prisma.mahalla.findMany({ select: { name: true } }),
-    prisma.profession.count(),
+    prisma.profession.findMany({ select: { name: true, category: true } }),
   ]);
+
+  /*
+   * Ruxsat etilgan nomlar ro'yxatlari. Katalog (admin kiritgan) va
+   * constants.ts dagi variantlar — ishonchli manba. Anketadagi matn
+   * faqat shulardan biriga mos kelsa jadvalga chiqadi.
+   */
+  const maktabRoyxati = royxat(schoolCatalog.map((s) => s.name));
+  const mahallaRoyxati = royxat(mahallaCatalog.map((m) => m.name));
+  const kasbRoyxati = royxat(kasbCatalog.map((k) => k.name).concat(KASBLAR.map((k) => k.name)));
+  const yonalishRoyxati = royxat(
+    kasbCatalog.map((k) => k.category).concat(KASB_KATEGORIYALARI.map((k) => k.value))
+  );
+  const fanRoyxati = royxat(FANLAR.map((f) => f.name));
+  const kursRoyxati = royxat(KERAKLI_KURSLAR_TEKIS.map((k) => k.name));
+  // «Til kursi kerak emas» saqlanadi — markaz tahlili uni o'zi chiqarib tashlaydi
+  const tilRoyxati = royxat(TILLAR.map((t) => t.name).concat(TIL_KERAK_EMAS));
+  const tosiqRoyxati = royxat(TOSIQLAR.map((t) => t.name).concat(ESKI_TOSIQLAR));
+
+  /*
+   * Jadvallar uchun tozalangan anketalar: nom beruvchi har bir maydon
+   * ro'yxatga keltiriladi. Ko'rsatkichlar (faqat sonlar) esa dashboard
+   * bilan bir xil chiqishi uchun xom `rows` dan hisoblanadi.
+   */
+  const toza = rows.map((r) => ({
+    ...r,
+    mahalla: tanla(mahallaRoyxati, r.mahalla, ROYXATDAN_TASHQARI),
+    school: tanla(maktabRoyxati, r.school, ROYXATDAN_TASHQARI),
+    dreamJob: r.dreamJob ? tanla(kasbRoyxati, r.dreamJob, BOSHQA) : null,
+    jobCategory: r.jobCategory ? tanla(yonalishRoyxati, r.jobCategory, BOSHQA) : null,
+    favoriteSubjects: tanlaHammasi(fanRoyxati, r.favoriteSubjects, BOSHQA),
+    wantedCourses: tanlaHammasi(kursRoyxati, r.wantedCourses, BOSHQA),
+    // Qo'lda yozilgan til nomi ham erkin matn — «Boshqa til» ga yig'iladi
+    wantedLanguages: tanlaHammasi(tilRoyxati, r.wantedLanguages, BOSHQA_TIL),
+    barriers: tanlaHammasi(tosiqRoyxati, r.barriers, BOSHQA),
+  }));
 
   const jobs = new Map<string, number>();
   const categories = new Map<string, number>();
@@ -167,7 +253,7 @@ export async function buildIdrokStats(now: Date = new Date()): Promise<IdrokStat
   let withJob = 0;
   let chetEl = 0;
 
-  for (const row of rows) {
+  for (const row of toza) {
     // Dashboard bilan bir xil: "Qiz bola" bo'lmagan barchasi o'g'il bola
     const isGirl = row.gender === 'Qiz bola';
     if (isGirl) girls += 1;
@@ -204,9 +290,9 @@ export async function buildIdrokStats(now: Date = new Date()): Promise<IdrokStat
 
   const total = rows.length;
   const girlsPercent = percent(girls, total);
-  // Dashboard KPI si kabi: bo'sh nom hudud sifatida sanalmaydi
-  const maktablarSoni = Array.from(maktablar.keys()).filter(Boolean).length;
-  const mahallalarSoni = Array.from(mahallalar.keys()).filter(Boolean).length;
+  // Dashboard KPI si kabi (xom nomlar bo'yicha): bo'sh nom hudud sifatida sanalmaydi
+  const maktablarSoni = new Set(rows.map((r) => r.school).filter(Boolean)).size;
+  const mahallalarSoni = new Set(rows.map((r) => r.mahalla).filter(Boolean)).size;
 
   /*
    * Qamrov — /api/stats dagi buildCoverage bilan bir xil: anketadagi
@@ -216,12 +302,12 @@ export async function buildIdrokStats(now: Date = new Date()): Promise<IdrokStat
   const schoolByKey = new Map<string, string>();
   for (const s of schoolCatalog) schoolByKey.set(searchKey(s.name), s.name);
   const activeNames = new Set<string>();
-  for (const name of Array.from(maktablar.keys())) {
-    const katalogNomi = schoolByKey.get(searchKey(name));
+  for (const row of rows) {
+    const katalogNomi = schoolByKey.get(searchKey(row.school));
     if (katalogNomi) activeNames.add(katalogNomi);
   }
   const activeSchools = schoolCatalog.filter((s) => activeNames.has(s.name)).length;
-  const mahallaKeys = new Set(Array.from(mahallalar.keys()).map(searchKey));
+  const mahallaKeys = new Set(rows.map((r) => searchKey(r.mahalla)));
   const silentMahallas = mahallaCatalog.filter((m) => !mahallaKeys.has(searchKey(m.name))).length;
 
   /*
@@ -232,8 +318,9 @@ export async function buildIdrokStats(now: Date = new Date()): Promise<IdrokStat
   const aralashuvRows = yordamRows.filter((r) =>
     r.barriers.some((b) => (YORDAM_TOSIQLARI as readonly string[]).includes(b))
   );
+  // Sabablar jadvali nom beradi — shuning uchun tozalangan to'siqlardan
   const barrierStats = new Map<string, { count: number; resolved: number }>();
-  for (const r of yordamRows) {
+  for (const r of toza) {
     for (const b of r.barriers) {
       const cell = barrierStats.get(b) ?? { count: 0, resolved: 0 };
       cell.count += 1;
@@ -252,8 +339,11 @@ export async function buildIdrokStats(now: Date = new Date()): Promise<IdrokStat
     (r) => r.helpResolved && r.helpResolvedAt && r.helpResolvedAt >= haftaBoshi
   ).length;
 
+  // Ko'rsatkichlar uchun — dashboard bilan bir xil (xom ma'lumot)
   const plan = buildCenterPlan(rows);
   const viableCount = plan.byMahalla.filter((o) => o.viability === 'viable').length;
+  // Jadvallar uchun — faqat ro'yxatdagi nomlar bilan
+  const tozaPlan = buildCenterPlan(toza);
 
   /*
    * Tartib muhim: IDROK birinchi ko'rsatkichlarni kartochka va
@@ -280,7 +370,7 @@ export async function buildIdrokStats(now: Date = new Date()): Promise<IdrokStat
     { kalit: 'maktablar_qamrovi', nomi: 'Maktablar qamrovi', qiymat: percent(activeSchools, schoolCatalog.length), birlik: 'foiz' },
     { kalit: 'katalogdagi_mahallalar', nomi: "Ro'yxatdagi mahallalar", qiymat: mahallaCatalog.length, birlik: 'ta' },
     { kalit: 'anketa_kelmagan_mahallalar', nomi: 'Anketa kelmagan mahallalar', qiymat: silentMahallas, birlik: 'ta' },
-    { kalit: 'katalogdagi_kasblar', nomi: "Ro'yxatdagi kasblar", qiymat: kasblarSoni, birlik: 'ta' },
+    { kalit: 'katalogdagi_kasblar', nomi: "Ro'yxatdagi kasblar", qiymat: kasbCatalog.length, birlik: 'ta' },
     { kalit: 'tosiq_belgilaganlar', nomi: "To'garakka qatnamaslik sababini aytganlar", qiymat: yordamRows.length, birlik: 'kishi' },
     { kalit: 'yordam_kerak', nomi: "Hokimiyat aralashuvi kerak bo'lganlar", qiymat: aralashuvRows.length, birlik: 'kishi' },
     { kalit: 'yordam_hal_qilingan', nomi: 'Muammosi hal qilinganlar', qiymat: resolved, birlik: 'kishi' },
@@ -348,7 +438,7 @@ export async function buildIdrokStats(now: Date = new Date()): Promise<IdrokStat
     {
       nomi: "Ta'lim markazi: mahallalar bo'yicha guruh hajmi",
       ustunlar: ['Mahalla', 'Guruh hajmi', 'Yetib kela oladiganlar', "Eng ko'p so'ralgan kurs", 'Holat'],
-      qatorlar: plan.byMahalla.map((o) => [
+      qatorlar: tozaPlan.byMahalla.map((o) => [
         o.location,
         o.topDemand,
         o.reachable,
@@ -359,7 +449,7 @@ export async function buildIdrokStats(now: Date = new Date()): Promise<IdrokStat
     {
       nomi: "Eng ko'p so'ralgan kurslar",
       ustunlar: ['Kurs', 'Xohlovchilar'],
-      qatorlar: plan.courseDemand.map((c) => [c.name, c.count]),
+      qatorlar: tozaPlan.courseDemand.map((c) => [c.name, c.count]),
     },
     {
       nomi: "To'garakka qatnamaslik sabablari",
@@ -385,9 +475,15 @@ export async function buildIdrokStats(now: Date = new Date()): Promise<IdrokStat
     {
       nomi: "O'rganmoqchi bo'lgan tillar",
       ustunlar: ['Til', 'Xohlovchilar'],
-      qatorlar: plan.languageDemand.map((l) => [l.name, l.count]),
+      qatorlar: tozaPlan.languageDemand.map((l) => [l.name, l.count]),
     },
-  ].map((t) => ({ ...t, qatorlar: t.qatorlar.slice(0, JADVAL_CHEGARASI) }));
+  ].map((t) => ({
+    ...t,
+    // Oxirgi himoya: har qanday matnli katak qisqartiriladi
+    qatorlar: t.qatorlar
+      .slice(0, JADVAL_CHEGARASI)
+      .map((qator) => qator.map((c) => (typeof c === 'string' ? truncate(c, MATN_CHEGARASI) : c))),
+  }));
 
   return {
     manba: MANBA,

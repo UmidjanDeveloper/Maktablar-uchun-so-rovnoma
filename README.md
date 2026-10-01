@@ -460,6 +460,10 @@ X-IDROK-Key: <IDROK_API_KEY qiymati>
 - **Shaxsiy ma'lumot yo'q:** ism, familiya, telefon qaytarilmaydi — faqat
   yig'ma raqamlar va maktab / mahalla / kasb / sinf kesimidagi jadvallar
   (har biri ko'pi bilan 30 qator).
+- **Erkin matn yo'q:** jadvallarga faqat katalog va `constants.ts` dagi
+  nomlar chiqadi. Ro'yxatda yo'q javob «Boshqa (ro'yxatda yo'q)» ga,
+  qo'lda yozilgan til «Boshqa til» ga, katalogda yo'q mahalla/maktab
+  «Ro'yxatdan tashqari» ga yig'iladi; har bir matnli katak 80 belgigacha.
 - Raqamlar `/admin/dashboard` dagi bilan bir xil qoidalar bo'yicha (filtrsiz)
   hisoblanadi: `src/lib/idrok-stats.ts`.
 
