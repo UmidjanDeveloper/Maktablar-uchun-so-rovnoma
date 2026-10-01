@@ -434,10 +434,50 @@ Maktablar-uchun-so-rovnoma/
 | `GET` | `/api/admin/unlisted` | Admin | Qo'lda kiritilgan, katalogda yo'q nomlar |
 | `GET`/`POST` | `/api/admin/kasblar` | Admin | Kasblar |
 | `PATCH`/`DELETE` | `/api/admin/kasblar/[id]` | Admin | Tahrirlash / o'chirish |
+| `GET` | `/api/idrok/stats` | `X-IDROK-Key` | IDROK uchun yig'ma statistika (pastga qarang) |
 
 **Filtr parametrlari** (`/api/stats` va `/api/students` uchun bir xil):
 `mahalla`, `school`, `grade`, `gender`, `category` — vergul bilan ajratilgan;
 `dateFrom`, `dateTo` — `YYYY-MM-DD` ko'rinishida.
+
+### IDROK uchun yashirin statistika API
+
+Xatirchi tumani hokimligining **IDROK** AI yordamchisi platforma holatini
+shu endpoint orqali oladi:
+
+```
+GET /api/idrok/stats
+X-IDROK-Key: <IDROK_API_KEY qiymati>
+```
+
+- **Yoqish:** `.env` (yoki Vercel Environment Variables) ga `IDROK_API_KEY`
+  qo'shing — kamida 16 ta belgi (`openssl rand -hex 32`). IDROK serverida
+  xuddi shu qiymat `LIVE_KELAJAK_KEY` bo'lib yoziladi.
+- **Kalit sozlanmagan bo'lsa** — endpoint o'chiq, `404` qaytadi.
+  **Kalit noto'g'ri bo'lsa** — `401 {"xato":"Ruxsat yo'q"}`.
+- **Faqat o'qish:** bazaga hech narsa yozilmaydi. Javob keshlanmaydi
+  (`Cache-Control: no-store`).
+- **Shaxsiy ma'lumot yo'q:** ism, familiya, telefon qaytarilmaydi — faqat
+  yig'ma raqamlar va maktab / mahalla / kasb / sinf kesimidagi jadvallar
+  (har biri ko'pi bilan 30 qator).
+- Raqamlar `/admin/dashboard` dagi bilan bir xil qoidalar bo'yicha (filtrsiz)
+  hisoblanadi: `src/lib/idrok-stats.ts`.
+
+Javob shakli:
+
+```json
+{
+  "manba": "kelajakegasi.uz",
+  "nomi": "Kelajak Egasi — Xatirchi Tuman Kasb Platformasi",
+  "vaqt": "2026-10-01T09:00:00.000Z",
+  "korsatkichlar": [
+    { "kalit": "jami_oquvchilar", "nomi": "Jami o'quvchilar (anketalar)", "qiymat": 1250, "birlik": "kishi" }
+  ],
+  "jadvallar": [
+    { "nomi": "Maktablar bo'yicha anketalar", "ustunlar": ["Maktab", "Anketalar", "..."], "qatorlar": [["21-maktab", 84, "..."]] }
+  ]
+}
+```
 
 ---
 
